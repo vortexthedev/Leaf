@@ -18,7 +18,7 @@ index 45b17a4fbb7f4941f23f5bf4983f9eccf425b73f..08553d0e47a76e7cbcc9649c0c0dc23f
              ActivationRange.maxBB = player.getBoundingBox().inflate(maxRange, worldHeight, maxRange);
              ActivationType.MISC.boundingBox = player.getBoundingBox().inflate(miscActivationRange, worldHeight, miscActivationRange);
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 1b49392ed30d69e74732187eb70489ee77a2a89c..57fdda94ce810f8309d2445966f1691d082d9980 100644
+index 07462b4f4a5c62cab3d57851c90fd30051481077..8330b822223780449ecbe9b4fb00cc02bba46f84 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -15,15 +15,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
@@ -205,10 +205,10 @@ index 0e77c717d3481aae5d591a08eed1eb5f1439cdbf..236e32bfb6cffc95368037f3904a2e6e
          try {
              org.purpurmc.purpur.PurpurConfig.init((java.io.File) options.valueOf("purpur-settings"));
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index c9db0f183e5607fde9cdf248b88fc357d2238d41..bd53374ecf90528a20b6a0bd41ab9c7e352a716f 100644
+index 637fe91dc7f32765d05d0e322dc5f3d4d31e1fda..8d4f4d9dea757ffcbb4e1e8a379904faa3ad0b26 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -2604,81 +2604,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2611,81 +2611,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      public void resetLastActionTime() {
          this.lastActionTime = Util.getMillis();
@@ -666,10 +666,10 @@ index a0d23f7c733c315a021e8b2ba8968f41807159a4..326da0817707fb2cd145c2c387d88b5e
      // Paper start - Affects Spawning API
      public static final Predicate<Entity> PLAYER_AFFECTS_SPAWNING = (entity) -> {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 5d7076e4573d47ea30d63dd16f0788012bd39264..128d8d936f5b574003ba54fd6545716f66d874fb 100644
+index ff497cdc9877e70bb5132743b84e61cdd329811e..aedd57afaf0f019bd9fc3f9f2f7d26394d3d8351 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -1511,24 +1511,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1531,24 +1531,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  this.stopSleeping();
              }
  

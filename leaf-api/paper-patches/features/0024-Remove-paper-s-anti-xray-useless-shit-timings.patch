@@ -114,10 +114,10 @@ index a6aa89cc7964037aac36b0e7e860fe49fa5e1fcc..00000000000000000000000000000000
 -    void callPlayerLeftClickBlock(@NotNull World world, @NotNull Player player, int x, int y, int z);
 -}
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 82d8febbc565d41e37717f1d75ce7561116254d5..835f282600880a29a75bff821a57324c922ac8af 100644
+index 020ee30c0a7d96944c22ffa447994747c7e13ea2..1e72b7ebbd38fb81a1c7a3ac723d5ab22ec7bdad 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -152,15 +152,6 @@ public interface UnsafeValues {
+@@ -151,15 +151,6 @@ public interface UnsafeValues {
      static boolean isLegacyPlugin(org.bukkit.plugin.Plugin plugin) {
          return !Bukkit.getUnsafe().isSupportedApiVersion(plugin.getDescription().getAPIVersion());
      }

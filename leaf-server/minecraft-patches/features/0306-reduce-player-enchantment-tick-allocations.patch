@@ -6,10 +6,10 @@ Subject: [PATCH] reduce player enchantment tick allocations
 To reduce allocation of creating entity loot contexts
 
 diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
-index 05d9626aec8b66f5b02e875ad60b853d15c0e02a..94285f13be555d92ce273cd70b2bf10840232bae 100644
+index 620c8465fab550115e6eb192682c813b8813d618..35c76588dff971cc01257d40bd862de8da7fd124 100644
 --- a/net/minecraft/world/item/enchantment/Enchantment.java
 +++ b/net/minecraft/world/item/enchantment/Enchantment.java
-@@ -349,8 +349,14 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+@@ -379,8 +379,14 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
      }
  
      public void tick(ServerLevel level, int enchantmentLevel, EnchantedItemInUse item, Entity entity) {

@@ -319,7 +319,7 @@ index f1dd9c35371b231602b1dd94b218050296dcb6a2..91fce90f96662f4807f856a0df74e243
 +
          return true;
      }
-
+ 
 diff --git a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
 index 45b70a28e0c3d4bcf65a8ddd5ce276e9769649de..a8aef055e9243150a4e6fb304074256fd9dbd61f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java

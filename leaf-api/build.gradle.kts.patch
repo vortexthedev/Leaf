@@ -17,7 +17,7 @@
  
  val apiAndDocs: Configuration by configurations.creating {
      attributes {
-@@ -42,16 +_,24 @@
+@@ -42,22 +_,36 @@
  
  dependencies {
      // api dependencies are listed transitively to API consumers
@@ -45,9 +45,23 @@
  
      // Deprecate bungeecord-chat in favor of adventure
      api("net.md-5:bungeecord-chat:$bungeeCordChatVersion") {
-@@ -66,32 +_,42 @@
+         exclude("com.google.guava", "guava")
+     }
+ 
++    api("org.json:json:20250517")
++    api("com.github.ben-manes.caffeine:caffeine:3.2.3")
++    api("org.mongodb:mongodb-driver-sync:5.6.2")
++    api("org.redisson:redisson:4.0.0")
++    api("it.unimi.dsi:fastutil:8.5.16")
++
+     apiAndDocs(platform("net.kyori:adventure-bom:$adventureVersion"))
+     apiAndDocs("net.kyori:adventure-api")
+     apiAndDocs("net.kyori:adventure-text-minimessage")
+@@ -65,33 +_,44 @@
+     apiAndDocs("net.kyori:adventure-text-serializer-legacy")
      apiAndDocs("net.kyori:adventure-text-serializer-plain")
      apiAndDocs("net.kyori:adventure-text-logger-slf4j")
++    api("net.kyori:adventure-platform-bukkit:4.4.1")
  
 -    api("org.apache.maven:maven-resolver-provider:3.9.6") // make API dependency for Paper Plugins
 -    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18")

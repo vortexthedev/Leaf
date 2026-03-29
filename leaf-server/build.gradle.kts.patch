@@ -153,7 +153,7 @@
 +    testImplementation("org.junit.platform:junit-platform-suite-engine:6.1.0-M1")
 +    testImplementation("org.hamcrest:hamcrest:3.0")
 +    testImplementation("org.mockito:mockito-core:5.22.0")
-+    mockitoAgent("org.mockito:mockito-core5.22.0") { isTransitive = false } // Configure mockito agent that is needed in newer java versions
++    mockitoAgent("org.mockito:mockito-core:5.22.0") { isTransitive = false } // Configure mockito agent that is needed in newer java versions
 +    testImplementation("org.ow2.asm:asm-tree:9.9.1")
 +    testImplementation("org.junit-pioneer:junit-pioneer:2.3.0") // CartesianTest
 +    // Leaf end - Bump Dependencies

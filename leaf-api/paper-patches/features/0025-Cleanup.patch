@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Sun, 29 Mar 2026 14:56:01 +0300
+Subject: [PATCH] Cleanup
+
+
+diff --git a/src/main/java/dev/imanity/antixray/sdk/AntiXraySDK.java b/src/main/java/dev/imanity/antixray/sdk/AntiXraySDK.java
+deleted file mode 100644
+index c44f1a19729e9b9ee6e3d32a53cc0fc2dabb5cfe..0000000000000000000000000000000000000000
+--- a/src/main/java/dev/imanity/antixray/sdk/AntiXraySDK.java
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package dev.imanity.antixray.sdk;
+-
+-import org.jspecify.annotations.Nullable;
+-
+-public class AntiXraySDK {
+-
+-    private static @Nullable AntiXrayAdapter ADAPTER;
+-
+-    public static @Nullable AntiXrayAdapter getAdapter() {
+-        return ADAPTER;
+-    }
+-
+-    public static void setAdapter(AntiXrayAdapter adapter) {
+-        ADAPTER = adapter;
+-    }
+-}
+diff --git a/src/main/java/dev/imanity/antixray/sdk/package-info.java b/src/main/java/dev/imanity/antixray/sdk/package-info.java
+deleted file mode 100644
+index edf2da29944e6e83bc020a23a9888f87f9007f8a..0000000000000000000000000000000000000000
+--- a/src/main/java/dev/imanity/antixray/sdk/package-info.java
++++ /dev/null
+@@ -1,4 +0,0 @@
+-@NullMarked
+-package dev.imanity.antixray.sdk;
+-
+-import org.jspecify.annotations.NullMarked;

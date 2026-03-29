@@ -32,7 +32,6 @@ index 3104caaf8463de31231f7503c86e9c7016f13372..a6aa89cc7964037aac36b0e7e860fe49
 -    void callPlayerLeftClickBlock(World world, Player player, int x, int y, int z);
 +    void callPlayerLeftClickBlock(@NotNull World world, @NotNull Player player, int x, int y, int z);
  }
-
 diff --git a/src/main/java/io/papermc/paper/math/FinePosition.java b/src/main/java/io/papermc/paper/math/FinePosition.java
 index b9c0065d8a9dedc3bd1a2d8bfbedfbc7f952ff93..41fbf4d31b52ded7164435da18de31e4afae275f 100644
 --- a/src/main/java/io/papermc/paper/math/FinePosition.java
@@ -5254,10 +5253,10 @@ index 5fbb1ccaeb424ad5584c140ae4e51c661cc39a9d..19815dcee20e888b8d2d6ca8d7e34c16
  
      Tag<Material> ITEMS_FENCES = Bukkit.getTag(REGISTRY_ITEMS, NamespacedKey.minecraft("fences"), Material.class);
 diff --git a/src/main/java/org/bukkit/enchantments/Enchantment.java b/src/main/java/org/bukkit/enchantments/Enchantment.java
-index 2f995a77e87689e9a3b226ab1f350f9631c7e691..762a10464572cb40ee7a5ba6a25f0e4a21d86881 100644
+index bbcde935e373dff04c6670f83b784e24a8c7a823..584045381180c917a1eab8ab855be928b48147f1 100644
 --- a/src/main/java/org/bukkit/enchantments/Enchantment.java
 +++ b/src/main/java/org/bukkit/enchantments/Enchantment.java
-@@ -234,6 +234,41 @@ public abstract class Enchantment implements Keyed, Translatable, net.kyori.adve
+@@ -235,6 +235,41 @@ public abstract class Enchantment implements Keyed, Translatable, net.kyori.adve
       */
      public static final Enchantment LUNGE = getEnchantment("lunge");
  
@@ -5297,9 +5296,9 @@ index 2f995a77e87689e9a3b226ab1f350f9631c7e691..762a10464572cb40ee7a5ba6a25f0e4a
 +    public static final Enchantment SMELTING = getEnchantment("smelting");
 +
      @NotNull
-     private static Enchantment getEnchantment(@NotNull String key) {
-         return RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).getOrThrow(NamespacedKey.minecraft(key));
-@@ -249,6 +284,14 @@ public abstract class Enchantment implements Keyed, Translatable, net.kyori.adve
+     private static Enchantment getEnchantment(@NotNull @KeyPattern.Value String key) {
+         return RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).getOrThrow(Key.key(Key.MINECRAFT_NAMESPACE, key));
+@@ -250,6 +285,14 @@ public abstract class Enchantment implements Keyed, Translatable, net.kyori.adve
      @Deprecated(since = "1.13", forRemoval = true)
      public abstract String getName();
  
@@ -5918,7 +5917,7 @@ index 0000000000000000000000000000000000000000..e4c62928d78e812237cf1533ff39ce06
 +
 +}
 diff --git a/src/main/java/org/bukkit/potion/PotionEffectType.java b/src/main/java/org/bukkit/potion/PotionEffectType.java
-index eddda8e149b8aaf7846b08fdfb927abf9235c7d0..78f3ed12d8fb700b144aa5e83ca80f45226d1113 100644
+index 60571a074c266f6606f9814b8778f55f693a537a..a8d4bc5f1e699301bfc7357219e1ea0ada6c6c1b 100644
 --- a/src/main/java/org/bukkit/potion/PotionEffectType.java
 +++ b/src/main/java/org/bukkit/potion/PotionEffectType.java
 @@ -298,6 +298,14 @@ public abstract class PotionEffectType implements Keyed, Translatable, net.kyori

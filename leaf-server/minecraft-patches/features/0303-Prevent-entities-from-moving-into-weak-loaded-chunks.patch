@@ -60,10 +60,10 @@ index 8aed2dead0314811aaebc9735362ae98b1f3fafa..c30c53942005d230e73841c9e6bb4d05
      public final void loadChunksForMoveAsync(AABB box, ca.spottedleaf.concurrentutil.util.Priority priority,
                                               java.util.function.Consumer<List<net.minecraft.world.level.chunk.ChunkAccess>> onLoad) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 8efddde48490eb05268b5b285551c8e61a3b61d6..6565b517710e6a2ed7a1fcf617b1a46279bab149 100644
+index 6fdd38e9879d14caf08484fa79b8afe47ecca286..e5a3d6484cab4b8ed75626539e43bc0dfa2b4d2c 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -388,6 +388,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -389,6 +389,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      public long activatedImmunityTick = Integer.MIN_VALUE;
      public @Nullable Boolean immuneToFire = null; // Purpur - Fire immune API
      public boolean leaf$isWeakLoaded = false; // Leaf - Rewrite entity despawn time

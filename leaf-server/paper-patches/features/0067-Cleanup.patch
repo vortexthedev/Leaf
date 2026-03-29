@@ -1,0 +1,1476 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Sun, 29 Mar 2026 14:56:00 +0300
+Subject: [PATCH] Cleanup
+
+
+diff --git a/src/log4jPlugins/java/org/purpurmc/purpur/gui/util/HighlightErrorConverter.java b/src/log4jPlugins/java/org/purpurmc/purpur/gui/util/HighlightErrorConverter.java
+deleted file mode 100644
+index 15a226e3854d731f7724025ea3459c8ace07630c..0000000000000000000000000000000000000000
+--- a/src/log4jPlugins/java/org/purpurmc/purpur/gui/util/HighlightErrorConverter.java
++++ /dev/null
+@@ -1,85 +0,0 @@
+-package org.purpurmc.purpur.gui.util;
+-
+-import org.apache.logging.log4j.Level;
+-import org.apache.logging.log4j.core.LogEvent;
+-import org.apache.logging.log4j.core.config.Configuration;
+-import org.apache.logging.log4j.core.config.plugins.Plugin;
+-import org.apache.logging.log4j.core.layout.PatternLayout;
+-import org.apache.logging.log4j.core.pattern.ConverterKeys;
+-import org.apache.logging.log4j.core.pattern.LogEventPatternConverter;
+-import org.apache.logging.log4j.core.pattern.PatternConverter;
+-import org.apache.logging.log4j.core.pattern.PatternFormatter;
+-import org.apache.logging.log4j.core.pattern.PatternParser;
+-import org.apache.logging.log4j.util.PerformanceSensitive;
+-
+-import java.util.List;
+-
+-@Plugin(name = "highlightGUIError", category = PatternConverter.CATEGORY)
+-@ConverterKeys({"highlightGUIError"})
+-@PerformanceSensitive("allocation")
+-public final class HighlightErrorConverter extends LogEventPatternConverter {
+-    private static final String ERROR = "\u00A74\u00A7l"; // Bold Red
+-    private static final String WARN = "\u00A7e\u00A7l"; // Bold Yellow
+-
+-    private final List<PatternFormatter> formatters;
+-
+-    private HighlightErrorConverter(List<PatternFormatter> formatters) {
+-        super("highlightGUIError", null);
+-        this.formatters = formatters;
+-    }
+-
+-    @Override
+-    public void format(LogEvent event, StringBuilder toAppendTo) {
+-        Level level = event.getLevel();
+-        if (level.isMoreSpecificThan(Level.ERROR)) {
+-            format(ERROR, event, toAppendTo);
+-            return;
+-        } else if (level.isMoreSpecificThan(Level.WARN)) {
+-            format(WARN, event, toAppendTo);
+-            return;
+-        }
+-        for (PatternFormatter formatter : formatters) {
+-            formatter.format(event, toAppendTo);
+-        }
+-    }
+-
+-    private void format(String style, LogEvent event, StringBuilder toAppendTo) {
+-        int start = toAppendTo.length();
+-        toAppendTo.append(style);
+-        int end = toAppendTo.length();
+-
+-        for (PatternFormatter formatter : formatters) {
+-            formatter.format(event, toAppendTo);
+-        }
+-
+-        if (toAppendTo.length() == end) {
+-            toAppendTo.setLength(start);
+-        }
+-    }
+-
+-    @Override
+-    public boolean handlesThrowable() {
+-        for (final PatternFormatter formatter : formatters) {
+-            if (formatter.handlesThrowable()) {
+-                return true;
+-            }
+-        }
+-        return false;
+-    }
+-
+-    public static HighlightErrorConverter newInstance(Configuration config, String[] options) {
+-        if (options.length != 1) {
+-            LOGGER.error("Incorrect number of options on highlightGUIError. Expected 1 received " + options.length);
+-            return null;
+-        }
+-
+-        if (options[0] == null) {
+-            LOGGER.error("No pattern supplied on highlightGUIError");
+-            return null;
+-        }
+-
+-        PatternParser parser = PatternLayout.createPatternParser(config);
+-        List<PatternFormatter> formatters = parser.parse(options[0]);
+-        return new HighlightErrorConverter(formatters);
+-    }
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java
+deleted file mode 100644
+index cc54b1c207981235b5160e8773b27cf9a5dcd4d5..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java
++++ /dev/null
+@@ -1,75 +0,0 @@
+-package com.destroystokyo.paper.network;
+-
+-import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+-import net.minecraft.ChatFormatting;
+-import net.minecraft.server.MinecraftServer;
+-import org.apache.commons.lang3.StringUtils;
+-
+-import java.net.InetSocketAddress;
+-
+-import javax.annotation.Nullable;
+-
+-public final class PaperLegacyStatusClient implements StatusClient {
+-
+-    private final InetSocketAddress address;
+-    private final int protocolVersion;
+-    @Nullable private final InetSocketAddress virtualHost;
+-
+-    private PaperLegacyStatusClient(InetSocketAddress address, int protocolVersion, @Nullable InetSocketAddress virtualHost) {
+-        this.address = address;
+-        this.protocolVersion = protocolVersion;
+-        this.virtualHost = virtualHost;
+-    }
+-
+-    @Override
+-    public InetSocketAddress getAddress() {
+-        return this.address;
+-    }
+-
+-    @Override
+-    public int getProtocolVersion() {
+-        return this.protocolVersion;
+-    }
+-
+-    @Nullable
+-    @Override
+-    public InetSocketAddress getVirtualHost() {
+-        return this.virtualHost;
+-    }
+-
+-    @Override
+-    public boolean isLegacy() {
+-        return true;
+-    }
+-
+-    public static PaperServerListPingEvent processRequest(MinecraftServer server,
+-            InetSocketAddress address, int protocolVersion, @Nullable InetSocketAddress virtualHost) {
+-
+-        PaperServerListPingEvent event =  new PaperServerListPingEventImpl(server,
+-                new PaperLegacyStatusClient(address, protocolVersion, virtualHost), Byte.MAX_VALUE, null);
+-        server.server.getPluginManager().callEvent(event);
+-
+-        if (event.isCancelled()) {
+-            return null;
+-        }
+-
+-        return event;
+-    }
+-
+-    @SuppressWarnings("deprecation") // Valid as this is the legacy status client
+-    public static String getMotd(PaperServerListPingEvent event) {
+-        return getFirstLine(event.getMotd());
+-    }
+-
+-    public static String getUnformattedMotd(PaperServerListPingEvent event) {
+-        // Strip color codes and all other occurrences of the color char (because it's used as delimiter)
+-        return getFirstLine(StringUtils.remove(PlainTextComponentSerializer.plainText().serialize(event.motd()), ChatFormatting.PREFIX_CODE));
+-    }
+-
+-    private static String getFirstLine(String s) {
+-        int pos = s.indexOf('\n');
+-        return pos >= 0 ? s.substring(0, pos) : s;
+-    }
+-
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
+deleted file mode 100644
+index 6ed2114f577ce12d2d493985e798609c7d83f15e..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
++++ /dev/null
+@@ -1,31 +0,0 @@
+-package com.destroystokyo.paper.network;
+-
+-import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+-import net.minecraft.server.MinecraftServer;
+-import net.minecraft.server.level.ServerPlayer;
+-import org.bukkit.entity.Player;
+-import org.bukkit.util.CachedServerIcon;
+-
+-import javax.annotation.Nullable;
+-
+-class PaperServerListPingEventImpl extends PaperServerListPingEvent {
+-
+-    private final MinecraftServer server;
+-
+-    PaperServerListPingEventImpl(MinecraftServer server, StatusClient client, int protocolVersion, @Nullable CachedServerIcon icon) {
+-        super(client, server.motd(), server.getPlayerCount(), server.getMaxPlayers(),
+-                server.getServerModName() + ' ' + server.getServerVersion(), protocolVersion, icon);
+-        this.server = server;
+-    }
+-
+-    @Override
+-    protected final Object[] getOnlinePlayers() {
+-        return this.server.getPlayerList().players.toArray();
+-    }
+-
+-    @Override
+-    protected final Player getBukkitPlayer(Object player) {
+-        return ((ServerPlayer) player).getBukkitEntity();
+-    }
+-
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
+deleted file mode 100644
+index d926ad804355ee2fdc5910b2505e8671602acdab..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
++++ /dev/null
+@@ -1,11 +0,0 @@
+-package com.destroystokyo.paper.network;
+-
+-import net.minecraft.network.Connection;
+-
+-class PaperStatusClient extends PaperNetworkClient implements StatusClient {
+-
+-    PaperStatusClient(Connection networkManager) {
+-        super(networkManager);
+-    }
+-
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
+deleted file mode 100644
+index b40b79beb3115b80150d1aa4455ebb7a2a055574..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
++++ /dev/null
+@@ -1,105 +0,0 @@
+-package com.destroystokyo.paper.network;
+-
+-import com.destroystokyo.paper.profile.PlayerProfile;
+-import io.papermc.paper.adventure.AdventureComponent;
+-import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.List;
+-import java.util.Optional;
+-import javax.annotation.Nonnull;
+-import net.minecraft.network.Connection;
+-import net.minecraft.network.chat.Component;
+-import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
+-import net.minecraft.network.protocol.status.ServerStatus;
+-import net.minecraft.server.MinecraftServer;
+-import net.minecraft.server.players.NameAndId;
+-import org.bukkit.craftbukkit.util.CraftIconCache;
+-import org.jetbrains.annotations.NotNull;
+-
+-public final class StandardPaperServerListPingEventImpl extends PaperServerListPingEventImpl {
+-
+-    private List<NameAndId> originalSample;
+-
+-    private StandardPaperServerListPingEventImpl(MinecraftServer server, Connection networkManager, ServerStatus ping) {
+-        super(server, new PaperStatusClient(networkManager), ping.version().map(ServerStatus.Version::protocol).orElse(-1), server.server.getServerIcon());
+-        this.originalSample = ping.players().map(ServerStatus.Players::sample).orElse(null); // GH-1473 - pre-tick race condition NPE
+-    }
+-
+-    @Nonnull
+-    @Override
+-    public List<ListedPlayerInfo> getListedPlayers() {
+-        List<ListedPlayerInfo> sample = super.getListedPlayers();
+-
+-        if (this.originalSample != null) {
+-            for (NameAndId profile : this.originalSample) {
+-                sample.add(new ListedPlayerInfo(profile.name(), profile.id()));
+-            }
+-            this.originalSample = null;
+-        }
+-
+-        return sample;
+-    }
+-
+-    @Override
+-    public @NotNull List<PlayerProfile> getPlayerSample() {
+-        this.getListedPlayers(); // Populate the backing list for the transforming view, and null out originalSample (see getListedPlayers and processRequest)
+-        return super.getPlayerSample();
+-    }
+-
+-    private List<NameAndId> getPlayerSampleHandle() {
+-        if (this.originalSample != null) {
+-            return this.originalSample;
+-        }
+-
+-        List<ListedPlayerInfo> entries = super.getListedPlayers();
+-        if (entries.isEmpty()) {
+-            return Collections.emptyList();
+-        }
+-
+-        final List<NameAndId> profiles = new ArrayList<>();
+-        for (ListedPlayerInfo playerInfo : entries) {
+-            profiles.add(new NameAndId(playerInfo.id(), playerInfo.name()));
+-        }
+-        return profiles;
+-    }
+-
+-    public static void processRequest(MinecraftServer server, Connection networkManager) {
+-        StandardPaperServerListPingEventImpl event = new StandardPaperServerListPingEventImpl(server, networkManager, server.getStatus());
+-        server.server.getPluginManager().callEvent(event);
+-
+-        // Close connection immediately if event is cancelled
+-        if (event.isCancelled()) {
+-            networkManager.disconnect((Component) null);
+-            return;
+-        }
+-
+-        // Setup response
+-
+-        // Description
+-        final Component description = new AdventureComponent(event.motd());
+-
+-        // Players
+-        final Optional<ServerStatus.Players> players;
+-        if (!event.shouldHidePlayers()) {
+-            players = Optional.of(new ServerStatus.Players(event.getMaxPlayers(), event.getNumPlayers(), event.getPlayerSampleHandle()));
+-        } else {
+-            players = Optional.empty();
+-        }
+-
+-        // Version
+-        final ServerStatus.Version version = new ServerStatus.Version(event.getVersion(), event.getProtocolVersion());
+-
+-        // Favicon
+-        final Optional<ServerStatus.Favicon> favicon;
+-        if (event.getServerIcon() != null) {
+-            favicon = Optional.of(new ServerStatus.Favicon(((CraftIconCache) event.getServerIcon()).value));
+-        } else {
+-            favicon = Optional.empty();
+-        }
+-        final ServerStatus ping = new ServerStatus(description, players, Optional.of(version), favicon, server.enforceSecureProfile());
+-
+-        // Send response
+-        networkManager.send(new ClientboundStatusResponsePacket(ping));
+-    }
+-
+-}
+diff --git a/src/main/java/io/papermc/paper/command/PaperCommand.java b/src/main/java/io/papermc/paper/command/PaperCommand.java
+index b6a9d516fcf8fd220286e6708465f251123ad44a..3dc4fd8e2fcc6f6b049eff77cfd6da9bc4556050 100644
+--- a/src/main/java/io/papermc/paper/command/PaperCommand.java
++++ b/src/main/java/io/papermc/paper/command/PaperCommand.java
+@@ -30,7 +30,6 @@ public final class PaperCommand extends Command {
+ 
+         commands.put(Set.of("heap"), new HeapDumpCommand());
+         commands.put(Set.of("entity"), new EntityCommand());
+-        commands.put(Set.of("reload"), new ReloadCommand());
+         commands.put(Set.of("dumpplugins"), new DumpPluginsCommand());
+         commands.put(Set.of("dumpitem"), new DumpItemCommand());
+         commands.put(Set.of("mobcaps", "playermobcaps"), new MobcapsCommand());
+diff --git a/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java b/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java
+deleted file mode 100644
+index bd68139ae635f2ad7ec8e7a21e0056a139c4c62e..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java
++++ /dev/null
+@@ -1,33 +0,0 @@
+-package io.papermc.paper.command.subcommands;
+-
+-import io.papermc.paper.command.PaperSubcommand;
+-import net.minecraft.server.MinecraftServer;
+-import org.bukkit.command.Command;
+-import org.bukkit.command.CommandSender;
+-import org.bukkit.craftbukkit.CraftServer;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+-import org.checkerframework.framework.qual.DefaultQualifier;
+-
+-import static net.kyori.adventure.text.Component.text;
+-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+-import static net.kyori.adventure.text.format.NamedTextColor.RED;
+-
+-@DefaultQualifier(NonNull.class)
+-public final class ReloadCommand implements PaperSubcommand {
+-    @Override
+-    public boolean execute(final CommandSender sender, final String subCommand, final String[] args) {
+-        this.doReload(sender);
+-        return true;
+-    }
+-
+-    private void doReload(final CommandSender sender) {
+-        Command.broadcastCommandMessage(sender, text("Please note that this command is not supported and may cause issues.", RED));
+-        Command.broadcastCommandMessage(sender, text("If you encounter any issues please use the /stop command to restart your server.", RED));
+-
+-        MinecraftServer server = ((CraftServer) sender.getServer()).getServer();
+-        server.paperConfigurations.reloadConfigs(server);
+-        server.server.reloadCount++;
+-
+-        Command.broadcastCommandMessage(sender, text("Paper config reload complete.", GREEN));
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+index 61eb4a33d8d15a27091eef030237052c8b2839d9..77ab7f6682fb88edd8d6c28e7a22e8851406a1a9 100644
+--- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+@@ -89,8 +89,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+         public class Kick extends ConfigurationPart {
+             public Component authenticationServersDown = Component.translatable("multiplayer.disconnect.authservers_down");
+             public Component connectionThrottle = Component.text("Connection throttled! Please wait before reconnecting.");
+-            public Component flyingPlayer = Component.translatable("multiplayer.disconnect.flying");
+-            public Component flyingVehicle = Component.translatable("multiplayer.disconnect.flying");
+         }
+ 
+         public Component noPermission = Component.text("I'm sorry, but you do not have permission to perform this command. Please contact the server administrators if you believe that this is in error.", NamedTextColor.RED);
+@@ -172,7 +170,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+         public boolean allowPermanentBlockBreakExploits = false;
+         @Comment("This setting controls if player should be able to use TNT duplication, but this also allows duplicating carpet, rails and potentially other items")
+         public boolean allowPistonDuplication = false;
+-        public boolean performUsernameValidation = true;
+         @Comment("This setting controls if players should be able to create headless pistons.")
+         public boolean allowHeadlessPistons = false;
+         @Comment("This setting controls if the vanilla damage tick should be skipped if damage was blocked via a shield.")
+@@ -260,12 +257,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+         }
+     }
+ 
+-    public Collisions collisions;
+-
+-    public class Collisions extends ConfigurationPart {
+-        public boolean enablePlayerCollisions = true;
+-    }
+-
+     public PlayerAutoSave playerAutoSave;
+ 
+ 
+@@ -280,7 +271,7 @@ public class GlobalConfiguration extends ConfigurationPart {
+         }
+     }
+ 
+-    @Setting(org.purpurmc.purpur.configuration.transformation.FarEndTerrainGenerationMigration.MISC_KEY) // Purpur - Migrate Setting to reintroduce end void rings
++    @Setting("misc") // Purpur - Migrate Setting to reintroduce end void rings
+     public Misc misc;
+ 
+     public class Misc extends ConfigurationPart {
+@@ -326,7 +317,7 @@ public class GlobalConfiguration extends ConfigurationPart {
+         @Comment("Whether the nether dimension is enabled and will be loaded.")
+         public boolean enableNether = true;
+         @Comment("Keeps Paper's fix for MC-159283 enabled. Disable to use vanilla End ring terrain.")
+-        @Setting(org.purpurmc.purpur.configuration.transformation.FarEndTerrainGenerationMigration.FIX_FAR_END_TERRAIN_GENERATION_KEY) // Purpur - Migrate Setting to reintroduce end void rings
++        @Setting("fix-far-end-terrain-generation")
+         public boolean fixFarEndTerrainGeneration = true;
+     }
+ 
+diff --git a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
+index d175dc4afd8cc2595921d4256c492633b301cd01..6a7035637466500c50a4ed8e4001c852db4ce73a 100644
+--- a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
++++ b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
+@@ -291,7 +291,6 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
+         for (NodePath path : RemovedConfigurations.REMOVED_GLOBAL_PATHS) {
+             builder.addAction(path, TransformAction.remove());
+         }
+-        org.purpurmc.purpur.configuration.transformation.FarEndTerrainGenerationMigration.apply(builder); // Purpur - Migrate Setting to reintroduce end void rings
+         builder.build().apply(node);
+ 
+         final ConfigurationTransformation.VersionedBuilder versionedBuilder = Transformations.versionedBuilder();
+diff --git a/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java b/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
+index 605052931456d40152aefaf46da565708ae27be1..7caa67e1c13f41e9d9f605d787c0e3d134e00339 100644
+--- a/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
+@@ -231,7 +231,7 @@ public class WorldConfiguration extends ConfigurationPart {
+             public boolean zombiesTargetTurtleEggs = true;
+             public boolean piglinsGuardChests = true;
+             public double babyZombieMovementModifier = 0.5;
+-            public boolean allowSpiderWorldBorderClimbing = true;
++            public boolean allowSpiderWorldBorderClimbing = false;
+ 
+             private static final List<EntityType<?>> ZOMBIE_LIKE = List.of(EntityType.ZOMBIE, EntityType.HUSK, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIFIED_PIGLIN);
+             @MergeMap
+@@ -484,11 +484,11 @@ public class WorldConfiguration extends ConfigurationPart {
+     public TickRates tickRates;
+ 
+     public class TickRates extends ConfigurationPart {
+-        public int grassSpread = 1;
++        public int grassSpread = 3;
+         public int containerUpdate = 1;
+         public int mobSpawner = 1;
+-        public int wetFarmland = 1;
+-        public int dryFarmland = 1;
++        public int wetFarmland = 3;
++        public int dryFarmland = 3;
+         public Table<EntityType<?>, String, Integer> sensor = Util.make(HashBasedTable.create(), table -> table.put(EntityType.VILLAGER, "secondarypoisensor", 40));
+         public Table<EntityType<?>, String, Integer> behavior = Util.make(HashBasedTable.create(), table -> table.put(EntityType.VILLAGER, "validatenearbypoi", -1));
+     }
+diff --git a/src/main/java/io/papermc/paper/world/PaperWorldLoader.java b/src/main/java/io/papermc/paper/world/PaperWorldLoader.java
+index 51a01f86fee58052cfa10febc2b3ddf8f6dd2ad7..bc6cba8ee84925d22c43d4342848b82375ce6724 100644
+--- a/src/main/java/io/papermc/paper/world/PaperWorldLoader.java
++++ b/src/main/java/io/papermc/paper/world/PaperWorldLoader.java
+@@ -135,7 +135,7 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
+                     ((DedicatedServer) this.server).settings,
+                     this.server.worldLoaderContext,
+                     this.server.worldLoaderContext.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM),
+-                    this.server.isDemo(),
++                    false,
+                     this.server.options.has("bonusChest")
+                 ).cookie();
+             } else {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 8dc831bb08aa482149fcb69bd6a7222591a50e19..f43cb62f2b2b534ef08d3a5b999f80e022faa631 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -66,11 +66,9 @@ import net.minecraft.server.dedicated.DedicatedServerSettings;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.server.level.TicketType;
+-import net.minecraft.server.players.IpBanListEntry;
+ import net.minecraft.server.players.NameAndId;
+ import net.minecraft.server.players.PlayerList;
+ import net.minecraft.server.players.ServerOpListEntry;
+-import net.minecraft.server.players.UserBanListEntry;
+ import net.minecraft.server.players.UserWhiteListEntry;
+ import net.minecraft.tags.TagKey;
+ import net.minecraft.util.GsonHelper;
+@@ -773,10 +771,6 @@ public final class CraftServer implements Server {
+         return this.configuration.getBoolean("settings.warn-on-overload");
+     }
+ 
+-    public boolean getQueryPlugins() {
+-        return this.configuration.getBoolean("settings.query-plugins");
+-    }
+-
+     @Override
+     public List<String> getInitialEnabledPacks() {
+         return Collections.unmodifiableList(this.getProperties().initialDataPackConfiguration.getEnabled());
+@@ -794,27 +788,27 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public ResourcePack getServerResourcePack() {
+-        return this.getServer().getServerResourcePack().map(CraftResourcePack::new).orElse(null);
++        return null;
+     }
+ 
+     @Override
+     public String getResourcePack() {
+-        return this.getServer().getServerResourcePack().map(MinecraftServer.ServerResourcePackInfo::url).orElse("");
++        return"";
+     }
+ 
+     @Override
+     public String getResourcePackHash() {
+-        return this.getServer().getServerResourcePack().map(MinecraftServer.ServerResourcePackInfo::hash).orElse("").toUpperCase(Locale.ROOT);
++        return "";
+     }
+ 
+     @Override
+     public String getResourcePackPrompt() {
+-        return this.getServer().getServerResourcePack().map(MinecraftServer.ServerResourcePackInfo::prompt).map(CraftChatMessage::fromComponent).orElse("");
++        return "";
+     }
+ 
+     @Override
+     public boolean isResourcePackRequired() {
+-        return this.getServer().isResourcePackRequired();
++        return false;
+     }
+ 
+     @Override
+@@ -943,7 +937,6 @@ public final class CraftServer implements Server {
+         this.console.settings = new DedicatedServerSettings(this.console.options);
+         DedicatedServerProperties config = this.console.settings.getProperties();
+ 
+-        this.console.setMotd(config.motd.get());
+         this.overrideSpawnLimits();
+         this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
+         TicketType.PLUGIN_TYPE_TIMEOUT = this.configuration.getInt("chunk-gc.period-in-ticks");
+@@ -954,17 +947,6 @@ public final class CraftServer implements Server {
+         this.loadCompatibilities();
+         CraftMagicNumbers.INSTANCE.getCommodore().updateReroute(activeCompatibilities::contains);
+ 
+-        try {
+-            this.playerList.getIpBans().load();
+-        } catch (IOException ex) {
+-            this.logger.log(Level.WARNING, "Failed to load banned-ips.json, " + ex.getMessage());
+-        }
+-        try {
+-            this.playerList.getBans().load();
+-        } catch (IOException ex) {
+-            this.logger.log(Level.WARNING, "Failed to load banned-players.json, " + ex.getMessage());
+-        }
+-
+         org.spigotmc.SpigotConfig.init((File) this.console.options.valueOf("spigot-settings")); // Spigot
+         this.console.paperConfigurations.reloadConfigs(this.console);
+         org.purpurmc.purpur.PurpurConfig.init((File) console.options.valueOf("purpur-settings")); // Purpur - Purpur config files
+@@ -1103,53 +1085,6 @@ public final class CraftServer implements Server {
+         }
+     }
+ 
+-    @SuppressWarnings({ "unchecked", "finally" })
+-    private void loadCustomPermissions() {
+-        File file = new File(this.configuration.getString("settings.permissions-file"));
+-        FileInputStream stream;
+-
+-        try {
+-            stream = new FileInputStream(file);
+-        } catch (FileNotFoundException ex) {
+-            try {
+-                file.createNewFile();
+-            } finally {
+-                return;
+-            }
+-        }
+-
+-        Map<String, Map<String, Object>> perms;
+-
+-        try {
+-            perms = this.yaml.load(stream);
+-        } catch (MarkedYAMLException ex) {
+-            this.getLogger().log(Level.WARNING, "Server permissions file " + file + " is not valid YAML: " + ex.toString());
+-            return;
+-        } catch (Throwable ex) {
+-            this.getLogger().log(Level.WARNING, "Server permissions file " + file + " is not valid YAML.", ex);
+-            return;
+-        } finally {
+-            try {
+-                stream.close();
+-            } catch (IOException ex) {}
+-        }
+-
+-        if (perms == null) {
+-            this.getLogger().log(Level.INFO, "Server permissions file " + file + " is empty, ignoring it");
+-            return;
+-        }
+-
+-        List<Permission> permsList = Permission.loadPermissions(perms, "Permission node '%s' in " + file + " is invalid", Permission.DEFAULT_PERMISSION);
+-
+-        for (Permission perm : permsList) {
+-            try {
+-                this.pluginManager.addPermission(perm);
+-            } catch (IllegalArgumentException ex) {
+-                this.getLogger().log(Level.SEVERE, "Permission in " + file + " was already defined", ex);
+-            }
+-        }
+-    }
+-
+     @Override
+     public String toString() {
+         return "CraftServer{" + "serverName=" + this.serverName + ",serverVersion=" + this.serverVersion + ",minecraftVersion=" + this.console.getServerVersion() + '}';
+@@ -1765,7 +1700,7 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public boolean getAllowFlight() {
+-        return this.console.allowFlight();
++        return true;
+     }
+ 
+     @Override
+@@ -2050,7 +1985,7 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public Set<String> getIPBans() {
+-        return this.playerList.getIpBans().getEntries().stream().map(IpBanListEntry::getUser).collect(Collectors.toSet());
++        return Collections.emptySet();
+     }
+ 
+     @Override
+@@ -2083,13 +2018,7 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public Set<OfflinePlayer> getBannedPlayers() {
+-        Set<OfflinePlayer> result = new HashSet<>();
+-
+-        for (UserBanListEntry entry : this.playerList.getBans().getEntries()) {
+-            result.add(this.getOfflinePlayer(entry.getUser()));
+-        }
+-
+-        return result;
++        return Collections.emptySet();
+     }
+ 
+     @Override
+@@ -2097,8 +2026,8 @@ public final class CraftServer implements Server {
+         Preconditions.checkArgument(type != null, "BanList.Type cannot be null");
+ 
+         return switch (type) {
+-            case IP -> (T) new CraftIpBanList(this.playerList.getIpBans());
+-            case PROFILE, NAME -> (T) new CraftProfileBanList(this.playerList.getBans());
++            case IP -> (T) new CraftIpBanList();
++            case PROFILE, NAME -> (T) new CraftProfileBanList();
+         };
+     }
+ 
+@@ -2107,9 +2036,9 @@ public final class CraftServer implements Server {
+     public <B extends BanList<E>, E> B getBanList(final io.papermc.paper.ban.BanListType<B> type) {
+         Preconditions.checkArgument(type != null, "BanList.BanType cannot be null");
+         if (type == io.papermc.paper.ban.BanListType.IP) {
+-            return (B) new CraftIpBanList(this.playerList.getIpBans());
++            return (B) new CraftIpBanList();
+         } else if (type == io.papermc.paper.ban.BanListType.PROFILE) {
+-            return (B) new CraftProfileBanList(this.playerList.getBans());
++            return (B) new CraftProfileBanList();
+         } else {
+             throw new IllegalArgumentException("Unknown BanListType: " + type);
+         }
+@@ -2339,12 +2268,11 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public net.kyori.adventure.text.Component motd() {
+-        return this.console.motd();
++        return net.kyori.adventure.text.Component.empty();
+     }
+ 
+     @Override
+     public void motd(final net.kyori.adventure.text.Component motd) {
+-        this.console.motd(motd);
+     }
+ 
+     @Override
+@@ -2354,7 +2282,6 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public void setMotd(String motd) {
+-        this.console.setMotd(motd);
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index b41c0741e6a6553449937241d919f1986eda1021..9d1b0cf434f304d5df4917aa68b48b18965a35a0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -28,74 +28,71 @@ public class Main {
+                 this.acceptsAll(asList("?", "help"), "Show the help");
+ 
+                 this.acceptsAll(asList("c", "config"), "Properties file to use")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("server.properties"))
+-                        .describedAs("Properties file");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("server.properties"))
++                    .describedAs("Properties file");
+ 
+                 this.acceptsAll(asList("P", "plugins"), "Plugin directory to use")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("plugins"))
+-                        .describedAs("Plugin directory");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("plugins"))
++                    .describedAs("Plugin directory");
+ 
+                 this.acceptsAll(asList("h", "host", "server-ip"), "Host to listen on")
+-                        .withRequiredArg()
+-                        .ofType(String.class)
+-                        .describedAs("Hostname or IP");
++                    .withRequiredArg()
++                    .ofType(String.class)
++                    .describedAs("Hostname or IP");
+ 
+                 this.acceptsAll(asList("W", "world-dir", "universe", "world-container"), "World container")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("."))
+-                        .describedAs("Directory containing worlds");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("."))
++                    .describedAs("Directory containing worlds");
+ 
+                 this.acceptsAll(asList("w", "world", "level-name"), "World name")
+-                        .withRequiredArg()
+-                        .ofType(String.class)
+-                        .describedAs("World name");
++                    .withRequiredArg()
++                    .ofType(String.class)
++                    .describedAs("World name");
+ 
+                 this.acceptsAll(asList("p", "port", "server-port"), "Port to listen on")
+-                        .withRequiredArg()
+-                        .ofType(Integer.class)
+-                        .describedAs("Port");
++                    .withRequiredArg()
++                    .ofType(Integer.class)
++                    .describedAs("Port");
+ 
+                 this.accepts("serverId", "Server ID")
+-                        .withRequiredArg();
+-
+-                this.accepts("jfrProfile", "Enable JFR profiling");
++                    .withRequiredArg();
+ 
+                 this.accepts("pidFile", "pid File")
+-                        .withRequiredArg()
+-                        .withValuesConvertedBy(new PathConverter());
++                    .withRequiredArg()
++                    .withValuesConvertedBy(new PathConverter());
+ 
+                 this.acceptsAll(asList("o", "online-mode"), "Whether to use online authentication")
+-                        .withRequiredArg()
+-                        .ofType(Boolean.class)
+-                        .describedAs("Authentication");
++                    .withRequiredArg()
++                    .ofType(Boolean.class)
++                    .describedAs("Authentication");
+ 
+                 this.acceptsAll(asList("s", "size", "max-players"), "Maximum amount of players")
+-                        .withRequiredArg()
+-                        .ofType(Integer.class)
+-                        .describedAs("Server size");
++                    .withRequiredArg()
++                    .ofType(Integer.class)
++                    .describedAs("Server size");
+ 
+                 this.acceptsAll(asList("b", "bukkit-settings"), "File for bukkit settings")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("bukkit.yml"))
+-                        .describedAs("Yml file");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("bukkit.yml"))
++                    .describedAs("Yml file");
+ 
+                 this.acceptsAll(asList("C", "commands-settings"), "File for command settings")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("commands.yml"))
+-                        .describedAs("Yml file");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("commands.yml"))
++                    .describedAs("Yml file");
+ 
+                 this.accepts("forceUpgrade", "Whether to force a world upgrade");
+                 this.accepts("eraseCache", "Whether to force cache erase during world upgrade");
+                 this.accepts("recreateRegionFiles", "Whether to recreate region files during world upgrade");
+                 this.accepts("safeMode", "Loads level with vanilla datapack only"); // Paper
+-                this.accepts("nogui", "Disables the graphical console");
+ 
+                 this.accepts("nojline", "Disables jline and emulates the vanilla console");
+ 
+@@ -103,41 +100,37 @@ public class Main {
+ 
+                 this.acceptsAll(asList("v", "version"), "Show the CraftBukkit Version");
+ 
+-                this.accepts("demo", "Demo mode");
+-
+-                this.accepts("bonusChest", "Enable the bonus chest");
+-
+                 this.accepts("initSettings", "Only create configuration files and then exit"); // SPIGOT-5761: Add initSettings option
+ 
+                 this.acceptsAll(asList("S", "spigot-settings"), "File for spigot settings")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("spigot.yml"))
+-                        .describedAs("Yml file");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("spigot.yml"))
++                    .describedAs("Yml file");
+ 
+                 this.acceptsAll(asList("paper-dir", "paper-settings-directory"), "Directory for Paper settings")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File(io.papermc.paper.configuration.PaperConfigurations.CONFIG_DIR))
+-                        .describedAs("Config directory");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File(io.papermc.paper.configuration.PaperConfigurations.CONFIG_DIR))
++                    .describedAs("Config directory");
+ 
+                 this.acceptsAll(asList("paper", "paper-settings"), "File for Paper settings")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File("paper.yml"))
+-                        .describedAs("Yml file");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File("paper.yml"))
++                    .describedAs("Yml file");
+ 
+                 this.acceptsAll(asList("add-plugin", "add-extra-plugin-jar"), "Specify paths to extra plugin jars to be loaded in addition to those in the plugins folder. This argument can be specified multiple times, once for each extra plugin jar path.")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File[] {})
+-                        .describedAs("Jar file");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File[] {})
++                    .describedAs("Jar file");
+ 
+                 this.acceptsAll(asList("add-plugin-dir", "add-extra-plugin-dir"), "Specify paths to extra plugin directories to be loaded in addition to the plugins folder. This argument can be specified multiple times, once for each extra plugin dir path.")
+-                        .withRequiredArg()
+-                        .ofType(File.class)
+-                        .defaultsTo(new File[] {})
+-                        .describedAs("Plugin directory");
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .defaultsTo(new File[] {})
++                    .describedAs("Plugin directory");
+ 
+                 // Purpur start - Purpur config files
+                 this.acceptsAll(asList("purpur", "purpur-settings"), "File for purpur settings")
+@@ -148,10 +141,10 @@ public class Main {
+                 // Purpur end - Purpur config files
+ 
+                 this.accepts("server-name", "Name of the server")
+-                        .withRequiredArg()
+-                        .ofType(String.class)
+-                        .defaultsTo("Unknown Server")
+-                        .describedAs("Name");
++                    .withRequiredArg()
++                    .ofType(String.class)
++                    .defaultsTo("Unknown Server")
++                    .describedAs("Name");
+             }
+         };
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanEntry.java b/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanEntry.java
+index 847da7f813d2a45c194befa6029754383215dbf1..0d3d76cbbbffc3ce847aae7947ea90693ec2257f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanEntry.java
++++ b/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanEntry.java
+@@ -4,26 +4,19 @@ import com.google.common.net.InetAddresses;
+ import java.net.InetAddress;
+ import java.time.Instant;
+ import java.util.Date;
+-import net.minecraft.server.players.IpBanList;
+-import net.minecraft.server.players.IpBanListEntry;
+ import org.bukkit.BanEntry;
+ 
+ public final class CraftIpBanEntry implements BanEntry<InetAddress> {
+     private static final Date minorDate = Date.from(Instant.parse("1899-12-31T04:00:00Z"));
+-    private final IpBanList list;
+-    private final String target;
++
++    private String target;
+     private Date created;
+     private String source;
+     private Date expiration;
+     private String reason;
+ 
+-    public CraftIpBanEntry(String target, IpBanListEntry entry, IpBanList list) {
+-        this.list = list;
+-        this.target = target;
+-        this.created = entry.getCreated() != null ? new Date(entry.getCreated().getTime()) : null;
+-        this.source = entry.getSource();
+-        this.expiration = entry.getExpires() != null ? new Date(entry.getExpires().getTime()) : null;
+-        this.reason = entry.getReason();
++    public CraftIpBanEntry(String target, Object entry, Object list) {
++
+     }
+ 
+     @Override
+@@ -82,12 +75,11 @@ public final class CraftIpBanEntry implements BanEntry<InetAddress> {
+ 
+     @Override
+     public void save() {
+-        IpBanListEntry entry = new IpBanListEntry(this.target, this.created, this.source, this.expiration, this.reason);
+-        this.list.add(entry);
++
+     }
+ 
+     @Override
+     public void remove() {
+-        this.list.remove(this.target);
++
+     }
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanList.java b/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanList.java
+index 94be0e848dce0b16ce5e9595a898e61c7bbb442a..1b7804db5f64e7c80fb9d0a1dcd4f32b9456a08c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanList.java
++++ b/src/main/java/org/bukkit/craftbukkit/ban/CraftIpBanList.java
+@@ -1,34 +1,23 @@
+ package org.bukkit.craftbukkit.ban;
+ 
+ import com.google.common.base.Preconditions;
+-import com.google.common.collect.ImmutableSet;
+ import com.google.common.net.InetAddresses;
++import org.bukkit.BanEntry;
++
+ import java.net.InetAddress;
+ import java.time.Duration;
+ import java.time.Instant;
++import java.util.Collections;
+ import java.util.Date;
+ import java.util.Set;
+-import net.minecraft.server.players.IpBanList;
+-import net.minecraft.server.players.IpBanListEntry;
+-import org.bukkit.BanEntry;
+ 
+ public class CraftIpBanList implements org.bukkit.ban.IpBanList {
+-    private final IpBanList list;
+-
+-    public CraftIpBanList(IpBanList list) {
+-        this.list = list;
+-    }
+ 
+     @Override
+     public BanEntry<InetAddress> getBanEntry(String target) {
+         Preconditions.checkArgument(target != null, "Target cannot be null");
+ 
+-        IpBanListEntry entry = this.list.get(target);
+-        if (entry == null) {
+-            return null;
+-        }
+-
+-        return new CraftIpBanEntry(target, entry, this.list);
++        return new CraftIpBanEntry(target, null, null);
+     }
+ 
+     @Override
+@@ -40,13 +29,7 @@ public class CraftIpBanList implements org.bukkit.ban.IpBanList {
+     public BanEntry<InetAddress> addBan(String target, String reason, Date expires, String source) {
+         Preconditions.checkArgument(target != null, "Ban target cannot be null");
+ 
+-        IpBanListEntry entry = new IpBanListEntry(target, new Date(),
+-                (source == null || source.isBlank()) ? null : source, expires,
+-                (reason == null || reason.isBlank()) ? null : reason);
+-
+-        this.list.add(entry);
+-
+-        return new CraftIpBanEntry(target, entry, this.list);
++        return new CraftIpBanEntry(target, null, null);
+     }
+ 
+     @Override
+@@ -68,32 +51,18 @@ public class CraftIpBanList implements org.bukkit.ban.IpBanList {
+ 
+     @Override
+     public Set<BanEntry> getBanEntries() {
+-        ImmutableSet.Builder<BanEntry> builder = ImmutableSet.builder();
+-        for (String target : this.list.getUserList()) {
+-            IpBanListEntry ipBanEntry = this.list.get(target);
+-            if (ipBanEntry != null) {
+-                builder.add(new CraftIpBanEntry(target, ipBanEntry, this.list));
+-            }
+-        }
+-        return builder.build();
++        return Collections.emptySet();
+     }
+ 
+     @Override
+     public Set<BanEntry<InetAddress>> getEntries() {
+-        ImmutableSet.Builder<BanEntry<InetAddress>> builder = ImmutableSet.builder();
+-        for (String target : this.list.getUserList()) {
+-            IpBanListEntry ipBanEntry = this.list.get(target);
+-            if (ipBanEntry != null) {
+-                builder.add(new CraftIpBanEntry(target, ipBanEntry, this.list));
+-            }
+-        }
+-        return builder.build();
++        return Collections.emptySet();
+     }
+ 
+     @Override
+     public boolean isBanned(String target) {
+         Preconditions.checkArgument(target != null, "Target cannot be null");
+-        return this.list.isBanned(target);
++        return false;
+     }
+ 
+     @Override
+@@ -104,7 +73,6 @@ public class CraftIpBanList implements org.bukkit.ban.IpBanList {
+     @Override
+     public void pardon(String target) {
+         Preconditions.checkArgument(target != null, "Target cannot be null");
+-        this.list.remove(target);
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanEntry.java b/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanEntry.java
+index d30f12c171f20b58c4b1069ed006a844e1e039eb..85fc1e79f3b4ead189d5b5a68d78148f1d0967b0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanEntry.java
++++ b/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanEntry.java
+@@ -1,28 +1,21 @@
+ package org.bukkit.craftbukkit.ban;
+ 
+-import java.time.Instant;
+-import java.util.Date;
+ import net.minecraft.server.players.NameAndId;
+-import net.minecraft.server.players.UserBanList;
+-import net.minecraft.server.players.UserBanListEntry;
+ import org.bukkit.BanEntry;
+ 
++import java.time.Instant;
++import java.util.Date;
++
+ public final class CraftProfileBanEntry implements BanEntry<com.destroystokyo.paper.profile.PlayerProfile> { // Paper
+     private static final Date minorDate = Date.from(Instant.parse("1899-12-31T04:00:00Z"));
+-    private final UserBanList list;
+     private final NameAndId profile;
+     private Date created;
+     private String source;
+     private Date expiration;
+     private String reason;
+ 
+-    public CraftProfileBanEntry(NameAndId profile, UserBanListEntry entry, UserBanList list) {
+-        this.list = list;
++    public CraftProfileBanEntry(NameAndId profile, Object entry, Object list) {
+         this.profile = profile;
+-        this.created = entry.getCreated() != null ? new Date(entry.getCreated().getTime()) : null;
+-        this.source = entry.getSource();
+-        this.expiration = entry.getExpires() != null ? new Date(entry.getExpires().getTime()) : null;
+-        this.reason = entry.getReason();
+     }
+ 
+     @Override
+@@ -81,12 +74,9 @@ public final class CraftProfileBanEntry implements BanEntry<com.destroystokyo.pa
+ 
+     @Override
+     public void save() {
+-        UserBanListEntry entry = new UserBanListEntry(this.profile, this.created, this.source, this.expiration, this.reason);
+-        this.list.add(entry);
+     }
+ 
+     @Override
+     public void remove() {
+-        this.list.remove(this.profile);
+     }
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanList.java b/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanList.java
+index 89ad99df2f76537bdcb0482f2046e1215c104ded..2c4db0a98eb20eb2c9694092f33d40bea6c98254 100644
+--- a/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanList.java
++++ b/src/main/java/org/bukkit/craftbukkit/ban/CraftProfileBanList.java
+@@ -1,26 +1,20 @@
+ package org.bukkit.craftbukkit.ban;
+ 
+ import com.google.common.base.Preconditions;
+-import com.google.common.collect.ImmutableSet;
+-import java.time.Duration;
+-import java.time.Instant;
+-import java.util.Date;
+-import java.util.Set;
+-import java.util.UUID;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.players.NameAndId;
+-import net.minecraft.server.players.UserBanList;
+-import net.minecraft.server.players.UserBanListEntry;
+ import org.bukkit.BanEntry;
+ import org.bukkit.ban.ProfileBanList;
+ import org.bukkit.profile.PlayerProfile;
+ 
+-public class CraftProfileBanList implements ProfileBanList {
+-    private final UserBanList list;
++import java.time.Duration;
++import java.time.Instant;
++import java.util.Collections;
++import java.util.Date;
++import java.util.Set;
++import java.util.UUID;
+ 
+-    public CraftProfileBanList(UserBanList list) {
+-        this.list = list;
+-    }
++public class CraftProfileBanList implements ProfileBanList {
+ 
+     @Override
+     public BanEntry<com.destroystokyo.paper.profile.PlayerProfile> getBanEntry(String target) { // Paper
+@@ -102,24 +96,12 @@ public class CraftProfileBanList implements ProfileBanList {
+ 
+     @Override
+     public Set<BanEntry> getBanEntries() {
+-        ImmutableSet.Builder<BanEntry> builder = ImmutableSet.builder();
+-        for (UserBanListEntry entry : this.list.getEntries()) {
+-            NameAndId profile = entry.getUser();
+-            builder.add(new CraftProfileBanEntry(profile, entry, this.list));
+-        }
+-
+-        return builder.build();
++        return Collections.emptySet();
+     }
+ 
+     @Override
+     public Set<BanEntry<com.destroystokyo.paper.profile.PlayerProfile>> getEntries() { // Paper
+-        ImmutableSet.Builder<BanEntry<com.destroystokyo.paper.profile.PlayerProfile>> builder = ImmutableSet.builder(); // Paper
+-        for (UserBanListEntry entry : this.list.getEntries()) {
+-            NameAndId profile = entry.getUser();
+-            builder.add(new CraftProfileBanEntry(profile, entry, this.list));
+-        }
+-
+-        return builder.build();
++        return Collections.emptySet();
+     }
+ 
+     @Override
+@@ -163,12 +145,7 @@ public class CraftProfileBanList implements ProfileBanList {
+             return null;
+         }
+ 
+-        UserBanListEntry entry = this.list.get(profile);
+-        if (entry == null) {
+-            return null;
+-        }
+-
+-        return new CraftProfileBanEntry(profile, entry, this.list);
++        return new CraftProfileBanEntry(profile, null, null);
+     }
+ 
+     public BanEntry<com.destroystokyo.paper.profile.PlayerProfile> addBan(NameAndId profile, String reason, Date expires, String source) { // Paper
+@@ -176,21 +153,15 @@ public class CraftProfileBanList implements ProfileBanList {
+             return null;
+         }
+ 
+-        UserBanListEntry entry = new UserBanListEntry(profile, new Date(),
+-                (source == null || source.isBlank()) ? null : source, expires,
+-                (reason == null || reason.isBlank()) ? null : reason);
+-
+-        this.list.add(entry);
+-
+-        return new CraftProfileBanEntry(profile, entry, this.list);
++        return new CraftProfileBanEntry(profile, null, null);
+     }
+ 
+     private void pardon(NameAndId profile) {
+-        this.list.remove(profile);
++
+     }
+ 
+     private boolean isBanned(NameAndId profile) {
+-        return profile != null && this.list.isBanned(profile);
++        return false;
+     }
+ 
+     static NameAndId getProfile(String target) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java b/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java
+index dc32801e26938b3011c08929bd8704f9cbb8fff6..4bbb1ae196f4cbce9f5fdc34e20fb8d8590151c4 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java
+@@ -36,9 +36,6 @@ public final class CommandPermissions {
+         // Paper start
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "advancement", "Allows the user to give, remove, or check player advancements", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "attribute", "Allows the user to query, add, remove or set an entity attribute", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "ban", "Allows the user to add players to the ban list", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "ban-ip", "Allows the user to add ip address to the ban list", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "banlist", "Allows the user to display the ban list", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "bossbar", "Allows the user to create and modify bossbars", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "clear", "Allows the user to clear items from player inventory", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "clone", "Allows the user to copy blocks from one place to another", PermissionDefault.OP, commands);
+@@ -61,10 +58,7 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "locate", "Allows the user to locate the closest structure", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "loot", "Allows the user to drop items from an inventory slot onto the ground", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "op", "Allows the user to grant operator status to a player", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "pardon", "Allows the user to remove entries from the player ban list", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "pardon-ip", "Allows the user to remove entries from the ip address ban list", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "particle", "Allows the user to create particles", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "perf", "Allows the user to start/stop the vanilla performance metrics capture", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "place", "Allows the user to place features and structures", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "playsound", "Allows the user to play a sound", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "random", "Allows the user to generate a random number", PermissionDefault.OP, commands);
+@@ -79,7 +73,6 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "schedule", "Allows the user to delay the execution of a function", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "scoreboard", "Allows the user manage scoreboard objectives and players", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "setblock", "Allows the user to change a block to another block", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "setidletimeout", "Allows the user to set the time before idle players are kicked", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "setworldspawn", "Allows the user to set the world spawn", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "spawnpoint", "Allows the user to set the spawn point for a player", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "spectate", "Allows the user to make one player in spectator mode spectate an entity", PermissionDefault.OP, commands);
+@@ -88,7 +81,6 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "summon", "Allows the user to summon an entity", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "tag", "Allows the user to control entity tags", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "team", "Allows the user to control teams", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "test", "Allows the user to manage and execute GameTests", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "tick", "Allows the user to control the tick rate of the server", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "time", "Allows the user to change or query the world's game time", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "title", "Allows the user to manage screen titles", PermissionDefault.OP, commands);
+@@ -97,7 +89,6 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "weather", "Allows the user to set the weather", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "whitelist", "Allows the user to manage the server whitelist", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "worldborder", "Allows the user to manage the world border", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "stopwatch", "Allows the user to use the /stopwatch command", PermissionDefault.OP, commands);
+         // Paper end
+ 
+         DefaultPermissions.registerPermission("minecraft.admin.command_feedback", "Receive command broadcasts when sendCommandFeedback is true", PermissionDefault.OP, commands);
+diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
+index 95973e8b543b2fcde8b707dbcf93dccd090ac115..acbc27a3fdb23d28a3d23ac99a7bb03931cd02c7 100644
+--- a/src/main/java/org/spigotmc/SpigotConfig.java
++++ b/src/main/java/org/spigotmc/SpigotConfig.java
+@@ -144,13 +144,13 @@ public class SpigotConfig {
+             }
+         }
+         SpigotConfig.tabComplete = SpigotConfig.getInt("commands.tab-complete", 0);
+-        SpigotConfig.sendNamespaced = SpigotConfig.getBoolean("commands.send-namespaced", true);
++        SpigotConfig.sendNamespaced = SpigotConfig.getBoolean("commands.send-namespaced", false);
+     }
+ 
+     public static String whitelistMessage;
+     public static String serverFullMessage;
+-    public static String outdatedClientMessage = "Outdated client! Please use {0}";
+-    public static String outdatedServerMessage = "Outdated server! I'm still on {0}";
++    public static String outdatedClientMessage = "&cИспользуйте эту версию для игры: {0}";
++    public static String outdatedServerMessage = "&cИспользуйте эту версию для игры: {0}";
+ 
+     private static String transform(String s) {
+         return ChatColor.translateAlternateColorCodes('&', s).replaceAll("\\\\n", "\n");
+@@ -162,8 +162,8 @@ public class SpigotConfig {
+             SpigotConfig.set("messages.outdated-server", SpigotConfig.outdatedServerMessage);
+         }
+ 
+-        SpigotConfig.whitelistMessage = SpigotConfig.transform(SpigotConfig.getString("messages.whitelist", "You are not whitelisted on this server!"));
+-        SpigotConfig.serverFullMessage = SpigotConfig.transform(SpigotConfig.getString("messages.server-full", "The server is full!"));
++        SpigotConfig.whitelistMessage = SpigotConfig.transform(SpigotConfig.getString("messages.whitelist", "&cВы не находитесь в белом списке."));
++        SpigotConfig.serverFullMessage = SpigotConfig.transform(SpigotConfig.getString("messages.server-full", "&cСервер переполнен! Приобретите донат для обхода лимита."));
+         SpigotConfig.outdatedClientMessage = SpigotConfig.transform(SpigotConfig.getString("messages.outdated-client", SpigotConfig.outdatedClientMessage));
+         SpigotConfig.outdatedServerMessage = SpigotConfig.transform(SpigotConfig.getString("messages.outdated-server", SpigotConfig.outdatedServerMessage));
+     }
+@@ -177,7 +177,7 @@ public class SpigotConfig {
+         SpigotConfig.timeoutTime = SpigotConfig.getInt("settings.timeout-time", SpigotConfig.timeoutTime);
+         SpigotConfig.restartOnCrash = SpigotConfig.getBoolean("settings.restart-on-crash", SpigotConfig.restartOnCrash);
+         SpigotConfig.restartScript = SpigotConfig.getString("settings.restart-script", SpigotConfig.restartScript);
+-        SpigotConfig.restartMessage = SpigotConfig.transform(SpigotConfig.getString("messages.restart", "Server is restarting"));
++        SpigotConfig.restartMessage = SpigotConfig.transform(SpigotConfig.getString("messages.restart", "&cСервер перезапускается."));
+     }
+ 
+     private static void nettyThreads() {
+@@ -217,13 +217,6 @@ public class SpigotConfig {
+         SpigotConfig.commands.put("tps", new TicksPerSecondCommand("tps"));
+     }
+ 
+-    public static int playerSample;
+-
+-    private static void playerSample() {
+-        SpigotConfig.playerSample = Math.max(SpigotConfig.getInt("settings.sample-count", 12), 0); // Paper - Avoid negative counts
+-        Bukkit.getLogger().log(Level.INFO, "Server Ping Player Sample Count: {0}", playerSample); // Paper - Use logger
+-    }
+-
+     public static int playerShuffle;
+ 
+     private static void playerShuffle() {
+@@ -234,7 +227,7 @@ public class SpigotConfig {
+     public static List<String> spamExclusions;
+ 
+     private static void spamExclusions() {
+-        SpigotConfig.spamExclusions = SpigotConfig.getList("commands.spam-exclusions", List.of("/skill"));
++        SpigotConfig.spamExclusions = SpigotConfig.getList("commands.spam-exclusions", List.of());
+         Object enabled = SpigotConfig.config.get("commands.enable-spam-exclusions");
+         if (enabled instanceof Boolean value) {
+             SpigotConfig.enableSpamExclusions = value;
+@@ -264,7 +257,7 @@ public class SpigotConfig {
+             SpigotConfig.config.set("replace-commands", null);
+         }
+         SpigotConfig.replaceCommands = new HashSet<>(SpigotConfig.getList("commands.replace-commands",
+-            Arrays.asList("setblock", "summon", "testforblock", "tellraw")));
++            List.of()));
+     }
+ 
+     public static int userCacheCap;
+@@ -276,7 +269,7 @@ public class SpigotConfig {
+     public static boolean saveUserCacheOnStopOnly;
+ 
+     private static void saveUserCacheOnStopOnly() {
+-        SpigotConfig.saveUserCacheOnStopOnly = SpigotConfig.getBoolean("settings.save-user-cache-on-stop-only", false);
++        SpigotConfig.saveUserCacheOnStopOnly = SpigotConfig.getBoolean("settings.save-user-cache-on-stop-only", true);
+     }
+ 
+     public static double movedWronglyThreshold;
+@@ -337,8 +330,8 @@ public class SpigotConfig {
+     public static boolean logNamedDeaths;
+ 
+     private static void logDeaths() {
+-        SpigotConfig.logVillagerDeaths = SpigotConfig.getBoolean("settings.log-villager-deaths", true);
+-        SpigotConfig.logNamedDeaths = SpigotConfig.getBoolean("settings.log-named-deaths", true);
++        SpigotConfig.logVillagerDeaths = SpigotConfig.getBoolean("settings.log-villager-deaths", false);
++        SpigotConfig.logNamedDeaths = SpigotConfig.getBoolean("settings.log-named-deaths", false);
+     }
+ 
+     public static boolean disablePlayerDataSaving;
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index 43c6240ec2855c0f668ce04de29d22a223d2612f..27df02fbd61642887c9a17847b0d1d448835fee1 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -180,15 +180,15 @@ public class SpigotWorldConfig {
+ 
+     public int itemDespawnRate;
+     private void itemDespawnRate() {
+-        this.itemDespawnRate = this.getInt("item-despawn-rate", 6000);
++        this.itemDespawnRate = this.getInt("item-despawn-rate", 3000);
+         this.log("Item Despawn Rate: " + this.itemDespawnRate);
+     }
+ 
+-    public int animalActivationRange = 32;
+-    public int monsterActivationRange = 32;
+-    public int raiderActivationRange = 64;
++    public int animalActivationRange = 24;
++    public int monsterActivationRange = 24;
++    public int raiderActivationRange = 32;
+     public int miscActivationRange = 16;
+-    public int flyingMonsterActivationRange = 32;
++    public int flyingMonsterActivationRange = 24;
+     public int waterActivationRange = 16;
+     public int villagerActivationRange = 32;
+     public int wakeUpInactiveAnimals = 4;
+@@ -243,12 +243,12 @@ public class SpigotWorldConfig {
+         this.log("Entity Activation Range: An " + this.animalActivationRange + " / Mo " + this.monsterActivationRange + " / Ra " + this.raiderActivationRange + " / Mi " + this.miscActivationRange + " / Tiv " + this.tickInactiveVillagers + " / Isa " + this.ignoreSpectatorActivation);
+     }
+ 
+-    public int playerTrackingRange = 128;
+-    public int animalTrackingRange = 96;
+-    public int monsterTrackingRange = 96;
+-    public int miscTrackingRange = 96;
+-    public int displayTrackingRange = 128;
+-    public int otherTrackingRange = 64;
++    public int playerTrackingRange = 80;
++    public int animalTrackingRange = 48;
++    public int monsterTrackingRange = 48;
++    public int miscTrackingRange = 32;
++    public int displayTrackingRange = 80;
++    public int otherTrackingRange = 32;
+     private void trackingRange() {
+         this.playerTrackingRange = this.getInt("entity-tracking-range.players", this.playerTrackingRange);
+         this.animalTrackingRange = this.getInt("entity-tracking-range.animals", this.animalTrackingRange);
+@@ -278,7 +278,7 @@ public class SpigotWorldConfig {
+     public int arrowDespawnRate;
+     public int tridentDespawnRate;
+     private void arrowDespawnRate() {
+-        this.arrowDespawnRate = this.getInt("arrow-despawn-rate", 1200);
++        this.arrowDespawnRate = this.getInt("arrow-despawn-rate", 600);
+         this.tridentDespawnRate = this.getInt("trident-despawn-rate", this.arrowDespawnRate);
+         this.log("Arrow Despawn Rate: " + this.arrowDespawnRate + " Trident Respawn Rate:" + this.tridentDespawnRate);
+     }
+diff --git a/src/main/resources/configurations/bukkit.yml b/src/main/resources/configurations/bukkit.yml
+index 629a61cb26543cc3d32e875ecac3920b133949f3..bcea13e4bc4a03ed97191eee2960ff1987e09c27 100644
+--- a/src/main/resources/configurations/bukkit.yml
++++ b/src/main/resources/configurations/bukkit.yml
+@@ -8,35 +8,31 @@
+ # Docs: https://docs.papermc.io/
+ # Discord: https://discord.gg/papermc
+ # Website: https://papermc.io/
+-
+ settings:
+-    allow-end: true
+-    warn-on-overload: true
+-    update-folder: update
+-    plugin-profiling: false
+-    connection-throttle: 4000
+-    query-plugins: true
+-    deprecated-verbose: default
+-    shutdown-message: Server closed
+-    minimum-api: none
+-    use-map-color-cache: true
++  allow-end: false
++  warn-on-overload: true
++  update-folder: update
++  connection-throttle: 4000
++  deprecated-verbose: default
++  shutdown-message: Сервер перезапускается
++  minimum-api: none
++  use-map-color-cache: false
+ spawn-limits:
+-    monsters: 70
+-    animals: 10
+-    water-animals: 5
+-    water-ambient: 20
+-    water-underground-creature: 5
+-    axolotls: 5
+-    ambient: 15
++  monsters: 25
++  animals: 20
++  water-animals: 5
++  water-ambient: 5
++  water-underground-creature: 8
++  axolotls: 8
++  ambient: 4
+ chunk-gc:
+-    period-in-ticks: 600
++  period-in-ticks: 600
+ ticks-per:
+-    animal-spawns: 400
+-    monster-spawns: 1
+-    water-spawns: 1
+-    water-ambient-spawns: 1
+-    water-underground-creature-spawns: 1
+-    axolotl-spawns: 1
+-    ambient-spawns: 1
+-    autosave: 6000
+-aliases: now-in-commands.yml
++  animal-spawns: 300
++  monster-spawns: 300
++  water-spawns: 400
++  water-ambient-spawns: 400
++  water-underground-creature-spawns: 400
++  axolotl-spawns: 400
++  ambient-spawns: 400
++  autosave: 3000
