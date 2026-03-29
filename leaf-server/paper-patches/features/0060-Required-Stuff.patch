@@ -1,0 +1,791 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Mon, 16 Feb 2026 03:31:28 +0200
+Subject: [PATCH] Required Stuff
+
+
+diff --git a/src/main/java/io/papermc/paper/registry/data/PaperEnchantmentRegistryEntry.java b/src/main/java/io/papermc/paper/registry/data/PaperEnchantmentRegistryEntry.java
+index 5b05108c5729593e0d8ff680d85f5a65a5ee44cb..4a59aa781bdbcdae95b66bb91f6a8291c6af91d9 100644
+--- a/src/main/java/io/papermc/paper/registry/data/PaperEnchantmentRegistryEntry.java
++++ b/src/main/java/io/papermc/paper/registry/data/PaperEnchantmentRegistryEntry.java
+@@ -34,6 +34,7 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
+     protected @Nullable Component description;
+ 
+     // Definition
++    protected Optional<String> name;
+     protected @Nullable HolderSet<Item> supportedItems;
+     protected @Nullable HolderSet<Item> primaryItems;
+     protected OptionalInt weight = OptionalInt.empty();
+@@ -66,6 +67,7 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
+ 
+         // definition
+         final Enchantment.EnchantmentDefinition definition = internal.definition();
++        this.name = definition.name();
+         this.supportedItems = definition.supportedItems();
+         this.primaryItems = definition.primaryItems().orElse(null);
+         this.weight = OptionalInt.of(definition.weight());
+@@ -206,6 +208,7 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
+         @Override
+         public Enchantment build() {
+             final Enchantment.EnchantmentDefinition def = new Enchantment.EnchantmentDefinition(
++                asConfigured(this.name, "name"),
+                 asConfigured(this.supportedItems, "supportedItems"),
+                 Optional.ofNullable(this.primaryItems),
+                 this.weight(),
+diff --git a/src/main/java/io/papermc/paper/util/Holderable.java b/src/main/java/io/papermc/paper/util/Holderable.java
+index a1927b6bcea6d7bd2b5949887e78d02ef8be38da..8c2ee35f3e0bde55734c3b62f0b23b14497769b7 100644
+--- a/src/main/java/io/papermc/paper/util/Holderable.java
++++ b/src/main/java/io/papermc/paper/util/Holderable.java
+@@ -37,7 +37,7 @@ public interface Holderable<M> extends Handleable<M> {
+                 }
+                 yield registry.get(Key.key(string));
+             }
+-            case JsonObjectWrapper(final JsonObject element) -> {
++            case JsonObjectWrapper(JsonObject element) -> {
+                 if (!(registry instanceof final CraftRegistry<?, ?> craftRegistry) || !craftRegistry.supportsDirectHolders()) {
+                     throw new IllegalArgumentException("Cannot deserialize direct holders for " + registry);
+                 }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index f1dd9c35371b231602b1dd94b218050296dcb6a2..91fce90f96662f4807f856a0df74e24322149a66 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -280,7 +280,6 @@ public final class CraftServer implements Server {
+     private final Map<String, World> worlds = new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>(); // Leaf - Replace world map with optimized collection
+     private final it.unimi.dsi.fastutil.objects.Object2ObjectMap<UUID, World> worldsByUUID = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(); // Gale - MultiPaper - CraftBukkit UUID to world map
+     private YamlConfiguration configuration;
+-    private YamlConfiguration commandsConfiguration;
+     private final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+     private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap();
+     private final EntityMetadataStore entityMetadata = new EntityMetadataStore();
+@@ -296,10 +295,10 @@ public final class CraftServer implements Server {
+     private final CraftServerLinks serverLinks;
+     private boolean printSaveWarning;
+     private CraftIconCache icon;
+-    private boolean overrideAllCommandBlockCommands = false;
+     public boolean ignoreVanillaPermissions = false;
+     private final List<CraftPlayer> playerView;
+     public int reloadCount;
++    private boolean saving = true;
+     public Set<String> activeCompatibilities = Collections.emptySet();
+     private final io.papermc.paper.datapack.PaperDatapackManager datapackManager;
+     public static Exception excessiveVelEx;
+@@ -418,7 +417,7 @@ public final class CraftServer implements Server {
+         this.pluginManager = new SimplePluginManager(this, commandMap);
+         this.paperPluginManager = new io.papermc.paper.plugin.manager.PaperPluginManagerImpl(this, this.commandMap, pluginManager);
+         this.pluginManager.paperPluginManager = this.paperPluginManager;
+-         // Paper end
++        // Paper end
+         // Purpur start - Language API
+         org.purpurmc.purpur.language.Language.setLanguage(new org.purpurmc.purpur.language.Language() {
+             private net.minecraft.locale.Language language = net.minecraft.locale.Language.getInstance();
+@@ -445,46 +444,10 @@ public final class CraftServer implements Server {
+         YamlConfiguration configurationDefaults = YamlConfiguration.loadConfiguration(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml"), StandardCharsets.UTF_8));
+         this.configuration.setDefaults(configurationDefaults);
+         this.configuration.options().setHeader(configurationDefaults.options().getHeader());
+-        ConfigurationSection legacyAlias = null;
+-        if (!this.configuration.isString("aliases")) {
+-            legacyAlias = this.configuration.getConfigurationSection("aliases");
+-            this.configuration.set("aliases", "now-in-commands.yml");
+-        }
+-        this.saveConfig();
+-        if (this.getCommandsConfigFile().isFile()) {
+-            legacyAlias = null;
+-        }
+-        this.commandsConfiguration = YamlConfiguration.loadConfiguration(this.getCommandsConfigFile());
+-        this.commandsConfiguration.options().copyDefaults(true);
+-        // Paper start - don't enforce icanhasbukkit default if alias block exists
+-        final YamlConfiguration commandsDefaults = YamlConfiguration.loadConfiguration(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("configurations/commands.yml"), StandardCharsets.UTF_8));
+-        if (this.commandsConfiguration.contains("aliases")) commandsDefaults.set("aliases", null);
+-        this.commandsConfiguration.setDefaults(commandsDefaults);
+-        // Paper end - don't enforce icanhasbukkit default if alias block exists
+-        this.commandsConfiguration.options().setHeader(commandsDefaults.options().getHeader());
+-        this.saveCommandsConfig();
+-
+-        // Migrate aliases from old file and add previously implicit $1- to pass all arguments
+-        if (legacyAlias != null) {
+-            ConfigurationSection aliases = this.commandsConfiguration.createSection("aliases");
+-            for (String key : legacyAlias.getKeys(false)) {
+-                List<String> commands = new ArrayList<>();
+-
+-                if (legacyAlias.isList(key)) {
+-                    for (String command : legacyAlias.getStringList(key)) {
+-                        commands.add(command + " $1-");
+-                    }
+-                } else {
+-                    commands.add(legacyAlias.getString(key) + " $1-");
+-                }
+ 
+-                aliases.set(key, commands);
+-            }
+-        }
++        this.saveConfig();
+ 
+-        this.saveCommandsConfig();
+-        this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
+-        this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
++        this.ignoreVanillaPermissions = false;
+         java.util.Arrays.fill(spawnCategoryLimit, -1); // Leaf - optimize mob spawning
+         this.overrideSpawnLimits();
+         console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
+@@ -505,7 +468,7 @@ public final class CraftServer implements Server {
+     }
+ 
+     public boolean getCommandBlockOverride(String command) {
+-        return this.overrideAllCommandBlockCommands || this.commandsConfiguration.getStringList("command-block-overrides").contains(command);
++        return false;
+     }
+ 
+     private File getConfigFile() {
+@@ -532,14 +495,6 @@ public final class CraftServer implements Server {
+         }
+     }
+ 
+-    private void saveCommandsConfig() {
+-        try {
+-            this.commandsConfiguration.save(this.getCommandsConfigFile());
+-        } catch (IOException ex) {
+-            Logger.getLogger(CraftServer.class.getName()).log(Level.SEVERE, "Could not save " + this.getCommandsConfigFile(), ex);
+-        }
+-    }
+-
+     private void loadCompatibilities() {
+         if (true) return; // Paper - Big nope
+         ConfigurationSection compatibilities = this.configuration.getConfigurationSection("settings.compatibility");
+@@ -549,10 +504,10 @@ public final class CraftServer implements Server {
+         }
+ 
+         this.activeCompatibilities = compatibilities
+-                .getKeys(false)
+-                .stream()
+-                .filter(compatibilities::getBoolean)
+-                .collect(Collectors.toSet());
++            .getKeys(false)
++            .stream()
++            .filter(compatibilities::getBoolean)
++            .collect(Collectors.toSet());
+ 
+         if (!this.activeCompatibilities.isEmpty()) {
+             this.logger.info("Using following compatibilities: `" + Joiner.on("`, `").join(this.activeCompatibilities) + "`, this will affect performance and other plugins behavior.");
+@@ -603,7 +558,6 @@ public final class CraftServer implements Server {
+         if (type == PluginLoadOrder.STARTUP) {
+             this.helpMap.clear();
+             this.helpMap.initializeGeneralTopics();
+-            if (io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) loadCustomPermissions(); // Paper
+         }
+ 
+         Plugin[] plugins = this.pluginManager.getPlugins();
+@@ -620,7 +574,6 @@ public final class CraftServer implements Server {
+             // Spigot end
+             DefaultPermissions.registerCorePermissions();
+             CraftDefaultPermissions.registerCorePermissions();
+-            if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) this.loadCustomPermissions(); // Paper
+             this.syncCommands();
+         }
+     }
+@@ -648,7 +601,7 @@ public final class CraftServer implements Server {
+                     permsToLoad.add(perm);
+                 } else {
+                     this.getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered");
+-                // Paper end
++                    // Paper end
+                 }
+             }
+             this.paperPluginManager.addPermissions(permsToLoad); // Paper
+@@ -868,6 +821,16 @@ public final class CraftServer implements Server {
+         return this.getServer().isResourcePackRequired();
+     }
+ 
++    @Override
++    public void setSaving(final boolean value) {
++        saving = value;
++    }
++
++    @Override
++    public boolean isSave() {
++        return saving;
++    }
++
+     @Override
+     public boolean hasWhitelist() {
+         return this.playerList.isUsingWhitelist();
+@@ -980,7 +943,6 @@ public final class CraftServer implements Server {
+         org.spigotmc.WatchdogThread.hasStarted = false; // Paper - Disable watchdog early timeout on reload
+         this.reloadCount++;
+         this.configuration = YamlConfiguration.loadConfiguration(this.getConfigFile());
+-        this.commandsConfiguration = YamlConfiguration.loadConfiguration(this.getCommandsConfigFile());
+ 
+         this.console.settings = new DedicatedServerSettings(this.console.options);
+         DedicatedServerProperties config = this.console.settings.getProperties();
+@@ -1045,8 +1007,6 @@ public final class CraftServer implements Server {
+         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
+         this.spark.registerCommandBeforePlugins(this); // Paper - spark
+         org.purpurmc.purpur.PurpurConfig.registerCommands(); // Purpur - Purpur config files
+-        this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
+-        this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
+ 
+         int pollCount = 0;
+ 
+@@ -1755,23 +1715,8 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public Map<String, String[]> getCommandAliases() {
+-        ConfigurationSection section = this.commandsConfiguration.getConfigurationSection("aliases");
+         Map<String, String[]> result = new LinkedHashMap<>();
+ 
+-        if (section != null) {
+-            for (String key : section.getKeys(false)) {
+-                List<String> commands;
+-
+-                if (section.isList(key)) {
+-                    commands = section.getStringList(key);
+-                } else {
+-                    commands = ImmutableList.of(section.getString(key));
+-                }
+-
+-                result.put(key, commands.toArray(new String[commands.size()]));
+-            }
+-        }
+-
+         return result;
+     }
+ 
+@@ -2165,13 +2110,13 @@ public final class CraftServer implements Server {
+     @Override
+     public <B extends BanList<E>, E> B getBanList(final io.papermc.paper.ban.BanListType<B> type) {
+         Preconditions.checkArgument(type != null, "BanList.BanType cannot be null");
+-       if (type == io.papermc.paper.ban.BanListType.IP) {
+-           return (B) new CraftIpBanList(this.playerList.getIpBans());
+-       } else if (type == io.papermc.paper.ban.BanListType.PROFILE) {
+-          return (B) new CraftProfileBanList(this.playerList.getBans());
+-       } else {
+-           throw new IllegalArgumentException("Unknown BanListType: " + type);
+-       }
++        if (type == io.papermc.paper.ban.BanListType.IP) {
++            return (B) new CraftIpBanList(this.playerList.getIpBans());
++        } else if (type == io.papermc.paper.ban.BanListType.PROFILE) {
++            return (B) new CraftProfileBanList(this.playerList.getBans());
++        } else {
++            throw new IllegalArgumentException("Unknown BanListType: " + type);
++        }
+     }
+ 
+     @Override
+@@ -2737,9 +2682,9 @@ public final class CraftServer implements Server {
+ 
+         ReloadableServerRegistries.Holder registry = this.getServer().reloadableRegistries();
+         return registry.lookup().lookup(Registries.LOOT_TABLE)
+-                .flatMap((lookup) -> lookup.get(CraftLootTable.bukkitKeyToMinecraft(key)))
+-                .map((holder) -> new CraftLootTable(key, holder.value()))
+-                .orElse(null);
++            .flatMap((lookup) -> lookup.get(CraftLootTable.bukkitKeyToMinecraft(key)))
++            .map((holder) -> new CraftLootTable(key, holder.value()))
++            .orElse(null);
+     }
+ 
+     @Override
+@@ -2980,7 +2925,6 @@ public final class CraftServer implements Server {
+     @Override
+     public void reloadPermissions() {
+         pluginManager.clearPermissions();
+-        if (io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) loadCustomPermissions();
+         for (Plugin plugin : pluginManager.getPlugins()) {
+             for (Permission perm : plugin.getDescription().getPermissions()) {
+                 try {
+@@ -2990,27 +2934,13 @@ public final class CraftServer implements Server {
+                 }
+             }
+         }
+-        if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) loadCustomPermissions();
+         DefaultPermissions.registerCorePermissions();
+         CraftDefaultPermissions.registerCorePermissions();
+     }
+ 
+     @Override
+     public boolean reloadCommandAliases() {
+-        Set<String> removals = getCommandAliases().keySet().stream()
+-                .map(key -> key.toLowerCase(java.util.Locale.ENGLISH))
+-                .collect(java.util.stream.Collectors.toSet());
+-        getCommandMap().getKnownCommands().keySet().removeIf(removals::contains);
+-        File file = getCommandsConfigFile();
+-        try {
+-            commandsConfiguration.load(file);
+-        } catch (FileNotFoundException ex) {
+-            return false;
+-        } catch (IOException | org.bukkit.configuration.InvalidConfigurationException ex) {
+-            Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + file, ex);
+-            return false;
+-        }
+-        commandMap.registerServerAliases();
++
+         return true;
+     }
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
+index 45b70a28e0c3d4bcf65a8ddd5ce276e9769649de..a8aef055e9243150a4e6fb304074256fd9dbd61f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
++++ b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
+@@ -124,6 +124,11 @@ public class CraftEnchantment extends Enchantment implements Holderable<net.mine
+         };
+     }
+ 
++    @Override
++    public String getTranslatedName() {
++        return getHandle().getName().orElse(getName());
++    }
++
+     @Override
+     public boolean conflictsWith(Enchantment other) {
+         if (other instanceof EnchantmentWrapper) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 1742395c42d7844ae3b66ca4bfab515a7ef52c08..115560ee7932c39f896e8ac7e8d12ca390ef87f7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -61,6 +61,7 @@ import net.minecraft.core.SectionPos;
+ import net.minecraft.nbt.CompoundTag;
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.network.chat.PlayerChatMessage;
++import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.common.ClientboundClearDialogPacket;
+ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+ import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
+@@ -203,6 +204,7 @@ import org.bukkit.entity.Item;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
++import org.bukkit.event.player.PlayerHealthChangeEvent;
+ import org.bukkit.event.player.PlayerHideEntityEvent;
+ import org.bukkit.event.player.PlayerShowEntityEvent;
+ import org.bukkit.inventory.EquipmentSlot;
+@@ -469,7 +471,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+     @Override
+     public void setPlayerListHeaderFooter(@Nullable BaseComponent header, @Nullable BaseComponent footer) {
+         this.setPlayerListHeaderFooter(header == null ? null : new BaseComponent[]{header},
+-                footer == null ? null : new BaseComponent[]{footer});
++            footer == null ? null : new BaseComponent[]{footer});
+     }
+ 
+     @Override
+@@ -1194,6 +1196,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         this.getHandle().connection.send(new ClientboundUpdateMobEffectPacket(entity.getEntityId(), CraftPotionUtil.fromBukkit(effect), true));
+     }
+ 
++    @Override
++    public void sendPacket(@Nullable final Object packet) {
++        if(packet instanceof Packet<?> pack)
++            getHandle().connection.send(pack);
++    }
++
+     @Override
+     public void sendPotionEffectChangeRemove(LivingEntity entity, PotionEffectType type) {
+         Preconditions.checkArgument(entity != null, "Entity cannot be null");
+@@ -2694,7 +2702,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+ 
+     public void setRealHealth(double health) {
+         if (Double.isNaN(health)) return; // Paper - Check for NaN
++        double previous = this.health;
+         this.health = health;
++        if (previous != health) {
++            new PlayerHealthChangeEvent(this, previous, health).callEvent();
++        }
+     }
+ 
+     public void updateScaledHealth() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 138d8c1f78dea434cb7f1b8b1e39bdf38e55e58a..cc6d76bd71ade3be49e9b54102ad8950aaece590 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -775,23 +775,23 @@ public class CraftEventFactory {
+                 final boolean mergeUnconditionally = maxValue <= 0;
+                 if (mergeUnconditionally || xp.getValue() < maxValue) { // Paper - Skip iteration if unnecessary
+ 
+-                List<Entity> entities = world.getEntities(entity, entity.getBoundingBox().inflate(radius, radius, radius));
+-                for (Entity e : entities) {
+-                    if (e instanceof net.minecraft.world.entity.ExperienceOrb loopItem) {
+-                        // Paper start
+-                        if (!loopItem.isRemoved() && xp.count == loopItem.count && (mergeUnconditionally || loopItem.getValue() < maxValue) && new com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) entity.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) loopItem.getBukkitEntity()).callEvent()) { // Paper - ExperienceOrbMergeEvent
+-                            long newTotal = (long)xp.getValue() + (long)loopItem.getValue();
+-                            if ((int) newTotal < 0) continue; // Overflow
+-                            if (!mergeUnconditionally && newTotal > maxValue) {
+-                                loopItem.setValue((int) (newTotal - maxValue));
+-                                xp.setValue((int) maxValue);
+-                            } else {
+-                            xp.setValue(xp.getValue() + loopItem.getValue());
+-                            loopItem.discard(null); // Add Bukkit remove cause
+-                            } // Paper end - Maximum exp value when merging
++                    List<Entity> entities = world.getEntities(entity, entity.getBoundingBox().inflate(radius, radius, radius));
++                    for (Entity e : entities) {
++                        if (e instanceof net.minecraft.world.entity.ExperienceOrb loopItem) {
++                            // Paper start
++                            if (!loopItem.isRemoved() && xp.count == loopItem.count && (mergeUnconditionally || loopItem.getValue() < maxValue) && new com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) entity.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) loopItem.getBukkitEntity()).callEvent()) { // Paper - ExperienceOrbMergeEvent
++                                long newTotal = (long)xp.getValue() + (long)loopItem.getValue();
++                                if ((int) newTotal < 0) continue; // Overflow
++                                if (!mergeUnconditionally && newTotal > maxValue) {
++                                    loopItem.setValue((int) (newTotal - maxValue));
++                                    xp.setValue((int) maxValue);
++                                } else {
++                                    xp.setValue(xp.getValue() + loopItem.getValue());
++                                    loopItem.discard(null); // Add Bukkit remove cause
++                                } // Paper end - Maximum exp value when merging
++                            }
+                         }
+                     }
+-                }
+                 } // Paper end - End iteration skip check - All tweaking ends here
+             }
+         }
+@@ -1037,7 +1037,7 @@ public class CraftEventFactory {
+         for (Entity.DefaultDrop drop : drops) {
+             if (drop == null) continue;
+             final org.bukkit.inventory.ItemStack stack = drop.stack();
+-        // Paper end - Restore vanilla drops behavior
++            // Paper end - Restore vanilla drops behavior
+             if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
+ 
+             drop.runConsumer(s -> world.dropItem(entity.getLocation(), s)); // Paper - Restore vanilla drops behavior
+@@ -1071,7 +1071,7 @@ public class CraftEventFactory {
+         for (Entity.DefaultDrop drop : drops) {
+             if (drop == null) continue;
+             final org.bukkit.inventory.ItemStack stack = drop.stack();
+-        // Paper end - Restore vanilla drops behavior
++            // Paper end - Restore vanilla drops behavior
+             if (stack == null || stack.getType() == Material.AIR) continue;
+ 
+             drop.runConsumer(s -> victim.drop(CraftItemStack.unwrap(s), true, false)); // Paper - Restore vanilla drops behavior
+@@ -1242,11 +1242,11 @@ public class CraftEventFactory {
+     private static final Function<? super Double, Double> ZERO = Functions.constant(-0.0);
+ 
+     public static EntityDamageEvent handleLivingEntityDamageEvent(Entity damagee, DamageSource source, double rawDamage, double freezingModifier, double hardHatModifier, double blockingModifier, double armorModifier, double resistanceModifier, double magicModifier, double absorptionModifier, Function<Double, Double> freezing, Function<Double, Double> hardHat, Function<Double, Double> blocking, Function<Double, Double> armor, Function<Double, Double> resistance, Function<Double, Double> magic, Function<Double, Double> absorption) {
+-    // Paper start - fix invulnerability reduction in EntityDamageEvent
++        // Paper start - fix invulnerability reduction in EntityDamageEvent
+         return handleLivingEntityDamageEvent(damagee, source, rawDamage, freezingModifier, hardHatModifier, blockingModifier, armorModifier, resistanceModifier, magicModifier, absorptionModifier, freezing, hardHat, blocking, armor, resistance, magic, absorption, null);
+     }
+     public static EntityDamageEvent handleLivingEntityDamageEvent(Entity damagee, DamageSource source, double rawDamage, double freezingModifier, double hardHatModifier, double blockingModifier, double armorModifier, double resistanceModifier, double magicModifier, double absorptionModifier, Function<Double, Double> freezing, Function<Double, Double> hardHat, Function<Double, Double> blocking, Function<Double, Double> armor, Function<Double, Double> resistance, Function<Double, Double> magic, Function<Double, Double> absorption, java.util.function.BiConsumer<Map<DamageModifier, Double>, Map<DamageModifier, Function<? super Double, Double>>> callback) {
+-    // Paper end - fix invulnerability reduction in EntityDamageEvent
++        // Paper end - fix invulnerability reduction in EntityDamageEvent
+         Map<DamageModifier, Double> modifiers = new EnumMap<>(DamageModifier.class);
+         Map<DamageModifier, Function<? super Double, Double>> modifierFunctions = new EnumMap<>(DamageModifier.class);
+         modifiers.put(DamageModifier.BASE, rawDamage);
+@@ -2088,7 +2088,7 @@ public class CraftEventFactory {
+         org.bukkit.entity.Entity bukkitEntity = (causingEntity == null) ? null : causingEntity.getBukkitEntity();
+         org.bukkit.block.Block bukkitBlock = (causePosition == null) ? null : CraftBlock.at(world, causePosition);
+ 
+-        TNTPrimeEvent event = new TNTPrimeEvent(CraftBlock.at(world, pos), cause, bukkitEntity, bukkitBlock);
++        TNTPrimeEvent event = new TNTPrimeEvent(CraftBlock.at(world, pos), null, cause, bukkitEntity, bukkitBlock, null);
+         Bukkit.getPluginManager().callEvent(event);
+ 
+         return !event.isCancelled();
+diff --git a/src/main/java/org/bukkit/craftbukkit/help/HelpYamlReader.java b/src/main/java/org/bukkit/craftbukkit/help/HelpYamlReader.java
+index a659e06c4cff1c17333703881c36fed78f61efce..d118de8d1b09c666489c5aaaa10e0b09eb23c097 100644
+--- a/src/main/java/org/bukkit/craftbukkit/help/HelpYamlReader.java
++++ b/src/main/java/org/bukkit/craftbukkit/help/HelpYamlReader.java
+@@ -1,48 +1,23 @@
+ package org.bukkit.craftbukkit.help;
+ 
+-import java.io.File;
+-import java.io.IOException;
+-import java.io.InputStreamReader;
+-import java.nio.charset.StandardCharsets;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.logging.Level;
+-import org.bukkit.ChatColor;
+ import org.bukkit.Server;
+-import org.bukkit.configuration.ConfigurationSection;
+-import org.bukkit.configuration.file.YamlConfiguration;
+ import org.bukkit.help.HelpTopic;
+ 
++import java.util.ArrayList;
++import java.util.LinkedList;
++import java.util.List;
++
+ /**
+  * HelpYamlReader is responsible for processing the contents of the help.yml file.
+  */
+ public class HelpYamlReader {
+ 
+-    private YamlConfiguration helpYaml;
+     private final char ALT_COLOR_CODE = '&';
+     private final Server server;
+ 
+     public HelpYamlReader(Server server) {
+         this.server = server;
+ 
+-        File helpYamlFile = new File("help.yml");
+-        YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("configurations/help.yml"), StandardCharsets.UTF_8));
+-
+-        try {
+-            this.helpYaml = YamlConfiguration.loadConfiguration(helpYamlFile);
+-            this.helpYaml.options().copyDefaults(true);
+-            this.helpYaml.setDefaults(defaultConfig);
+-            this.helpYaml.options().setHeader(defaultConfig.options().getHeader());
+-
+-            try {
+-                this.helpYaml.save(helpYamlFile);
+-            } catch (IOException ex) {
+-                server.getLogger().log(Level.SEVERE, "Could not save " + helpYamlFile, ex);
+-            }
+-        } catch (Exception ex) {
+-            server.getLogger().severe("Failed to load help.yml. Verify the yaml indentation is correct. Reverting to default help.yml.");
+-            this.helpYaml = defaultConfig;
+-        }
+     }
+ 
+     /**
+@@ -52,16 +27,7 @@ public class HelpYamlReader {
+      */
+     public List<HelpTopic> getGeneralTopics() {
+         List<HelpTopic> topics = new LinkedList<>();
+-        ConfigurationSection generalTopics = this.helpYaml.getConfigurationSection("general-topics");
+-        if (generalTopics != null) {
+-            for (String topicName : generalTopics.getKeys(false)) {
+-                ConfigurationSection section = generalTopics.getConfigurationSection(topicName);
+-                String shortText = ChatColor.translateAlternateColorCodes(this.ALT_COLOR_CODE, section.getString("shortText", ""));
+-                String fullText = ChatColor.translateAlternateColorCodes(this.ALT_COLOR_CODE, section.getString("fullText", ""));
+-                String permission = section.getString("permission", "");
+-                topics.add(new CustomHelpTopic(topicName, shortText, fullText, permission));
+-            }
+-        }
++
+         return topics;
+     }
+ 
+@@ -72,17 +38,7 @@ public class HelpYamlReader {
+      */
+     public List<HelpTopic> getIndexTopics() {
+         List<HelpTopic> topics = new LinkedList<>();
+-        ConfigurationSection indexTopics = this.helpYaml.getConfigurationSection("index-topics");
+-        if (indexTopics != null) {
+-            for (String topicName : indexTopics.getKeys(false)) {
+-                ConfigurationSection section = indexTopics.getConfigurationSection(topicName);
+-                String shortText = ChatColor.translateAlternateColorCodes(this.ALT_COLOR_CODE, section.getString("shortText", ""));
+-                String preamble = ChatColor.translateAlternateColorCodes(this.ALT_COLOR_CODE, section.getString("preamble", ""));
+-                String permission = section.getString("permission", "");
+-                List<String> commands = section.getStringList("commands");
+-                topics.add(new CustomIndexHelpTopic(this.server.getHelpMap(), topicName, shortText, permission, commands, preamble));
+-            }
+-        }
++
+         return topics;
+     }
+ 
+@@ -93,24 +49,15 @@ public class HelpYamlReader {
+      */
+     public List<HelpTopicAmendment> getTopicAmendments() {
+         List<HelpTopicAmendment> amendments = new LinkedList<>();
+-        ConfigurationSection commandTopics = this.helpYaml.getConfigurationSection("amended-topics");
+-        if (commandTopics != null) {
+-            for (String topicName : commandTopics.getKeys(false)) {
+-                ConfigurationSection section = commandTopics.getConfigurationSection(topicName);
+-                String description = ChatColor.translateAlternateColorCodes(this.ALT_COLOR_CODE, section.getString("shortText", ""));
+-                String usage = ChatColor.translateAlternateColorCodes(this.ALT_COLOR_CODE, section.getString("fullText", ""));
+-                String permission = section.getString("permission", "");
+-                amendments.add(new HelpTopicAmendment(topicName, description, usage, permission));
+-            }
+-        }
++
+         return amendments;
+     }
+ 
+     public List<String> getIgnoredPlugins() {
+-        return this.helpYaml.getStringList("ignore-plugins");
++        return new ArrayList<>();
+     }
+ 
+     public boolean commandTopicsInMasterIndex() {
+-        return this.helpYaml.getBoolean("command-topics-in-master-index", true);
++        return true;
+     }
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java b/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java
+index 268a6c9ab0c7ea9bc53c9a273269ce2cfd37aedf..88c948aa7d671be63dedd942617bb69d2c110cba 100644
+--- a/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java
++++ b/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java
+@@ -260,7 +260,7 @@ public final class CraftLegacy {
+     }
+ 
+     static {
+-        if (org.galemc.gale.configuration.GaleGlobalConfiguration.get().logToConsole.legacyMaterialInitialization) LOGGER.warn("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!"); // Paper - Improve logging and errors; doesn't need to be an error // Gale - Purpur - do not log legacy Material initialization
++        if (org.galemc.gale.configuration.GaleGlobalConfiguration.get() != null && org.galemc.gale.configuration.GaleGlobalConfiguration.get().logToConsole.legacyMaterialInitialization) LOGGER.warn("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!"); // Paper - Improve logging and errors; doesn't need to be an error // Gale - Purpur - do not log legacy Material initialization
+         if (MinecraftServer.getServer() != null && MinecraftServer.getServer().isDebugging()) {
+             new Exception().printStackTrace();
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java b/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java
+index 4881e366c8d44b646e872f3233fd1897882689ab..06b1cbc0f78596432ac330cf4052c42c2b39d43d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java
++++ b/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java
+@@ -109,6 +109,11 @@ public class CraftPotionEffectType extends PotionEffectType implements Holderabl
+         };
+     }
+ 
++    @Override
++    public String getTranslatedName() {
++        return getHandle().getName();
++    }
++
+     @Override
+     public PotionEffect createEffect(int duration, int amplifier) {
+         return new PotionEffect(this, this.isInstant() ? 1 : (int) (duration * this.getDurationModifier()), amplifier);
+diff --git a/src/main/resources/configurations/bukkit.yml b/src/main/resources/configurations/bukkit.yml
+index 00a5b4dc0d7bc57ae3f9231f84a081617ec4b15b..629a61cb26543cc3d32e875ecac3920b133949f3 100644
+--- a/src/main/resources/configurations/bukkit.yml
++++ b/src/main/resources/configurations/bukkit.yml
+@@ -12,7 +12,6 @@
+ settings:
+     allow-end: true
+     warn-on-overload: true
+-    permissions-file: permissions.yml
+     update-folder: update
+     plugin-profiling: false
+     connection-throttle: 4000
+diff --git a/src/main/resources/configurations/commands.yml b/src/main/resources/configurations/commands.yml
+deleted file mode 100644
+index ddf2cd4b802cf7d22342eed7f09c989761aed7a9..0000000000000000000000000000000000000000
+--- a/src/main/resources/configurations/commands.yml
++++ /dev/null
+@@ -1,15 +0,0 @@
+-# This is the Bukkit commands configuration file for Paper.
+-#
+-# If you need help with the configuration or have any questions related to Paper,
+-# join us in our Discord or check the docs page.
+-#
+-# File Reference: https://docs.papermc.io/paper/reference/bukkit-commands-configuration/
+-# Docs: https://docs.papermc.io/
+-# Discord: https://discord.gg/papermc
+-# Website: https://papermc.io/
+-
+-command-block-overrides: []
+-ignore-vanilla-permissions: false
+-aliases:
+-    icanhasbukkit:
+-      - "version $1-"
+diff --git a/src/main/resources/configurations/help.yml b/src/main/resources/configurations/help.yml
+deleted file mode 100644
+index e0958ee252cb38aeb21c2db24a9cbdb134171507..0000000000000000000000000000000000000000
+--- a/src/main/resources/configurations/help.yml
++++ /dev/null
+@@ -1,63 +0,0 @@
+-# This is the Bukkit help configuration file for Paper.
+-# 
+-# By default you do not need to modify this file. Help topics for all plugin commands are automatically provided by
+-# or extracted from your installed plugins. You only need to modify this file if you wish to add new help pages to
+-# your server or override the help pages of existing plugin commands.
+-# 
+-# This file is divided up into the following parts:
+-# -- general-topics: lists admin defined help topics
+-# -- index-topics:   lists admin defined index topics
+-# -- amended-topics: lists topic amendments to apply to existing help topics
+-# -- ignore-plugins: lists any plugins that should be excluded from help
+-# 
+-# Examples are given below. When amending command topic, the string <text> will be replaced with the existing value
+-# in the help topic. Color codes can be used in topic text. The color code character is & followed by 0-F.
+-# ================================================================
+-# 
+-# Set this to true to list the individual command help topics in the master help.
+-# command-topics-in-master-index: true
+-# 
+-# Each general topic will show up as a separate topic in the help index along with all the plugin command topics.
+-# general-topics:
+-#     Rules:
+-#         shortText: Rules of the server
+-#         fullText: |
+-#             &61. Be kind to your fellow players.
+-#             &B2. No griefing.
+-#             &D3. No swearing.
+-#         permission: topics.rules
+-# 
+-# Each index topic will show up as a separate sub-index in the help index along with all the plugin command topics.
+-# To override the default help index (displayed when the user executes /help), name the index topic "Default".
+-# index-topics:
+-#     Ban Commands:
+-#         shortText: Player banning commands
+-#         preamble: Moderator - do not abuse these commands
+-#         permission: op
+-#         commands:
+-#             - /ban
+-#             - /ban-ip
+-#             - /banlist
+-# 
+-# Topic amendments are used to change the content of automatically generated plugin command topics.
+-# amended-topics:
+-#     /stop:
+-#         shortText: Stops the server cold....in its tracks!
+-#         fullText: <text> - This kills the server.
+-#         permission: you.dont.have
+-# 
+-# Any plugin in the ignored plugins list will be excluded from help. The name must match the name displayed by
+-# the /plugins command. Ignore "Bukkit" to remove the standard bukkit commands from the index. Ignore "All"
+-# to completely disable automatic help topic generation.
+-# ignore-plugins:
+-#    - PluginNameOne
+-#    - PluginNameTwo
+-#    - PluginNameThree
+-#
+-# If you need help with the configuration or have any questions related to Paper,
+-# join us in our Discord or check the docs page.
+-#
+-# File Reference: https://docs.papermc.io/paper/reference/bukkit-help-configuration/
+-# Docs: https://docs.papermc.io/
+-# Discord: https://discord.gg/papermc
+-# Website: https://papermc.io/
+diff --git a/src/test/java/io/papermc/paper/block/CraftBlockDataDestroySpeedTest.java b/src/test/java/io/papermc/paper/block/CraftBlockDataDestroySpeedTest.java
+index f70985a8e222c6bcc162e7a1f70e1fcb545f699b..dfd38fc5e2dcb174e509c8308462004195b0ed27 100644
+--- a/src/test/java/io/papermc/paper/block/CraftBlockDataDestroySpeedTest.java
++++ b/src/test/java/io/papermc/paper/block/CraftBlockDataDestroySpeedTest.java
+@@ -83,6 +83,7 @@ public class CraftBlockDataDestroySpeedTest {
+         return new Enchantment(
+             Component.empty(),
+             new Enchantment.EnchantmentDefinition(
++                Optional.empty(),
+                 HolderSet.empty(),
+                 Optional.empty(),
+                 0, 0,
+diff --git a/src/test/java/org/bukkit/craftbukkit/legacy/MaterialReroutingTest.java b/src/test/java/org/bukkit/craftbukkit/legacy/MaterialReroutingTest.java
+index f6b04513355c0c56d30126faa667e22c9d989818..031c2d24a49260c323272204cfff24f0b5661eca 100644
+--- a/src/test/java/org/bukkit/craftbukkit/legacy/MaterialReroutingTest.java
++++ b/src/test/java/org/bukkit/craftbukkit/legacy/MaterialReroutingTest.java
+@@ -47,25 +47,26 @@ public class MaterialReroutingTest {
+ 
+     public static Stream<Arguments> bukkitData() {
+         return MaterialReroutingTest.jarFile
+-                .stream()
+-                .filter(entry -> entry.getName().endsWith(".class"))
+-                 // Add class exceptions here
+-                .filter(entry -> !entry.getName().endsWith("Material.class"))
+-                .filter(entry -> !entry.getName().endsWith("UnsafeValues.class"))
+-                .filter(entry -> !entry.getName().endsWith("BlockType.class"))
+-                .filter(entry -> !entry.getName().endsWith("ItemType.class"))
+-                .filter(entry -> !entry.getName().endsWith("Registry.class"))
+-                .filter(entry -> !entry.getName().startsWith("org/bukkit/material"))
+-                // Paper start - types that cannot be translated to ItemType/BlockType
+-                .filter(entry -> !entry.getName().equals("com/destroystokyo/paper/MaterialSetTag.class"))
+-                // Paper end - types that cannot be translated to ItemType/BlockType
+-                .map(entry -> {
+-                    try {
+-                        return MaterialReroutingTest.jarFile.getInputStream(entry);
+-                    } catch (IOException e) {
+-                        throw new RuntimeException(e);
+-                    }
+-                }).map(Arguments::arguments);
++            .stream()
++            .filter(entry -> entry.getName().endsWith(".class"))
++            // Add class exceptions here
++            .filter(entry -> !entry.getName().endsWith("Material.class"))
++            .filter(entry -> !entry.getName().endsWith("UnsafeValues.class"))
++            .filter(entry -> !entry.getName().endsWith("AntiXrayAdapter.class"))
++            .filter(entry -> !entry.getName().endsWith("BlockType.class"))
++            .filter(entry -> !entry.getName().endsWith("ItemType.class"))
++            .filter(entry -> !entry.getName().endsWith("Registry.class"))
++            .filter(entry -> !entry.getName().startsWith("org/bukkit/material"))
++            // Paper start - types that cannot be translated to ItemType/BlockType
++            .filter(entry -> !entry.getName().equals("com/destroystokyo/paper/MaterialSetTag.class"))
++            // Paper end - types that cannot be translated to ItemType/BlockType
++            .map(entry -> {
++                try {
++                    return MaterialReroutingTest.jarFile.getInputStream(entry);
++                } catch (IOException e) {
++                    throw new RuntimeException(e);
++                }
++            }).map(Arguments::arguments);
+     }
+ 
+     @BeforeAll

@@ -1,0 +1,115 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Mon, 16 Feb 2026 05:38:00 +0200
+Subject: [PATCH] Unused stuff
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 8467857c75d715484fc1f472a8aaf7efd4f14982..9bc91649e3516bce8e0f4f502b0b18b9239e72c9 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -4050,27 +4050,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+     PlayerGameConnection getConnection();
+ 
+     // Purpur start
+-    /**
+-     * Allows you to get if player uses PurpurClient
+-     *
+-     * @return true if player uses PurpurClient
+-     */
+-    boolean usesPurpurClient();
+-
+-    /**
+-     * Check if player is AFK
+-     *
+-     * @return True if AFK
+-     */
+-    boolean isAfk();
+-
+-    /**
+-     * Set player as AFK
+-     *
+-     * @param setAfk Whether to set AFK or not
+-     */
+-    void setAfk(boolean setAfk);
+-
+     /**
+      * Reset the idle timer back to 0
+      * @deprecated Use {@link #resetIdleDuration()} instead
+diff --git a/src/main/java/org/purpurmc/purpur/event/PlayerAFKEvent.java b/src/main/java/org/purpurmc/purpur/event/PlayerAFKEvent.java
+deleted file mode 100644
+index e9637b82014fe3f4f4671b24d18f77f3d5e4b8ad..0000000000000000000000000000000000000000
+--- a/src/main/java/org/purpurmc/purpur/event/PlayerAFKEvent.java
++++ /dev/null
+@@ -1,71 +0,0 @@
+-package org.purpurmc.purpur.event;
+-
+-import org.bukkit.entity.Player;
+-import org.bukkit.event.Cancellable;
+-import org.bukkit.event.HandlerList;
+-import org.bukkit.event.player.PlayerEvent;
+-import org.jetbrains.annotations.ApiStatus;
+-import org.jspecify.annotations.NullMarked;
+-import org.jspecify.annotations.Nullable;
+-
+-@NullMarked
+-public class PlayerAFKEvent extends PlayerEvent implements Cancellable {
+-    private static final HandlerList handlers = new HandlerList();
+-    private final boolean setAfk;
+-    private boolean shouldKick;
+-    private @Nullable String broadcast;
+-    private boolean cancel;
+-
+-    @ApiStatus.Internal
+-    public PlayerAFKEvent(Player player, boolean setAfk, boolean shouldKick, @Nullable String broadcast, boolean async) {
+-        super(player, async);
+-        this.setAfk = setAfk;
+-        this.shouldKick = shouldKick;
+-        this.broadcast = broadcast;
+-    }
+-
+-    /**
+-     * Whether player is going afk or coming back
+-     *
+-     * @return True if going afk. False is coming back
+-     */
+-    public boolean isGoingAfk() {
+-        return setAfk;
+-    }
+-
+-    public boolean shouldKick() {
+-        return shouldKick;
+-    }
+-
+-    public void setShouldKick(boolean shouldKick) {
+-        this.shouldKick = shouldKick;
+-    }
+-
+-    @Nullable
+-    public String getBroadcastMsg() {
+-        return broadcast;
+-    }
+-
+-    public void setBroadcastMsg(@Nullable String broadcast) {
+-        this.broadcast = broadcast;
+-    }
+-
+-    @Override
+-    public boolean isCancelled() {
+-        return cancel;
+-    }
+-
+-    @Override
+-    public void setCancelled(boolean cancel) {
+-        this.cancel = cancel;
+-    }
+-
+-    @Override
+-    public HandlerList getHandlers() {
+-        return handlers;
+-    }
+-
+-    public static HandlerList getHandlerList() {
+-        return handlers;
+-    }
+-}

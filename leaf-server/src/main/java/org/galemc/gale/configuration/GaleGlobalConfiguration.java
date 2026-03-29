@@ -71,7 +71,6 @@ public class GaleGlobalConfiguration extends ConfigurationPart {
 
         public class LastTickTimeInTpsCommand extends ConfigurationPart {
             public boolean enabled = false;
-            public boolean addOversleep = false;
         }
         // Gale end - YAPFA - last tick time - in TPS command
 

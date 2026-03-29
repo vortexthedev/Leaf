@@ -13,8 +13,6 @@ public class VanillaUsernameCheck extends ConfigModules {
         return EnumConfigCategory.MISC.getBaseKeyName() + ".vanilla-username-check";
     }
 
-    @Deprecated
-    public static boolean removeAllCheck = false;
     public static boolean enforceSkullValidation = true;
     @Experimental
     public static boolean allowOldPlayersJoin = false;
@@ -22,19 +20,11 @@ public class VanillaUsernameCheck extends ConfigModules {
     private static final String defaultRegexString = "^[a-zA-Z0-9_.]*$";
     public static Pattern usernameRegex = Pattern.compile(defaultRegexString);
     public static boolean shouldSkipNonPlayerNameCheck() { // helper
-        return removeAllCheck || useUsernameRegex;
+        return true;
     }
 
     @Override
     public void onLoaded() {
-        removeAllCheck = config.getBoolean(getBasePath() + ".remove-all-check", removeAllCheck, config.pickStringRegionBased("""
-                Remove Vanilla username check,
-                allowing all characters as username.
-                WARNING: UNSAFE, USE AT YOUR OWN RISK!""",
-            """
-                移除原版的用户名验证,
-                让所有字符均可作为玩家名.
-                警告: 完全移除验证非常不安全, 使用风险自负!"""));
         enforceSkullValidation = config.getBoolean(getBasePath() + ".enforce-skull-validation", enforceSkullValidation, config.pickStringRegionBased("""
                 Enforce skull validation,
                 preventing skulls with invalid names from disconnecting the client.""",
@@ -68,10 +58,6 @@ public class VanillaUsernameCheck extends ConfigModules {
             } catch (Exception e) {
                 LeafConfig.LOGGER.error("Invalid username regex {} found, falling back to default.", regexString, e);
             }
-        }
-        if (useUsernameRegex && removeAllCheck) {
-            LeafConfig.LOGGER.warn("Found conflicting configuration, remove-all-check and use-username-regex cannot be enabled at same time, ignoring remove-all-check...");
-            removeAllCheck = false;
         }
     }
 }

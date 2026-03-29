@@ -1,0 +1,852 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Thu, 26 Mar 2026 14:02:46 +0200
+Subject: [PATCH] Remove paper's anti-xray, useless shit, timings,
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/util/VersionFetcher.java b/src/main/java/com/destroystokyo/paper/util/VersionFetcher.java
+deleted file mode 100644
+index c70934e502fe2ae870bdafe4f3c85cefed1156a4..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/util/VersionFetcher.java
++++ /dev/null
+@@ -1,62 +0,0 @@
+-package com.destroystokyo.paper.util;
+-
+-import net.kyori.adventure.text.Component;
+-import net.kyori.adventure.text.format.NamedTextColor;
+-import org.bukkit.Bukkit;
+-import org.jetbrains.annotations.ApiStatus;
+-import org.jspecify.annotations.NullMarked;
+-
+-@NullMarked
+-public interface VersionFetcher {
+-
+-    /**
+-     * Amount of time to cache results for in milliseconds
+-     * <p>
+-     * Negative values will never cache.
+-     *
+-     * @return cache time
+-     */
+-    long getCacheTime();
+-
+-    /**
+-     * Gets the version message to cache and show to command senders.
+-     *
+-     * @return the message to show when requesting a version
+-     * @apiNote This method may involve a web request which will block the executing thread
+-     */
+-    Component getVersionMessage();
+-
+-    /**
+-     * Gets the version message to cache and show to command senders.
+-     *
+-     * @param serverVersion the current version of the server (will match {@link Bukkit#getVersion()})
+-     * @return the message to show when requesting a version
+-     * @apiNote This method may involve a web request which will block the current thread
+-     * @see #getVersionMessage()
+-     * @deprecated {@code serverVersion} is not required
+-     */
+-    @Deprecated
+-    default Component getVersionMessage(String serverVersion) {
+-        return getVersionMessage();
+-    }
+-
+-    /**
+-     * @hidden
+-     */
+-    @ApiStatus.Internal
+-    class DummyVersionFetcher implements VersionFetcher {
+-
+-        @Override
+-        public long getCacheTime() {
+-            return -1;
+-        }
+-
+-        @Override
+-        public Component getVersionMessage() {
+-            Bukkit.getLogger().warning("Version provider has not been set, cannot check for updates!");
+-            Bukkit.getLogger().info("Override the default implementation of org.bukkit.UnsafeValues#getVersionFetcher()");
+-            new Throwable().printStackTrace();
+-            return Component.text("Unable to check for updates. No version provider set.", NamedTextColor.RED);
+-        }
+-    }
+-}
+diff --git a/src/main/java/dev/imanity/antixray/sdk/AntiXrayAdapter.java b/src/main/java/dev/imanity/antixray/sdk/AntiXrayAdapter.java
+deleted file mode 100644
+index a6aa89cc7964037aac36b0e7e860fe49fa5e1fcc..0000000000000000000000000000000000000000
+--- a/src/main/java/dev/imanity/antixray/sdk/AntiXrayAdapter.java
++++ /dev/null
+@@ -1,35 +0,0 @@
+-package dev.imanity.antixray.sdk;
+-
+-import org.bukkit.Material;
+-import org.bukkit.World;
+-import org.bukkit.entity.Player;
+-import org.jetbrains.annotations.NotNull;
+-
+-public interface AntiXrayAdapter {
+-
+-    /**
+-     * Call a block change to the AntiXray system
+-     * It should be at Level.setBlock(BlockPos, BlockState, flags, maxUpdateDepth)
+-     * Or World.setTypeAndData(BlockPosition, IBlockData, i) in legacy spigot versions
+-     *
+-     * @param world    the bukkit world
+-     * @param x        the x
+-     * @param y        the y
+-     * @param z        the z
+-     * @param material the bukkit material
+-     */
+-    void callBlockChange(@NotNull World world, int x, int y, int z, @NotNull Material material);
+-
+-    /**
+-     * Call a player left click block to the AntiXray system
+-     * It should be at ServerPlayerGameMode.handleBlockBreakAction(BlockPos, ServerboundPlayerActionPacket.Action, Direction, worldHeight, sequence)
+-     * Or PlayerInteractManager.a(BlockPosition, EnumDirection) in legacy spigot versions
+-     *
+-     * @param world  the bukkit world
+-     * @param player the bukkit player
+-     * @param x      the x
+-     * @param y      the y
+-     * @param z      the z
+-     */
+-    void callPlayerLeftClickBlock(@NotNull World world, @NotNull Player player, int x, int y, int z);
+-}
+diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
+index 82d8febbc565d41e37717f1d75ce7561116254d5..835f282600880a29a75bff821a57324c922ac8af 100644
+--- a/src/main/java/org/bukkit/UnsafeValues.java
++++ b/src/main/java/org/bukkit/UnsafeValues.java
+@@ -152,15 +152,6 @@ public interface UnsafeValues {
+     static boolean isLegacyPlugin(org.bukkit.plugin.Plugin plugin) {
+         return !Bukkit.getUnsafe().isSupportedApiVersion(plugin.getDescription().getAPIVersion());
+     }
+-    // Paper end
+-
+-    // Paper start
+-    /**
+-     * Called once by the version command on first use, then cached.
+-     */
+-    default com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
+-        return new com.destroystokyo.paper.util.VersionFetcher.DummyVersionFetcher();
+-    }
+ 
+     byte[] serializeItem(ItemStack item);
+ 
+diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+index 83e7175927e8adb90208bebbd7ddc37cb186d1dc..4af9e439319d2a049909c313a92b08a79009e377 100644
+--- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
++++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+@@ -1,24 +1,17 @@
+ package org.bukkit.command;
+ 
+ import com.google.common.base.Preconditions;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Locale;
+-import java.util.Map;
+ import org.bukkit.Location;
+ import org.bukkit.Server;
+ import org.bukkit.command.defaults.BukkitCommand;
+-import org.bukkit.command.defaults.HelpCommand;
+ import org.bukkit.command.defaults.ReloadCommand;
+ import org.bukkit.entity.Player;
+ import org.bukkit.util.StringUtil;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
++import java.util.*;
++
+ public class SimpleCommandMap implements CommandMap {
+     protected final Map<String, Command> knownCommands;
+     private final Server server;
+@@ -36,10 +29,6 @@ public class SimpleCommandMap implements CommandMap {
+         this.knownCommands.put("bukkit:rl", reload);
+     }
+ 
+-    public void setFallbackCommands() {
+-        register("bukkit", new HelpCommand());
+-    }
+-
+     /**
+      * {@inheritDoc}
+      */
+diff --git a/src/main/java/org/bukkit/command/defaults/HelpCommand.java b/src/main/java/org/bukkit/command/defaults/HelpCommand.java
+deleted file mode 100644
+index a34bf3b981f94e5e3f9b8e9b6fd528a66cfa171a..0000000000000000000000000000000000000000
+--- a/src/main/java/org/bukkit/command/defaults/HelpCommand.java
++++ /dev/null
+@@ -1,233 +0,0 @@
+-package org.bukkit.command.defaults;
+-
+-import com.google.common.base.Joiner;
+-import com.google.common.base.Preconditions;
+-import com.google.common.collect.ImmutableList;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.TreeSet;
+-import net.kyori.adventure.text.Component;
+-import net.kyori.adventure.text.TextComponent;
+-import net.kyori.adventure.text.format.NamedTextColor;
+-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+-import org.bukkit.Bukkit;
+-import org.bukkit.command.CommandSender;
+-import org.bukkit.command.ConsoleCommandSender;
+-import org.bukkit.help.HelpMap;
+-import org.bukkit.help.HelpTopic;
+-import org.bukkit.help.HelpTopicComparator;
+-import org.bukkit.help.IndexHelpTopic;
+-import org.bukkit.util.ChatPaginator;
+-import org.jetbrains.annotations.NotNull;
+-import org.jetbrains.annotations.Nullable;
+-
+-public class HelpCommand extends BukkitCommand {
+-    public HelpCommand() {
+-        super("help");
+-        this.description = "Shows the help menu";
+-        this.usageMessage = "/help <pageNumber>\n/help <topic>\n/help <topic> <pageNumber>";
+-        this.setAliases(Arrays.asList(new String[]{"?"}));
+-        this.setPermission("bukkit.command.help");
+-    }
+-
+-    @Override
+-    public boolean execute(@NotNull CommandSender sender, @NotNull String currentAlias, @NotNull String[] args) {
+-        if (!testPermission(sender)) return true;
+-
+-        String command;
+-        int pageNumber;
+-        int pageHeight;
+-        int pageWidth;
+-
+-        if (args.length == 0) {
+-            command = "";
+-            pageNumber = 1;
+-        } else if (args[args.length - 1].chars().allMatch(Character::isDigit)) {
+-            command = Joiner.on(" ").join(Arrays.copyOfRange(args, 0, args.length - 1));
+-            try {
+-                pageNumber = Integer.decode(args[args.length - 1]);
+-            } catch (NumberFormatException exception) {
+-                pageNumber = 1;
+-            }
+-            if (pageNumber <= 0) {
+-                pageNumber = 1;
+-            }
+-        } else {
+-            command = Joiner.on(" ").join(args);
+-            pageNumber = 1;
+-        }
+-
+-        if (sender instanceof ConsoleCommandSender) {
+-            pageHeight = ChatPaginator.UNBOUNDED_PAGE_HEIGHT;
+-            pageWidth = ChatPaginator.UNBOUNDED_PAGE_WIDTH;
+-        } else {
+-            pageHeight = ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT - 1;
+-            pageWidth = ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH;
+-        }
+-
+-        HelpMap helpMap = Bukkit.getServer().getHelpMap();
+-        HelpTopic topic = helpMap.getHelpTopic(command);
+-
+-        if (topic == null) {
+-            topic = helpMap.getHelpTopic("/" + command);
+-        }
+-
+-        if (topic == null) {
+-            topic = findPossibleMatches(command);
+-        }
+-
+-        if (topic == null || !topic.canSee(sender)) {
+-            sender.sendMessage(Component.text("No help for " + command, NamedTextColor.RED));
+-            return true;
+-        }
+-
+-        ChatPaginator.ChatPage page = ChatPaginator.paginate(topic.getFullText(sender), pageNumber, pageWidth, pageHeight);
+-
+-        TextComponent.Builder header = Component.text()
+-            .append(Component.text("--------- ", NamedTextColor.YELLOW))
+-            .append(Component.text("Help: ", NamedTextColor.WHITE))
+-            .append(Component.text(topic.getName()))
+-            .append(Component.space());
+-        if (page.getTotalPages() > 1) {
+-            header.append(Component.text("("))
+-                .append(Component.text(page.getPageNumber()))
+-                .append(Component.text("/"))
+-                .append(Component.text(page.getTotalPages()))
+-                .append(Component.text(") "));
+-        }
+-        final TextComponent headerComponent = header.build();
+-        final int headerSize = PlainTextComponentSerializer.plainText().serialize(headerComponent).length();
+-        final int headerEndingCount = Math.max(0, ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH - headerSize);
+-
+-        sender.sendMessage(headerComponent.append(Component.text("-".repeat(headerEndingCount), NamedTextColor.YELLOW)));
+-
+-        sender.sendMessage(page.getLines());
+-
+-        return true;
+-    }
+-
+-    @NotNull
+-    @Override
+-    public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
+-        Preconditions.checkArgument(sender != null, "Sender cannot be null");
+-        Preconditions.checkArgument(args != null, "Arguments cannot be null");
+-        Preconditions.checkArgument(alias != null, "Alias cannot be null");
+-
+-        if (args.length == 1) {
+-            List<String> matchedTopics = new ArrayList<String>();
+-            String searchString = args[0];
+-            for (HelpTopic topic : Bukkit.getServer().getHelpMap().getHelpTopics()) {
+-                if (!topic.canSee(sender)) {
+-                    continue;
+-                }
+-                String trimmedTopic = topic.getName().startsWith("/") ? topic.getName().substring(1) : topic.getName();
+-
+-                if (trimmedTopic.startsWith(searchString)) {
+-                    matchedTopics.add(trimmedTopic);
+-                }
+-            }
+-            return matchedTopics;
+-        }
+-        return ImmutableList.of();
+-    }
+-
+-    @Nullable
+-    protected HelpTopic findPossibleMatches(@NotNull String searchString) {
+-        int maxDistance = (searchString.length() / 5) + 3;
+-        Set<HelpTopic> possibleMatches = new TreeSet<HelpTopic>(HelpTopicComparator.helpTopicComparatorInstance());
+-
+-        if (searchString.startsWith("/")) {
+-            searchString = searchString.substring(1);
+-        }
+-
+-        if (searchString.isEmpty()) return null; // Paper - prevent index out of bounds - nothing matches an empty search string, should have been special cased to defaultTopic earlier, just return null.
+-        for (HelpTopic topic : Bukkit.getServer().getHelpMap().getHelpTopics()) {
+-            String trimmedTopic = topic.getName().startsWith("/") ? topic.getName().substring(1) : topic.getName();
+-
+-            if (trimmedTopic.length() < searchString.length()) {
+-                continue;
+-            }
+-
+-            if (Character.toLowerCase(trimmedTopic.charAt(0)) != Character.toLowerCase(searchString.charAt(0))) {
+-                continue;
+-            }
+-
+-            if (damerauLevenshteinDistance(searchString, trimmedTopic.substring(0, searchString.length())) < maxDistance) {
+-                possibleMatches.add(topic);
+-            }
+-        }
+-
+-        if (possibleMatches.size() > 0) {
+-            return new IndexHelpTopic("Search", null, null, possibleMatches, "Search for: " + searchString);
+-        } else {
+-            return null;
+-        }
+-    }
+-
+-    /**
+-     * Computes the Dameraur-Levenshtein Distance between two strings. Adapted
+-     * from the algorithm at <a href="http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance">Wikipedia: Damerau–Levenshtein distance</a>
+-     *
+-     * @param s1 The first string being compared.
+-     * @param s2 The second string being compared.
+-     * @return The number of substitutions, deletions, insertions, and
+-     * transpositions required to get from s1 to s2.
+-     */
+-    protected static int damerauLevenshteinDistance(@Nullable String s1, @Nullable String s2) {
+-        if (s1 == null && s2 == null) {
+-            return 0;
+-        }
+-        if (s1 != null && s2 == null) {
+-            return s1.length();
+-        }
+-        if (s1 == null && s2 != null) {
+-            return s2.length();
+-        }
+-
+-        int s1Len = s1.length();
+-        int s2Len = s2.length();
+-        int[][] H = new int[s1Len + 2][s2Len + 2];
+-
+-        int INF = s1Len + s2Len;
+-        H[0][0] = INF;
+-        for (int i = 0; i <= s1Len; i++) {
+-            H[i + 1][1] = i;
+-            H[i + 1][0] = INF;
+-        }
+-        for (int j = 0; j <= s2Len; j++) {
+-            H[1][j + 1] = j;
+-            H[0][j + 1] = INF;
+-        }
+-
+-        Map<Character, Integer> sd = new HashMap<Character, Integer>();
+-        for (char Letter : (s1 + s2).toCharArray()) {
+-            if (!sd.containsKey(Letter)) {
+-                sd.put(Letter, 0);
+-            }
+-        }
+-
+-        for (int i = 1; i <= s1Len; i++) {
+-            int DB = 0;
+-            for (int j = 1; j <= s2Len; j++) {
+-                int i1 = sd.get(s2.charAt(j - 1));
+-                int j1 = DB;
+-
+-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+-                    H[i + 1][j + 1] = H[i][j];
+-                    DB = j;
+-                } else {
+-                    H[i + 1][j + 1] = Math.min(H[i][j], Math.min(H[i + 1][j], H[i][j + 1])) + 1;
+-                }
+-
+-                H[i + 1][j + 1] = Math.min(H[i + 1][j + 1], H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1));
+-            }
+-            sd.put(s1.charAt(i - 1), i);
+-        }
+-
+-        return H[s1Len + 1][s2Len + 1];
+-    }
+-}
+diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+deleted file mode 100644
+index d14d29364c4f180053158c1af0d9b49aba6cb641..0000000000000000000000000000000000000000
+--- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
++++ /dev/null
+@@ -1,302 +0,0 @@
+-package org.bukkit.command.defaults;
+-
+-import com.google.common.base.Preconditions;
+-import com.google.common.collect.ImmutableList;
+-import com.google.common.io.Resources;
+-import com.google.gson.Gson;
+-import com.google.gson.JsonObject;
+-import com.google.gson.JsonSyntaxException;
+-import java.io.BufferedReader;
+-import java.io.IOException;
+-import java.net.URL;
+-import java.net.URLEncoder;
+-import java.nio.charset.StandardCharsets;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.HashSet;
+-import java.util.List;
+-import java.util.Locale;
+-import java.util.Set;
+-import java.util.concurrent.locks.ReentrantLock;
+-import org.bukkit.Bukkit;
+-import org.bukkit.ChatColor;
+-import org.bukkit.command.CommandSender;
+-import org.bukkit.plugin.Plugin;
+-import org.bukkit.plugin.PluginDescriptionFile;
+-import org.bukkit.util.StringUtil;
+-import org.jetbrains.annotations.NotNull;
+-import com.destroystokyo.paper.util.VersionFetcher;
+-import net.kyori.adventure.text.Component;
+-import net.kyori.adventure.text.format.NamedTextColor;
+-import net.kyori.adventure.text.event.ClickEvent;
+-import net.kyori.adventure.text.format.TextDecoration;
+-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+-
+-@Deprecated(forRemoval = true)
+-public class VersionCommand extends BukkitCommand {
+-    private VersionFetcher versionFetcher; // Paper - version command 2.0
+-    private VersionFetcher getVersionFetcher() { // lazy load because unsafe isn't available at command registration
+-        if (versionFetcher == null) {
+-            versionFetcher = Bukkit.getUnsafe().getVersionFetcher();
+-        }
+-
+-        return versionFetcher;
+-    }
+-
+-    public VersionCommand(@NotNull String name) {
+-        super(name);
+-
+-        this.description = "Gets the version of this server including any plugins in use";
+-        this.usageMessage = "/version [plugin name]";
+-        this.setPermission("bukkit.command.version");
+-        this.setAliases(Arrays.asList("ver", "about"));
+-    }
+-
+-    @Override
+-    public boolean execute(@NotNull CommandSender sender, @NotNull String currentAlias, @NotNull String[] args) {
+-        if (!testPermission(sender)) return true;
+-
+-        if (args.length == 0) {
+-            //sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")"); // Paper - moved to setVersionMessage
+-            sendVersion(sender);
+-        } else {
+-            StringBuilder name = new StringBuilder();
+-
+-            for (String arg : args) {
+-                if (name.length() > 0) {
+-                    name.append(' ');
+-                }
+-
+-                name.append(arg);
+-            }
+-
+-            String pluginName = name.toString();
+-            Plugin exactPlugin = Bukkit.getPluginManager().getPlugin(pluginName);
+-            if (exactPlugin != null) {
+-                describeToSender(exactPlugin, sender);
+-                return true;
+-            }
+-
+-            boolean found = false;
+-            pluginName = pluginName.toLowerCase(Locale.ROOT);
+-            for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+-                if (plugin.getName().toLowerCase(Locale.ROOT).contains(pluginName)) {
+-                    describeToSender(plugin, sender);
+-                    found = true;
+-                }
+-            }
+-
+-            if (!found) {
+-                sender.sendMessage("This server is not running any plugin by that name.");
+-                sender.sendMessage("Use /plugins to get a list of plugins.");
+-            }
+-        }
+-        return true;
+-    }
+-
+-    private void describeToSender(@NotNull Plugin plugin, @NotNull CommandSender sender) {
+-        PluginDescriptionFile desc = plugin.getDescription();
+-        // Paper start - version command 2.0
+-        sender.sendMessage(
+-            Component.text()
+-                .append(Component.text(desc.getName(), NamedTextColor.GREEN))
+-                .append(Component.text(" version "))
+-                .append(Component.text(desc.getVersion(), NamedTextColor.GREEN)
+-                    .hoverEvent(Component.text("Click to copy to clipboard", NamedTextColor.WHITE))
+-                    .clickEvent(ClickEvent.copyToClipboard(desc.getVersion()))
+-                )
+-        );
+-        // Paper end - version command 2.0
+-        if (desc.getDescription() != null) {
+-            sender.sendMessage(desc.getDescription());
+-        }
+-
+-        if (desc.getWebsite() != null) {
+-            sender.sendMessage("Website: " + ChatColor.GREEN + desc.getWebsite());
+-        }
+-
+-        if (!desc.getAuthors().isEmpty()) {
+-            if (desc.getAuthors().size() == 1) {
+-                sender.sendMessage("Author: " + getNameList(desc.getAuthors()));
+-            } else {
+-                sender.sendMessage("Authors: " + getNameList(desc.getAuthors()));
+-            }
+-        }
+-
+-        if (!desc.getContributors().isEmpty()) {
+-            sender.sendMessage("Contributors: " + getNameList(desc.getContributors()));
+-        }
+-    }
+-
+-    @NotNull
+-    private String getNameList(@NotNull final List<String> names) {
+-        StringBuilder result = new StringBuilder();
+-
+-        for (int i = 0; i < names.size(); i++) {
+-            if (result.length() > 0) {
+-                result.append(ChatColor.WHITE);
+-
+-                if (i < names.size() - 1) {
+-                    result.append(", ");
+-                } else {
+-                    result.append(" and ");
+-                }
+-            }
+-
+-            result.append(ChatColor.GREEN);
+-            result.append(names.get(i));
+-        }
+-
+-        return result.toString();
+-    }
+-
+-    @NotNull
+-    @Override
+-    public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
+-        Preconditions.checkArgument(sender != null, "Sender cannot be null");
+-        Preconditions.checkArgument(args != null, "Arguments cannot be null");
+-        Preconditions.checkArgument(alias != null, "Alias cannot be null");
+-
+-        if (args.length == 1) {
+-            List<String> completions = new ArrayList<String>();
+-            String toComplete = args[0].toLowerCase(Locale.ROOT);
+-            for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+-                if (StringUtil.startsWithIgnoreCase(plugin.getName(), toComplete)) {
+-                    completions.add(plugin.getName());
+-                }
+-            }
+-            return completions;
+-        }
+-        return ImmutableList.of();
+-    }
+-
+-    private final ReentrantLock versionLock = new ReentrantLock();
+-    private boolean hasVersion = false;
+-    private Component versionMessage = null; // Paper
+-    private final Set<CommandSender> versionWaiters = new HashSet<CommandSender>();
+-    private boolean versionTaskStarted = false;
+-    private long lastCheck = 0;
+-
+-    private void sendVersion(@NotNull CommandSender sender) {
+-        if (hasVersion) {
+-            if (System.currentTimeMillis() - lastCheck > getVersionFetcher().getCacheTime()) { // Paper - use version supplier
+-                lastCheck = System.currentTimeMillis();
+-                hasVersion = false;
+-            } else {
+-                sender.sendMessage(versionMessage);
+-                return;
+-            }
+-        }
+-        versionLock.lock();
+-        try {
+-            if (hasVersion) {
+-                sender.sendMessage(versionMessage);
+-                return;
+-            }
+-            versionWaiters.add(sender);
+-            sender.sendMessage(Component.text("Checking version, please wait...", NamedTextColor.WHITE, TextDecoration.ITALIC)); // Paper
+-            if (!versionTaskStarted) {
+-                versionTaskStarted = true;
+-                new Thread(new Runnable() {
+-
+-                    @Override
+-                    public void run() {
+-                        obtainVersion();
+-                    }
+-                }).start();
+-            }
+-        } finally {
+-            versionLock.unlock();
+-        }
+-    }
+-
+-    private void obtainVersion() {
+-        String version = Bukkit.getVersion();
+-        // Paper start
+-        if (version.startsWith("null")) { // running from ide?
+-            setVersionMessage(Component.text("* Unknown version, custom build?", NamedTextColor.RED)); // Leaf - Rebrand - Purpur - Clean up version command output
+-            return;
+-        }
+-        setVersionMessage(getVersionFetcher().getVersionMessage(version));
+-        /*
+-        if (version == null) version = "Custom";
+-        String[] parts = version.substring(0, version.indexOf(' ')).split("-");
+-        if (parts.length == 4) {
+-            int cbVersions = getDistance("craftbukkit", parts[3]);
+-            int spigotVersions = getDistance("spigot", parts[2]);
+-            if (cbVersions == -1 || spigotVersions == -1) {
+-                setVersionMessage("Error obtaining version information");
+-            } else {
+-                if (cbVersions == 0 && spigotVersions == 0) {
+-                    setVersionMessage("You are running the latest version");
+-                } else {
+-                    setVersionMessage("You are " + (cbVersions + spigotVersions) + " version(s) behind");
+-                }
+-            }
+-
+-        } else if (parts.length == 3) {
+-            int cbVersions = getDistance("craftbukkit", parts[2]);
+-            if (cbVersions == -1) {
+-                setVersionMessage("Error obtaining version information");
+-            } else {
+-                if (cbVersions == 0) {
+-                    setVersionMessage("You are running the latest version");
+-                } else {
+-                    setVersionMessage("You are " + cbVersions + " version(s) behind");
+-                }
+-            }
+-        } else {
+-            setVersionMessage("Unknown version, custom build?");
+-        }
+-         */
+-        // Paper end
+-    }
+-
+-    // Paper start
+-    private void setVersionMessage(final @NotNull Component msg) {
+-        lastCheck = System.currentTimeMillis();
+-        final Component message = Component.textOfChildren(
+-            Component.text(Bukkit.getVersionMessage(), NamedTextColor.WHITE),
+-            Component.newline(),
+-            msg
+-        );
+-        this.versionMessage = Component.text()
+-            .append(message)
+-            .hoverEvent(Component.text("Click to copy to clipboard", NamedTextColor.WHITE))
+-            .clickEvent(ClickEvent.copyToClipboard(PlainTextComponentSerializer.plainText().serialize(message)))
+-            .build();
+-        // Paper end
+-        versionLock.lock();
+-        try {
+-            hasVersion = true;
+-            versionTaskStarted = false;
+-            for (CommandSender sender : versionWaiters) {
+-                sender.sendMessage(versionMessage);
+-            }
+-            versionWaiters.clear();
+-        } finally {
+-            versionLock.unlock();
+-        }
+-    }
+-
+-    private static int getDistance(@NotNull String repo, @NotNull String hash) {
+-        try {
+-            BufferedReader reader = Resources.asCharSource(
+-                    new URL("https://hub.spigotmc.org/stash/rest/api/1.0/projects/SPIGOT/repos/" + repo + "/commits?since=" + URLEncoder.encode(hash, StandardCharsets.UTF_8) + "&withCounts=true"),
+-                    StandardCharsets.UTF_8
+-            ).openBufferedStream();
+-            try {
+-                JsonObject obj = new Gson().fromJson(reader, JsonObject.class);
+-                return obj.get("totalCount").getAsInt();
+-            } catch (JsonSyntaxException ex) {
+-                ex.printStackTrace();
+-                return -1;
+-            } finally {
+-                reader.close();
+-            }
+-        } catch (IOException e) {
+-            e.printStackTrace();
+-            return -1;
+-        }
+-    }
+-}
+diff --git a/src/main/java/org/bukkit/util/permissions/CommandPermissions.java b/src/main/java/org/bukkit/util/permissions/CommandPermissions.java
+index 48c67cb3a7073db85d7cf2308e5b1aae89b7a1d2..ba24f8c59c78b2a3fac4688965625eb6a8dd8a26 100644
+--- a/src/main/java/org/bukkit/util/permissions/CommandPermissions.java
++++ b/src/main/java/org/bukkit/util/permissions/CommandPermissions.java
+@@ -17,7 +17,6 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(PREFIX + "help", "Allows the user to view the vanilla help menu", PermissionDefault.TRUE, commands);
+         DefaultPermissions.registerPermission(PREFIX + "plugins", "Allows the user to view the list of plugins running on this server", PermissionDefault.TRUE, commands);
+         DefaultPermissions.registerPermission(PREFIX + "reload", "Allows the user to reload the server settings", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(PREFIX + "version", "Allows the user to view the version of the server", PermissionDefault.TRUE, commands);
+         DefaultPermissions.registerPermission(PREFIX + "purpur", "Allows the user to use the purpur command", PermissionDefault.OP, commands); // Purpur - Default permissions
+ 
+         commands.recalculatePermissibles();
+diff --git a/src/main/javadoc/org/bukkit/plugin/doc-files/permissions-example_plugin.yml b/src/main/javadoc/org/bukkit/plugin/doc-files/permissions-example_plugin.yml
+deleted file mode 100644
+index 34d0381a68716e933c581a65eca6e69913d3d9c5..0000000000000000000000000000000000000000
+--- a/src/main/javadoc/org/bukkit/plugin/doc-files/permissions-example_plugin.yml
++++ /dev/null
+@@ -1,64 +0,0 @@
+-name: ScrapBukkit
+-main: com.dinnerbone.bukkit.scrap.ScrapBukkit
+-version: 1.0.0
+-website: http://www.bukkit.org
+-author: The Bukkit Team
+-description: >
+-             Miscellaneous administrative commands for Bukkit.
+-             This plugin is one of the default plugins shipped with Bukkit.
+-# commands: snipped
+-
+-permissions:
+-  scrapbukkit.*:
+-    description: Gives all permissions for Scrapbukkit
+-    default: op
+-    children:
+-      scrapbukkit.remove:
+-        description: Allows the player to remove items from anyones inventory
+-        children:
+-          scrapbukkit.remove.self:
+-            description: Allows the player to remove items from their own inventory
+-          scrapbukkit.remove.other:
+-            description: Allows the player to remove items from other peoples inventory
+-
+-      scrapbukkit.time:
+-        description: Allows the player to view and change the time
+-        children:
+-          scrapbukkit.time.view:
+-            description: Allows the player to view the time
+-            default: true
+-          scrapbukkit.time.change:
+-            description: Allows the player to change the time
+-
+-      scrapbukkit.tp:
+-        description: Allows the player to teleport anyone to anyone else
+-        children:
+-          scrapbukkit.tp.here:
+-            description: Allows the player to teleport other players to themselves
+-          scrapbukkit.tp.self:
+-            description: Allows the player to teleport themselves to another player
+-          scrapbukkit.tp.other:
+-            description: Allows the player to teleport anyone to another player
+-
+-      scrapbukkit.give:
+-        description: Allows the player to give items
+-        children:
+-          scrapbukkit.give.self:
+-            description: Allows the player to give themselves items
+-          scrapbukkit.give.other:
+-            description: Allows the player to give other players items
+-
+-      scrapbukkit.clear:
+-        description: Allows the player to clear inventories
+-        children:
+-          scrapbukkit.clear.self:
+-            description: Allows the player to clear their own inventory
+-          scrapbukkit.clear.other:
+-            description: Allows the player to clear other players inventory
+-
+-      scrapbukkit.some.standard.perm: {}
+-      scrapbukkit.some.other.perm: true
+-      scrapbukkit.some.bad.perm: false
+-  # This is defined here individually, as simply giving it an association will not cause it to exist at runtime
+-  scrapbukkit.some.bad.perm: {}
+-  scrapbukkit.some.other.perm: {}
+diff --git a/src/main/javadoc/overview.html b/src/main/javadoc/overview.html
+deleted file mode 100644
+index 68bab9bcee611f38019259b3bbc0c6a2b77e27d0..0000000000000000000000000000000000000000
+--- a/src/main/javadoc/overview.html
++++ /dev/null
+@@ -1,40 +0,0 @@
+-<body>
+-    <p>Bukkit, the plugin development framework.</p>
+-
+-    <p>
+-    The documentation is for developing plugins and is split into the
+-    respective packages for each subject matter. This documentation does not
+-    cover running a server, contributing code back to the project, or setting
+-    up a workspace. Working knowledge of the Java language is a prerequisite
+-    for developing plugins.
+-    </p><p>
+-    For basic plugin development, see the {@link org.bukkit.plugin plugin
+-    package}. It covers the basic requirements of a plugin jar.
+-    </p><p>
+-    For handling events and triggered code, see the {@link org.bukkit.event
+-    event package}.
+-    </p><p>
+-    Note: While the Bukkit API makes every effort to ensure stability, this is
+-    not guaranteed, especially across major versions. In particular the
+-    following is a (incomplete) list of things that are <b>not</b> API.
+-    <ul>
+-    <li>Implementing interfaces or extending classes. The Bukkit API is designed to only be
+-    implemented by server software. Unless a class/interface is obviously
+-    designed for extension (eg {@link org.bukkit.scheduler.BukkitRunnable}), or
+-    explicitly marked as such, it should not be implemented or extended by plugins. Although
+-    this can sometimes work, it is not guaranteed to do so and resulting bugs
+-    will be disregarded.</li>
+-    <li>Constructing inbuilt events. Although backwards compatibility is
+-    attempted where possible, it is sometimes not possible to add new fields to
+-    events without breaking existing constructors. To ensure that the API
+-    continues to evolve, event constructors are therefore not plugin API.</li>
+-    <li>Implementation classes. Concrete implementation classes packaged with
+-    Bukkit (eg those beginning with Simple) are not API. You should access them
+-    via their interfaces instead.</li>
+-    <li>The "enumness" of enums which implement {@link org.bukkit.Keyed}.
+-    Such enums are liable to conversion to regular classes and therefore
+-    usages deriving from their status as an enum (including, but not limited
+-    to, use in switch statements and classes such as {@link java.util.EnumSet})
+-    should be avoided.</li>
+-    </ul>
+-</body>

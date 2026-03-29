@@ -8,6 +8,7 @@ plugins {
 
 val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
 val leafMavenPublicUrl = "https://maven.leafmc.one/snapshots/"
+val mcMavenPrivateUrl = "https://repo.minecomplex.net/private"
 
 subprojects {
     apply(plugin = "java-library")
@@ -47,11 +48,9 @@ subprojects {
 
     extensions.configure<PublishingExtension> {
         repositories {
-            maven(leafMavenPublicUrl) {
-                name = "leaf"
-
-                credentials.username = System.getenv("REPO_USER")
-                credentials.password = System.getenv("REPO_PASSWORD")
+            maven(mcMavenPrivateUrl) {
+                name = "mc"
+                credentials(PasswordCredentials::class)
             }
         }
     }

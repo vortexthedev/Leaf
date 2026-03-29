@@ -9,7 +9,7 @@ public class ChatMessageSignature extends ConfigModules {
         return EnumConfigCategory.NETWORK.getBaseKeyName();
     }
 
-    public static boolean enabled = true;
+    public static boolean enabled = false;
 
     @Override
     public void onLoaded() {

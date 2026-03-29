@@ -5,10 +5,6 @@ import it.unimi.dsi.fastutil.Pair;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.util.Util;
-import org.dreeam.leaf.command.subcommands.MSPTCommand;
-import org.dreeam.leaf.command.subcommands.ReloadCommand;
-import org.dreeam.leaf.command.subcommands.VersionCommand;
-import org.jspecify.annotations.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -16,17 +12,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
+import org.dreeam.leaf.command.subcommands.MSPTCommand;
+import org.dreeam.leaf.command.subcommands.ReloadCommand;
+import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class LeafCommand extends Command {
@@ -36,13 +26,11 @@ public final class LeafCommand extends Command {
     private static final Permission basePermission = new Permission(BASE_PERM, PermissionDefault.OP);
     // subcommand label -> subcommand
     private static final LeafSubcommand RELOAD_SUBCOMMAND = new ReloadCommand();
-    private static final LeafSubcommand VERSION_SUBCOMMAND = new VersionCommand();
     private static final LeafSubcommand MSPT_SUBCOMMAND = new MSPTCommand();
     private static final Map<String, LeafSubcommand> SUBCOMMANDS = Util.make(() -> {
         final Map<Set<String>, LeafSubcommand> commands = new HashMap<>();
 
         commands.put(Set.of(ReloadCommand.LITERAL_ARGUMENT), RELOAD_SUBCOMMAND);
-        commands.put(Set.of(VersionCommand.LITERAL_ARGUMENT), VERSION_SUBCOMMAND);
         commands.put(Set.of(MSPTCommand.LITERAL_ARGUMENT), MSPT_SUBCOMMAND);
 
         return commands.entrySet().stream()
@@ -52,8 +40,6 @@ public final class LeafCommand extends Command {
     // alias -> subcommand label
     private static final Map<String, String> ALIASES = Util.make(() -> {
         final Map<String, Set<String>> aliases = new HashMap<>();
-
-        aliases.put(VersionCommand.LITERAL_ARGUMENT, Set.of("ver"));
 
         return aliases.entrySet().stream()
             .flatMap(entry -> entry.getValue().stream().map(s -> Map.entry(s, entry.getKey())))

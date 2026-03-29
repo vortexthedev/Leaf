@@ -1,0 +1,3296 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Thu, 26 Mar 2026 14:02:44 +0200
+Subject: [PATCH] Remove paper's anti-xray, useless shit, timings,
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
+deleted file mode 100644
+index da8dc6d62bb6071da150378c1daf384a24eb429f..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
++++ /dev/null
+@@ -1,30 +0,0 @@
+-package com.destroystokyo.paper;
+-
+-import static io.papermc.paper.ServerBuildInfo.StringRepresentation.VERSION_SIMPLE;
+-
+-// Gale start - branding changes - version fetcher
+-/**
+- * The original version fetcher for Paper. Most of the original content of this class has been moved to
+- * {@link org.galemc.gale.version.AbstractPaperVersionFetcher}.
+- */
+-public class PaperVersionFetcher extends org.galemc.gale.version.AbstractPaperVersionFetcher {
+-
+-    public static final String DOWNLOAD_PAGE = "https://papermc.io/downloads/paper";
+-    public static final String REPOSITORY = "PaperMC/Paper";
+-    public static final String API_URL = "https://fill.papermc.io/v3/projects/paper/versions/" + PaperVersionFetcher.BUILD_INFO.minecraftVersionId() + "/builds";
+-    public static final String USER_AGENT = BUILD_INFO.brandName() + "/" + BUILD_INFO.asString(VERSION_SIMPLE) + " (https://papermc.io)";
+-
+-    public PaperVersionFetcher() {
+-        super(
+-            DOWNLOAD_PAGE,
+-            "PaperMC",
+-            "Paper",
+-            "PaperMC",
+-            "Paper",
+-            API_URL,
+-            USER_AGENT,
+-            ApiType.FILLV3
+-        );
+-    }
+-    // Gale end - branding changes - version fetcher
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/GraphColor.java b/src/main/java/com/destroystokyo/paper/gui/GraphColor.java
+deleted file mode 100644
+index a4e641fdcccd3efcd1a2865dc6dc28d50671b995..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/gui/GraphColor.java
++++ /dev/null
+@@ -1,44 +0,0 @@
+-package com.destroystokyo.paper.gui;
+-
+-import java.awt.Color;
+-
+-public class GraphColor {
+-    private static final Color[] colorLine = new Color[101];
+-    private static final Color[] colorFill = new Color[101];
+-
+-    static {
+-        for (int i = 0; i < 101; i++) {
+-            Color color = createColor(i);
+-            colorLine[i] = new Color(color.getRed() / 2, color.getGreen() / 2, color.getBlue() / 2, 255);
+-            colorFill[i] = new Color(colorLine[i].getRed(), colorLine[i].getGreen(), colorLine[i].getBlue(), 125);
+-        }
+-    }
+-
+-    public static Color getLineColor(int percent) {
+-        return colorLine[percent];
+-    }
+-
+-    public static Color getFillColor(int percent) {
+-        return colorFill[percent];
+-    }
+-
+-    private static Color createColor(int percent) {
+-        if (percent <= 50) {
+-            return new Color(0X00FF00);
+-        }
+-
+-        int value = 510 - (int) (Math.min(Math.max(0, ((percent - 50) / 50F)), 1) * 510);
+-
+-        int red, green;
+-        if (value < 255) {
+-            red = 255;
+-            green = (int) (Math.sqrt(value) * 16);
+-        } else {
+-            green = 255;
+-            value = value - 255;
+-            red = 255 - (value * value / 255);
+-        }
+-
+-        return new Color(red, green, 0);
+-    }
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/GraphData.java b/src/main/java/com/destroystokyo/paper/gui/GraphData.java
+deleted file mode 100644
+index 186fc722965e403f76b1480e1c2381fc34e29049..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/gui/GraphData.java
++++ /dev/null
+@@ -1,47 +0,0 @@
+-package com.destroystokyo.paper.gui;
+-
+-import java.awt.Color;
+-
+-public class GraphData {
+-    private long total;
+-    private long free;
+-    private long max;
+-    private long usedMem;
+-    private int usedPercent;
+-
+-    public GraphData(long total, long free, long max) {
+-        this.total = total;
+-        this.free = free;
+-        this.max = max;
+-        this.usedMem = total - free;
+-        this.usedPercent = usedMem == 0 ? 0 : (int) (usedMem * 100L / max);
+-    }
+-
+-    public long getTotal() {
+-        return total;
+-    }
+-
+-    public long getFree() {
+-        return free;
+-    }
+-
+-    public long getMax() {
+-        return max;
+-    }
+-
+-    public long getUsedMem() {
+-        return usedMem;
+-    }
+-
+-    public int getUsedPercent() {
+-        return usedPercent;
+-    }
+-
+-    public Color getFillColor() {
+-        return GraphColor.getFillColor(usedPercent);
+-    }
+-
+-    public Color getLineColor() {
+-        return GraphColor.getLineColor(usedPercent);
+-    }
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java b/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java
+deleted file mode 100644
+index 537bc6213545e8ff1b7b51bc4b27fd5b2a740883..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java
++++ /dev/null
+@@ -1,41 +0,0 @@
+-package com.destroystokyo.paper.gui;
+-
+-import net.minecraft.server.MinecraftServer;
+-
+-import javax.swing.JPanel;
+-import javax.swing.Timer;
+-import java.awt.BorderLayout;
+-import java.awt.Dimension;
+-
+-public class GuiStatsComponent extends JPanel {
+-    private final Timer timer;
+-    private final RAMGraph ramGraph;
+-
+-    public GuiStatsComponent(MinecraftServer server) {
+-        super(new BorderLayout());
+-
+-        setOpaque(false);
+-
+-        ramGraph = new RAMGraph();
+-        RAMDetails ramDetails = new RAMDetails(server);
+-
+-        add(ramGraph, "North");
+-        add(ramDetails, "Center");
+-
+-        timer = new Timer(500, (event) -> {
+-            ramGraph.update();
+-            ramDetails.update();
+-        });
+-        timer.start();
+-    }
+-
+-    @Override
+-    public Dimension getPreferredSize() {
+-        return new Dimension(350, 200);
+-    }
+-
+-    public void close() {
+-        timer.stop();
+-        ramGraph.stop();
+-    }
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
+deleted file mode 100644
+index e2615eb244b149e860ec479128149f1acb4eb166..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
++++ /dev/null
+@@ -1,79 +0,0 @@
+-package com.destroystokyo.paper.gui;
+-
+-import net.minecraft.util.Util;
+-import net.minecraft.server.MinecraftServer;
+-import net.minecraft.util.TimeUtil;
+-
+-import javax.swing.DefaultListCellRenderer;
+-import javax.swing.DefaultListSelectionModel;
+-import javax.swing.JList;
+-import javax.swing.border.EmptyBorder;
+-import java.awt.Dimension;
+-import java.text.DecimalFormat;
+-import java.text.DecimalFormatSymbols;
+-import java.util.Locale;
+-import java.util.Vector;
+-
+-public class RAMDetails extends JList<String> {
+-    public static final DecimalFormat DECIMAL_FORMAT = Util.make(new DecimalFormat("########0.000"), (format)
+-        -> format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
+-
+-    private final MinecraftServer server;
+-
+-    public RAMDetails(MinecraftServer server) {
+-        this.server = server;
+-
+-        setBorder(new EmptyBorder(0, 10, 0, 0));
+-        setFixedCellHeight(20);
+-        setOpaque(false);
+-
+-        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+-        renderer.setOpaque(false);
+-        setCellRenderer(renderer);
+-
+-        setSelectionModel(new DefaultListSelectionModel() {
+-            @Override
+-            public void setAnchorSelectionIndex(final int anchorIndex) {
+-            }
+-
+-            @Override
+-            public void setLeadAnchorNotificationEnabled(final boolean flag) {
+-            }
+-
+-            @Override
+-            public void setLeadSelectionIndex(final int leadIndex) {
+-            }
+-
+-            @Override
+-            public void setSelectionInterval(final int index0, final int index1) {
+-            }
+-        });
+-    }
+-
+-    @Override
+-    public Dimension getPreferredSize() {
+-        return new Dimension(350, 100);
+-    }
+-
+-    public void update() {
+-        GraphData data = RAMGraph.DATA.peekLast();
+-        Vector<String> vector = new Vector<>();
+-
+-        // Follows CraftServer#getTPS
+-        double[] tps = server.getTPSIncluding5SecondsReadOnly(); // Gale - Purpur - 5 second TPS average
+-        String[] tpsAvg = new String[tps.length];
+-
+-        for ( int g = 0; g < tps.length; g++) {
+-            tpsAvg[g] = format( tps[g] );
+-        }
+-        vector.add("Memory use: " + (data.getUsedMem() / 1024L / 1024L) + " mb (" + (data.getFree() * 100L / data.getMax()) + "% free)");
+-        vector.add("Heap: " + (data.getTotal() / 1024L / 1024L) + " / " + (data.getMax() / 1024L / 1024L) + " mb");
+-        vector.add("Avg tick: " + DECIMAL_FORMAT.format((double)this.server.getAverageTickTimeNanos() / (double) TimeUtil.NANOSECONDS_PER_MILLISECOND) + " ms");
+-        vector.add("TPS from last 5s, 1m, 5m, 15m: " + String.join(", ", tpsAvg)); // Gale - Purpur - 5 second TPS average
+-        setListData(vector);
+-    }
+-
+-    private static String format(double tps) {
+-        return ( ( tps > 21.0 ) ? "*" : "" ) + Math.min( Math.round( tps * 100.0 ) / 100.0, 20.0 );
+-    }
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java b/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java
+deleted file mode 100644
+index d9275ae196681d1116a117d0475604389a6c42ee..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java
++++ /dev/null
+@@ -1,156 +0,0 @@
+-package com.destroystokyo.paper.gui;
+-
+-import javax.swing.JComponent;
+-import javax.swing.SwingUtilities;
+-import javax.swing.Timer;
+-import javax.swing.ToolTipManager;
+-import java.awt.Color;
+-import java.awt.Dimension;
+-import java.awt.Graphics;
+-import java.awt.MouseInfo;
+-import java.awt.Point;
+-import java.awt.PointerInfo;
+-import java.awt.event.MouseAdapter;
+-import java.awt.event.MouseEvent;
+-import java.text.SimpleDateFormat;
+-import java.util.Date;
+-import java.util.LinkedList;
+-import java.util.concurrent.TimeUnit;
+-
+-public class RAMGraph extends JComponent {
+-    public static final LinkedList<GraphData> DATA = new LinkedList<GraphData>() {
+-        @Override
+-        public boolean add(GraphData data) {
+-            if (size() >= 348) {
+-                remove();
+-            }
+-            return super.add(data);
+-        }
+-    };
+-
+-    static {
+-        GraphData empty = new GraphData(0, 0, 0);
+-        for (int i = 0; i < 350; i++) {
+-            DATA.add(empty);
+-        }
+-    }
+-
+-    private final Timer timer;
+-    private final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
+-
+-    private int currentTick;
+-
+-    public RAMGraph() {
+-        ToolTipManager.sharedInstance().setInitialDelay(0);
+-
+-        addMouseListener(new MouseAdapter() {
+-            final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+-            final int dismissDelayMinutes = (int) TimeUnit.MINUTES.toMillis(10);
+-
+-            @Override
+-            public void mouseEntered(MouseEvent me) {
+-                ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
+-            }
+-
+-            @Override
+-            public void mouseExited(MouseEvent me) {
+-                ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
+-            }
+-        });
+-
+-        timer = new Timer(50, (event) -> repaint());
+-        timer.start();
+-    }
+-
+-    @Override
+-    public Dimension getPreferredSize() {
+-        return new Dimension(350, 110);
+-    }
+-
+-    public void update() {
+-        Runtime jvm = Runtime.getRuntime();
+-        DATA.add(new GraphData(jvm.totalMemory(), jvm.freeMemory(), jvm.maxMemory()));
+-
+-        PointerInfo pointerInfo = null;
+-        // I think I recall spotting a bug report where this throw an exception once
+-        // not sure it's of concern here
+-        try {
+-            pointerInfo = MouseInfo.getPointerInfo();
+-        } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
+-            // https://bugs.openjdk.org/browse/JDK-6840067
+-        }
+-        if (pointerInfo != null) {
+-            Point point = pointerInfo.getLocation();
+-            if (point != null) {
+-                Point loc = new Point(point);
+-                SwingUtilities.convertPointFromScreen(loc, this);
+-                if (this.contains(loc)) {
+-                    ToolTipManager.sharedInstance().mouseMoved(
+-                        new MouseEvent(this, -1, System.currentTimeMillis(), 0, loc.x, loc.y,
+-                            point.x, point.y, 0, false, 0));
+-                }
+-            }
+-        }
+-
+-        currentTick++;
+-    }
+-
+-    @Override
+-    public void paint(Graphics graphics) {
+-        graphics.setColor(new Color(0xFFFFFFFF));
+-        graphics.fillRect(0, 0, 350, 100);
+-
+-        graphics.setColor(new Color(0x888888));
+-        graphics.drawLine(1, 25, 348, 25);
+-        graphics.drawLine(1, 50, 348, 50);
+-        graphics.drawLine(1, 75, 348, 75);
+-
+-        int i = 0;
+-        for (GraphData data : DATA) {
+-            i++;
+-            if ((i + currentTick) % 120 == 0) {
+-                graphics.setColor(new Color(0x888888));
+-                graphics.drawLine(i, 1, i, 99);
+-            }
+-            int used = data.getUsedPercent();
+-            if (used > 0) {
+-                Color color = data.getLineColor();
+-                graphics.setColor(data.getFillColor());
+-                graphics.fillRect(i, 100 - used, 1, used);
+-                graphics.setColor(color);
+-                graphics.fillRect(i, 100 - used, 1, 1);
+-            }
+-        }
+-
+-        graphics.setColor(new Color(0xFF000000));
+-        graphics.drawRect(0, 0, 348, 100);
+-
+-        Point m = null;
+-        try {
+-            m = getMousePosition();
+-        } catch (NullPointerException ignored) {
+-            // https://bugs.openjdk.org/browse/JDK-6840067
+-        }
+-        if (m != null && m.x > 0 && m.x < 348 && m.y > 0 && m.y < 100) {
+-            GraphData data = DATA.get(m.x);
+-            int used = data.getUsedPercent();
+-            graphics.setColor(new Color(0x000000));
+-            graphics.drawLine(m.x, 1, m.x, 99);
+-            graphics.drawOval(m.x - 2, 100 - used - 2, 5, 5);
+-            graphics.setColor(data.getLineColor());
+-            graphics.fillOval(m.x - 2, 100 - used - 2, 5, 5);
+-            setToolTipText(String.format("<html><body>Used: %s mb (%s%%)<br/>%s</body></html>",
+-                Math.round(data.getUsedMem() / 1024F / 1024F),
+-                used, getTime(m.x)));
+-        }
+-    }
+-
+-    public String getTime(int halfSeconds) {
+-        int millis = (348 - halfSeconds) / 2 * 1000;
+-        return TIME_FORMAT.format(new Date((System.currentTimeMillis() - millis)));
+-    }
+-
+-    public void stop() {
+-        timer.stop();
+-    }
+-}
+diff --git a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
+deleted file mode 100644
+index 605a4a83d0a098a9977da00c710e798396dc5256..0000000000000000000000000000000000000000
+--- a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
++++ /dev/null
+@@ -1,177 +0,0 @@
+-package com.destroystokyo.paper.io;
+-
+-import com.google.gson.JsonArray;
+-import com.google.gson.JsonObject;
+-import com.mojang.datafixers.util.Pair;
+-import it.unimi.dsi.fastutil.longs.Long2IntMap;
+-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.WeakHashMap;
+-import net.minecraft.world.level.ChunkPos;
+-import net.minecraft.world.level.Level;
+-
+-public class SyncLoadFinder {
+-
+-    public static final boolean ENABLED = Boolean.getBoolean("paper.debug-sync-loads");
+-
+-    private static final WeakHashMap<Level, Object2ObjectOpenHashMap<ThrowableWithEquals, SyncLoadInformation>> SYNC_LOADS = new WeakHashMap<>();
+-
+-    private static final class SyncLoadInformation {
+-
+-        public int times;
+-
+-        public final Long2IntOpenHashMap coordinateTimes = new Long2IntOpenHashMap();
+-    }
+-
+-    public static void clear() {
+-        SYNC_LOADS.clear();
+-    }
+-
+-    public static void logSyncLoad(final Level world, final int chunkX, final int chunkZ) {
+-        if (!ENABLED) {
+-            return;
+-        }
+-
+-        final ThrowableWithEquals stacktrace = new ThrowableWithEquals(Thread.currentThread().getStackTrace());
+-
+-        SYNC_LOADS.compute(world, (final Level keyInMap, Object2ObjectOpenHashMap<ThrowableWithEquals, SyncLoadInformation> map) -> {
+-            if (map == null) {
+-                map = new Object2ObjectOpenHashMap<>();
+-            }
+-
+-            map.compute(stacktrace, (ThrowableWithEquals keyInMap0, SyncLoadInformation valueInMap) -> {
+-                if (valueInMap == null) {
+-                    valueInMap = new SyncLoadInformation();
+-                }
+-
+-                ++valueInMap.times;
+-
+-                valueInMap.coordinateTimes.compute(ChunkPos.asLong(chunkX, chunkZ), (Long keyInMap1, Integer valueInMap1) -> {
+-                    return valueInMap1 == null ? Integer.valueOf(1) : Integer.valueOf(valueInMap1.intValue() + 1);
+-                });
+-
+-                return valueInMap;
+-            });
+-
+-            return map;
+-        });
+-    }
+-
+-    public static JsonObject serialize() {
+-        final JsonObject ret = new JsonObject();
+-
+-        final JsonArray worldsData = new JsonArray();
+-
+-        for (final Map.Entry<Level, Object2ObjectOpenHashMap<ThrowableWithEquals, SyncLoadInformation>> entry : SYNC_LOADS.entrySet()) {
+-            final Level world = entry.getKey();
+-
+-            final JsonObject worldData = new JsonObject();
+-
+-            worldData.addProperty("name", world.getWorld().getName());
+-
+-            final List<Pair<ThrowableWithEquals, SyncLoadInformation>> data = new ArrayList<>();
+-
+-            entry.getValue().forEach((ThrowableWithEquals stacktrace, SyncLoadInformation times) -> {
+-                data.add(new Pair<>(stacktrace, times));
+-            });
+-
+-            data.sort((Pair<ThrowableWithEquals, SyncLoadInformation> pair1, Pair<ThrowableWithEquals, SyncLoadInformation> pair2) -> {
+-                return Integer.compare(pair2.getSecond().times, pair1.getSecond().times); // reverse order
+-            });
+-
+-            final JsonArray stacktraces = new JsonArray();
+-
+-            for (Pair<ThrowableWithEquals, SyncLoadInformation> pair : data) {
+-                final JsonObject stacktrace = new JsonObject();
+-
+-                stacktrace.addProperty("times", pair.getSecond().times);
+-
+-                final JsonArray traces = new JsonArray();
+-
+-                for (StackTraceElement element : pair.getFirst().stacktrace) {
+-                    traces.add(String.valueOf(element));
+-                }
+-
+-                stacktrace.add("stacktrace", traces);
+-
+-                final JsonArray coordinates = new JsonArray();
+-
+-                for (Long2IntMap.Entry coordinate : pair.getSecond().coordinateTimes.long2IntEntrySet()) {
+-                    final long key = coordinate.getLongKey();
+-                    final int times = coordinate.getIntValue();
+-                    final ChunkPos chunkPos = new ChunkPos(key);
+-                    coordinates.add("(" + chunkPos.x + "," + chunkPos.z + "): " + times);
+-                }
+-
+-                stacktrace.add("coordinates", coordinates);
+-
+-                stacktraces.add(stacktrace);
+-            }
+-
+-
+-            worldData.add("stacktraces", stacktraces);
+-            worldsData.add(worldData);
+-        }
+-
+-        ret.add("worlds", worldsData);
+-
+-        return ret;
+-    }
+-
+-    static final class ThrowableWithEquals {
+-
+-        private final StackTraceElement[] stacktrace;
+-        private final int hash;
+-
+-        public ThrowableWithEquals(final StackTraceElement[] stacktrace) {
+-            this.stacktrace = stacktrace;
+-            this.hash = ThrowableWithEquals.hash(stacktrace);
+-        }
+-
+-        public static int hash(final StackTraceElement[] stacktrace) {
+-            int hash = 0;
+-
+-            for (int i = 0; i < stacktrace.length; ++i) {
+-                hash *= 31;
+-                hash += stacktrace[i].hashCode();
+-            }
+-
+-            return hash;
+-        }
+-
+-        @Override
+-        public int hashCode() {
+-            return this.hash;
+-        }
+-
+-        @Override
+-        public boolean equals(final Object obj) {
+-            if (obj == null || obj.getClass() != this.getClass()) {
+-                return false;
+-            }
+-
+-            final ThrowableWithEquals other = (ThrowableWithEquals)obj;
+-            final StackTraceElement[] otherStackTrace = other.stacktrace;
+-
+-            if (this.stacktrace.length != otherStackTrace.length || this.hash != other.hash) {
+-                return false;
+-            }
+-
+-            if (this == obj) {
+-                return true;
+-            }
+-
+-            for (int i = 0; i < this.stacktrace.length; ++i) {
+-                if (!this.stacktrace[i].equals(otherStackTrace[i])) {
+-                    return false;
+-                }
+-            }
+-
+-            return true;
+-        }
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/antixray/BitStorageReader.java b/src/main/java/io/papermc/paper/antixray/BitStorageReader.java
+deleted file mode 100644
+index c27703775c845a8b0bd1b0cb8f05eb736d8a813c..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/antixray/BitStorageReader.java
++++ /dev/null
+@@ -1,51 +0,0 @@
+-package io.papermc.paper.antixray;
+-
+-public final class BitStorageReader {
+-
+-    private byte[] buffer;
+-    private int bits;
+-    private int mask;
+-    private int longInBufferIndex;
+-    private int bitInLongIndex;
+-    private long current;
+-
+-    public void setBuffer(byte[] buffer) {
+-        this.buffer = buffer;
+-    }
+-
+-    public void setBits(int bits) {
+-        this.bits = bits;
+-        mask = (1 << bits) - 1;
+-    }
+-
+-    public void setIndex(int index) {
+-        longInBufferIndex = index;
+-        bitInLongIndex = 0;
+-        init();
+-    }
+-
+-    private void init() {
+-        if (buffer.length > longInBufferIndex + 7) {
+-            current = ((((long) buffer[longInBufferIndex]) << 56)
+-                | (((long) buffer[longInBufferIndex + 1] & 0xff) << 48)
+-                | (((long) buffer[longInBufferIndex + 2] & 0xff) << 40)
+-                | (((long) buffer[longInBufferIndex + 3] & 0xff) << 32)
+-                | (((long) buffer[longInBufferIndex + 4] & 0xff) << 24)
+-                | (((long) buffer[longInBufferIndex + 5] & 0xff) << 16)
+-                | (((long) buffer[longInBufferIndex + 6] & 0xff) << 8)
+-                | (((long) buffer[longInBufferIndex + 7] & 0xff)));
+-        }
+-    }
+-
+-    public int read() {
+-        if (bitInLongIndex + bits > 64) {
+-            bitInLongIndex = 0;
+-            longInBufferIndex += 8;
+-            init();
+-        }
+-
+-        int value = (int) (current >>> bitInLongIndex) & mask;
+-        bitInLongIndex += bits;
+-        return value;
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/antixray/BitStorageWriter.java b/src/main/java/io/papermc/paper/antixray/BitStorageWriter.java
+deleted file mode 100644
+index 83412e0ddaade11eb7ac7b41bb8ae5b085802775..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/antixray/BitStorageWriter.java
++++ /dev/null
+@@ -1,79 +0,0 @@
+-package io.papermc.paper.antixray;
+-
+-public final class BitStorageWriter {
+-
+-    private byte[] buffer;
+-    private int bits;
+-    private long mask;
+-    private int longInBufferIndex;
+-    private int bitInLongIndex;
+-    private long current;
+-    private boolean dirty;
+-
+-    public void setBuffer(byte[] buffer) {
+-        this.buffer = buffer;
+-    }
+-
+-    public void setBits(int bits) {
+-        this.bits = bits;
+-        mask = (1L << bits) - 1;
+-    }
+-
+-    public void setIndex(int index) {
+-        longInBufferIndex = index;
+-        bitInLongIndex = 0;
+-        init();
+-    }
+-
+-    private void init() {
+-        if (buffer.length > longInBufferIndex + 7) {
+-            current = ((((long) buffer[longInBufferIndex]) << 56)
+-                | (((long) buffer[longInBufferIndex + 1] & 0xff) << 48)
+-                | (((long) buffer[longInBufferIndex + 2] & 0xff) << 40)
+-                | (((long) buffer[longInBufferIndex + 3] & 0xff) << 32)
+-                | (((long) buffer[longInBufferIndex + 4] & 0xff) << 24)
+-                | (((long) buffer[longInBufferIndex + 5] & 0xff) << 16)
+-                | (((long) buffer[longInBufferIndex + 6] & 0xff) << 8)
+-                | (((long) buffer[longInBufferIndex + 7] & 0xff)));
+-        }
+-
+-        dirty = false;
+-    }
+-
+-    public void flush() {
+-        if (dirty && buffer.length > longInBufferIndex + 7) {
+-            buffer[longInBufferIndex] = (byte) (current >> 56 & 0xff);
+-            buffer[longInBufferIndex + 1] = (byte) (current >> 48 & 0xff);
+-            buffer[longInBufferIndex + 2] = (byte) (current >> 40 & 0xff);
+-            buffer[longInBufferIndex + 3] = (byte) (current >> 32 & 0xff);
+-            buffer[longInBufferIndex + 4] = (byte) (current >> 24 & 0xff);
+-            buffer[longInBufferIndex + 5] = (byte) (current >> 16 & 0xff);
+-            buffer[longInBufferIndex + 6] = (byte) (current >> 8 & 0xff);
+-            buffer[longInBufferIndex + 7] = (byte) (current & 0xff);
+-        }
+-    }
+-
+-    public void write(int value) {
+-        if (bitInLongIndex + bits > 64) {
+-            flush();
+-            bitInLongIndex = 0;
+-            longInBufferIndex += 8;
+-            init();
+-        }
+-
+-        current = current & ~(mask << bitInLongIndex) | (value & mask) << bitInLongIndex;
+-        dirty = true;
+-        bitInLongIndex += bits;
+-    }
+-
+-    public void skip() {
+-        bitInLongIndex += bits;
+-
+-        if (bitInLongIndex > 64) {
+-            flush();
+-            bitInLongIndex = bits;
+-            longInBufferIndex += 8;
+-            init();
+-        }
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
+deleted file mode 100644
+index 568d12d006996258e6b007622add1a059e475708..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
++++ /dev/null
+@@ -1,46 +0,0 @@
+-package io.papermc.paper.antixray;
+-
+-import net.minecraft.core.BlockPos;
+-import net.minecraft.core.Direction;
+-import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+-import net.minecraft.server.level.ServerPlayer;
+-import net.minecraft.server.level.ServerPlayerGameMode;
+-import net.minecraft.world.level.ChunkPos;
+-import net.minecraft.world.level.Level;
+-import net.minecraft.world.level.block.Block;
+-import net.minecraft.world.level.block.state.BlockState;
+-import net.minecraft.world.level.chunk.LevelChunk;
+-
+-public class ChunkPacketBlockController {
+-
+-    public static final ChunkPacketBlockController NO_OPERATION_INSTANCE = new ChunkPacketBlockController();
+-
+-    protected ChunkPacketBlockController() {
+-
+-    }
+-
+-    public BlockState[] getPresetBlockStates(Level level, ChunkPos chunkPos, int chunkSectionY) {
+-        return null;
+-    }
+-
+-    public boolean shouldModify(ServerPlayer player, LevelChunk chunk) {
+-        return false;
+-    }
+-
+-    public ChunkPacketInfo<BlockState> getChunkPacketInfo(ClientboundLevelChunkWithLightPacket chunkPacket, LevelChunk chunk) {
+-        return null;
+-    }
+-
+-    public void modifyBlocks(ClientboundLevelChunkWithLightPacket chunkPacket, ChunkPacketInfo<BlockState> chunkPacketInfo) {
+-        chunkPacket.setReady(true);
+-    }
+-
+-    public void onBlockChange(Level level, BlockPos blockPos, BlockState newBlockState, BlockState oldBlockState, @Block.UpdateFlags int flags, int maxUpdateDepth) {
+-
+-    }
+-
+-    public void onPlayerLeftClickBlock(ServerPlayerGameMode serverPlayerGameMode, BlockPos blockPos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence) {
+-
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
+deleted file mode 100644
+index d27a17a155df98b3f35d8fc1b896c81d6c1619b2..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
++++ /dev/null
+@@ -1,677 +0,0 @@
+-package io.papermc.paper.antixray;
+-
+-import io.papermc.paper.configuration.WorldConfiguration;
+-import io.papermc.paper.configuration.type.EngineMode;
+-import java.util.ArrayList;
+-import java.util.LinkedHashSet;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.Set;
+-import java.util.concurrent.Executor;
+-import java.util.concurrent.ThreadLocalRandom;
+-import java.util.function.IntSupplier;
+-import net.minecraft.core.BlockPos;
+-import net.minecraft.core.Direction;
+-import net.minecraft.core.registries.Registries;
+-import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+-import net.minecraft.server.MinecraftServer;
+-import net.minecraft.server.level.ServerLevel;
+-import net.minecraft.server.level.ServerPlayer;
+-import net.minecraft.server.level.ServerPlayerGameMode;
+-import net.minecraft.world.level.ChunkPos;
+-import net.minecraft.world.level.Level;
+-import net.minecraft.world.level.biome.Biomes;
+-import net.minecraft.world.level.block.Block;
+-import net.minecraft.world.level.block.Blocks;
+-import net.minecraft.world.level.block.EntityBlock;
+-import net.minecraft.world.level.block.state.BlockState;
+-import net.minecraft.world.level.chunk.EmptyLevelChunk;
+-import net.minecraft.world.level.chunk.GlobalPalette;
+-import net.minecraft.world.level.chunk.LevelChunk;
+-import net.minecraft.world.level.chunk.LevelChunkSection;
+-import net.minecraft.world.level.chunk.MissingPaletteEntryException;
+-import net.minecraft.world.level.chunk.Palette;
+-import net.minecraft.world.level.chunk.PaletteResize;
+-import org.bukkit.Bukkit;
+-
+-public final class ChunkPacketBlockControllerAntiXray extends ChunkPacketBlockController {
+-
+-    private static final Palette<BlockState> GLOBAL_BLOCKSTATE_PALETTE = new GlobalPalette<>(Block.BLOCK_STATE_REGISTRY);
+-    private static final LevelChunkSection EMPTY_SECTION = null;
+-    private final Executor executor;
+-    private final EngineMode engineMode;
+-    private final int maxBlockHeight;
+-    private final int updateRadius;
+-    private final boolean usePermission;
+-    private final BlockState[] presetBlockStates;
+-    private final BlockState[] presetBlockStatesFull;
+-    private final BlockState[] presetBlockStatesStone;
+-    private final BlockState[] presetBlockStatesDeepslate;
+-    private final BlockState[] presetBlockStatesNetherrack;
+-    private final BlockState[] presetBlockStatesEndStone;
+-    private final int[] presetBlockStateBitsGlobal;
+-    private final int[] presetBlockStateBitsStoneGlobal;
+-    private final int[] presetBlockStateBitsDeepslateGlobal;
+-    private final int[] presetBlockStateBitsNetherrackGlobal;
+-    private final int[] presetBlockStateBitsEndStoneGlobal;
+-    private final boolean[] solidGlobal = new boolean[Block.BLOCK_STATE_REGISTRY.size()];
+-    private final boolean[] obfuscateGlobal = new boolean[Block.BLOCK_STATE_REGISTRY.size()];
+-    private final LevelChunkSection[] emptyNearbyChunkSections = {EMPTY_SECTION, EMPTY_SECTION, EMPTY_SECTION, EMPTY_SECTION};
+-    private final int maxBlockHeightUpdatePosition;
+-
+-    public ChunkPacketBlockControllerAntiXray(Level level, Executor executor) {
+-        this.executor = executor;
+-        WorldConfiguration.Anticheat.AntiXray paperWorldConfig = level.paperConfig().anticheat.antiXray;
+-        engineMode = paperWorldConfig.engineMode;
+-        maxBlockHeight = paperWorldConfig.maxBlockHeight >> 4 << 4;
+-        updateRadius = paperWorldConfig.updateRadius;
+-        usePermission = paperWorldConfig.usePermission;
+-        List<Block> toObfuscate;
+-
+-        if (engineMode == EngineMode.HIDE) {
+-            toObfuscate = paperWorldConfig.hiddenBlocks;
+-            presetBlockStates = null;
+-            presetBlockStatesFull = null;
+-            presetBlockStatesStone = new BlockState[]{Blocks.STONE.defaultBlockState()};
+-            presetBlockStatesDeepslate = new BlockState[]{Blocks.DEEPSLATE.defaultBlockState()};
+-            presetBlockStatesNetherrack = new BlockState[]{Blocks.NETHERRACK.defaultBlockState()};
+-            presetBlockStatesEndStone = new BlockState[]{Blocks.END_STONE.defaultBlockState()};
+-            presetBlockStateBitsGlobal = null;
+-            presetBlockStateBitsStoneGlobal = new int[]{GLOBAL_BLOCKSTATE_PALETTE.idFor(Blocks.STONE.defaultBlockState(), PaletteResize.noResizeExpected())};
+-            presetBlockStateBitsDeepslateGlobal = new int[]{GLOBAL_BLOCKSTATE_PALETTE.idFor(Blocks.DEEPSLATE.defaultBlockState(), PaletteResize.noResizeExpected())};
+-            presetBlockStateBitsNetherrackGlobal = new int[]{GLOBAL_BLOCKSTATE_PALETTE.idFor(Blocks.NETHERRACK.defaultBlockState(), PaletteResize.noResizeExpected())};
+-            presetBlockStateBitsEndStoneGlobal = new int[]{GLOBAL_BLOCKSTATE_PALETTE.idFor(Blocks.END_STONE.defaultBlockState(), PaletteResize.noResizeExpected())};
+-        } else {
+-            toObfuscate = new ArrayList<>(paperWorldConfig.replacementBlocks);
+-            List<BlockState> presetBlockStateList = new LinkedList<>();
+-
+-            for (Block block : paperWorldConfig.hiddenBlocks) {
+-
+-                if (!(block instanceof EntityBlock)) {
+-                    toObfuscate.add(block);
+-                    presetBlockStateList.add(block.defaultBlockState());
+-                }
+-            }
+-
+-            // The doc of the LinkedHashSet(Collection<? extends E>) constructor doesn't specify that the insertion order is the predictable iteration order of the specified Collection, although it is in the implementation
+-            Set<BlockState> presetBlockStateSet = new LinkedHashSet<>();
+-            // Therefore addAll(Collection<? extends E>) is used, which guarantees this order in the doc
+-            presetBlockStateSet.addAll(presetBlockStateList);
+-            presetBlockStates = presetBlockStateSet.isEmpty() ? new BlockState[]{Blocks.DIAMOND_ORE.defaultBlockState()} : presetBlockStateSet.toArray(new BlockState[0]);
+-            presetBlockStatesFull = presetBlockStateSet.isEmpty() ? new BlockState[]{Blocks.DIAMOND_ORE.defaultBlockState()} : presetBlockStateList.toArray(new BlockState[0]);
+-            presetBlockStatesStone = null;
+-            presetBlockStatesDeepslate = null;
+-            presetBlockStatesNetherrack = null;
+-            presetBlockStatesEndStone = null;
+-            presetBlockStateBitsGlobal = new int[presetBlockStatesFull.length];
+-
+-            for (int i = 0; i < presetBlockStatesFull.length; i++) {
+-                presetBlockStateBitsGlobal[i] = GLOBAL_BLOCKSTATE_PALETTE.idFor(presetBlockStatesFull[i], PaletteResize.noResizeExpected());
+-            }
+-
+-            presetBlockStateBitsStoneGlobal = null;
+-            presetBlockStateBitsDeepslateGlobal = null;
+-            presetBlockStateBitsNetherrackGlobal = null;
+-            presetBlockStateBitsEndStoneGlobal = null;
+-        }
+-
+-        for (Block block : toObfuscate) {
+-
+-            // Don't obfuscate air because air causes unnecessary block updates and causes block updates to fail in the void
+-            if (block != null && !block.defaultBlockState().isAir()) {
+-                // Replace all block states of a specified block
+-                for (BlockState blockState : block.getStateDefinition().getPossibleStates()) {
+-                    obfuscateGlobal[GLOBAL_BLOCKSTATE_PALETTE.idFor(blockState, PaletteResize.noResizeExpected())] = true;
+-                }
+-            }
+-        }
+-
+-        EmptyLevelChunk emptyChunk = new EmptyLevelChunk(level, new ChunkPos(0, 0), MinecraftServer.getServer().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS));
+-        BlockPos zeroPos = new BlockPos(0, 0, 0);
+-
+-        for (int i = 0; i < solidGlobal.length; i++) {
+-            BlockState blockState = GLOBAL_BLOCKSTATE_PALETTE.valueFor(i);
+-
+-            if (blockState != null) {
+-                solidGlobal[i] = blockState.isRedstoneConductor(emptyChunk, zeroPos)
+-                    && !blockState.is(Blocks.SPAWNER) && !blockState.is(Blocks.BARRIER) && !blockState.is(Blocks.SHULKER_BOX) && !blockState.is(Blocks.SLIME_BLOCK) && !blockState.is(Blocks.MANGROVE_ROOTS) || paperWorldConfig.lavaObscures && blockState == Blocks.LAVA.defaultBlockState();
+-                // Comparing blockState == Blocks.LAVA.defaultBlockState() instead of blockState.is(Blocks.LAVA) ensures that only "stationary lava" is used
+-                // shulker box checks TE.
+-            }
+-        }
+-
+-        maxBlockHeightUpdatePosition = maxBlockHeight + updateRadius - 1;
+-    }
+-
+-    private int getPresetBlockStatesFullLength() {
+-        return engineMode == EngineMode.HIDE ? 1 : presetBlockStatesFull.length;
+-    }
+-
+-    @Override
+-    public BlockState[] getPresetBlockStates(Level level, ChunkPos chunkPos, int chunkSectionY) {
+-        // Return the block states to be added to the paletted containers so that they can be used for obfuscation
+-        int bottomBlockY = chunkSectionY << 4;
+-
+-        if (bottomBlockY < maxBlockHeight) {
+-            if (engineMode == EngineMode.HIDE) {
+-                return switch (level.getWorld().getEnvironment()) {
+-                    case NETHER -> presetBlockStatesNetherrack;
+-                    case THE_END -> presetBlockStatesEndStone;
+-                    default -> bottomBlockY < 0 ? presetBlockStatesDeepslate : presetBlockStatesStone;
+-                };
+-            }
+-
+-            return presetBlockStates;
+-        }
+-
+-        return null;
+-    }
+-
+-    @Override
+-    public boolean shouldModify(ServerPlayer player, LevelChunk chunk) {
+-        return !usePermission || !player.getBukkitEntity().hasPermission("paper.antixray.bypass");
+-    }
+-
+-    @Override
+-    public ChunkPacketInfoAntiXray getChunkPacketInfo(ClientboundLevelChunkWithLightPacket chunkPacket, LevelChunk chunk) {
+-        // Return a new instance to collect data and objects in the right state while creating the chunk packet for thread safe access later
+-        return new ChunkPacketInfoAntiXray(chunkPacket, chunk, this);
+-    }
+-
+-    @Override
+-    public void modifyBlocks(ClientboundLevelChunkWithLightPacket chunkPacket, ChunkPacketInfo<BlockState> chunkPacketInfo) {
+-        if (!(chunkPacketInfo instanceof ChunkPacketInfoAntiXray)) {
+-            chunkPacket.setReady(true);
+-            return;
+-        }
+-
+-        if (!Bukkit.isPrimaryThread() && !(Thread.currentThread() instanceof org.dreeam.leaf.async.chunk.AsyncChunkSendThread)) { // Leaf - Async chunk sending
+-            // Plugins?
+-            MinecraftServer.getServer().scheduleOnMain(() -> modifyBlocks(chunkPacket, chunkPacketInfo));
+-            return;
+-        }
+-
+-        LevelChunk chunk = chunkPacketInfo.getChunk();
+-        int x = chunk.getPos().x;
+-        int z = chunk.getPos().z;
+-        Level level = chunk.getLevel();
+-        ((ChunkPacketInfoAntiXray) chunkPacketInfo).setNearbyChunks(level.getChunkIfLoaded(x - 1, z), level.getChunkIfLoaded(x + 1, z), level.getChunkIfLoaded(x, z - 1), level.getChunkIfLoaded(x, z + 1));
+-        executor.execute((Runnable) chunkPacketInfo);
+-    }
+-
+-    // Actually these fields should be variables inside the obfuscate method but in sync mode or with SingleThreadExecutor in async mode it's okay (even without ThreadLocal)
+-    // If an ExecutorService with multiple threads is used, ThreadLocal must be used here
+-    private final ThreadLocal<int[]> presetBlockStateBits = ThreadLocal.withInitial(() -> new int[getPresetBlockStatesFullLength()]);
+-    private static final ThreadLocal<boolean[]> SOLID = ThreadLocal.withInitial(() -> new boolean[Block.BLOCK_STATE_REGISTRY.size()]);
+-    private static final ThreadLocal<boolean[]> OBFUSCATE = ThreadLocal.withInitial(() -> new boolean[Block.BLOCK_STATE_REGISTRY.size()]);
+-    // These boolean arrays represent chunk layers, true means don't obfuscate, false means obfuscate
+-    private static final ThreadLocal<boolean[][]> CURRENT = ThreadLocal.withInitial(() -> new boolean[16][16]);
+-    private static final ThreadLocal<boolean[][]> NEXT = ThreadLocal.withInitial(() -> new boolean[16][16]);
+-    private static final ThreadLocal<boolean[][]> NEXT_NEXT = ThreadLocal.withInitial(() -> new boolean[16][16]);
+-
+-    public void obfuscate(ChunkPacketInfoAntiXray chunkPacketInfoAntiXray) {
+-        int[] presetBlockStateBits = this.presetBlockStateBits.get();
+-        boolean[] solid = SOLID.get();
+-        boolean[] obfuscate = OBFUSCATE.get();
+-        boolean[][] current = CURRENT.get();
+-        boolean[][] next = NEXT.get();
+-        boolean[][] nextNext = NEXT_NEXT.get();
+-        // bitStorageReader, bitStorageWriter and nearbyChunkSections could also be reused (with ThreadLocal if necessary) but it's not worth it
+-        BitStorageReader bitStorageReader = new BitStorageReader();
+-        BitStorageWriter bitStorageWriter = new BitStorageWriter();
+-        LevelChunkSection[] nearbyChunkSections = new LevelChunkSection[4];
+-        LevelChunk chunk = chunkPacketInfoAntiXray.getChunk();
+-        Level level = chunk.getLevel();
+-        int maxChunkSectionIndex = Math.min((maxBlockHeight >> 4) - chunk.getMinSectionY(), chunk.getSectionsCount()) - 1;
+-        boolean[] solidTemp = null;
+-        boolean[] obfuscateTemp = null;
+-        bitStorageReader.setBuffer(chunkPacketInfoAntiXray.getBuffer());
+-        bitStorageWriter.setBuffer(chunkPacketInfoAntiXray.getBuffer());
+-        int numberOfBlocks = presetBlockStateBits.length;
+-        // Keep the lambda expressions as simple as possible. They are used very frequently.
+-        LayeredIntSupplier random = numberOfBlocks == 1 ? (() -> 0) : engineMode == EngineMode.OBFUSCATE_LAYER ? new LayeredIntSupplier() {
+-            // engine-mode: 3
+-            private int state;
+-            private int next;
+-
+-            {
+-                while ((state = ThreadLocalRandom.current().nextInt()) == 0) ;
+-            }
+-
+-            @Override
+-            public void nextLayer() {
+-                // https://en.wikipedia.org/wiki/Xorshift
+-                state ^= state << 13;
+-                state ^= state >>> 17;
+-                state ^= state << 5;
+-                // https://www.pcg-random.org/posts/bounded-rands.html
+-                next = (int) ((Integer.toUnsignedLong(state) * numberOfBlocks) >>> 32);
+-            }
+-
+-            @Override
+-            public int getAsInt() {
+-                return next;
+-            }
+-        } : new LayeredIntSupplier() {
+-            // engine-mode: 2
+-            private int state;
+-
+-            {
+-                while ((state = ThreadLocalRandom.current().nextInt()) == 0) ;
+-            }
+-
+-            @Override
+-            public int getAsInt() {
+-                // https://en.wikipedia.org/wiki/Xorshift
+-                state ^= state << 13;
+-                state ^= state >>> 17;
+-                state ^= state << 5;
+-                // https://www.pcg-random.org/posts/bounded-rands.html
+-                return (int) ((Integer.toUnsignedLong(state) * numberOfBlocks) >>> 32);
+-            }
+-        };
+-
+-        for (int chunkSectionIndex = 0; chunkSectionIndex <= maxChunkSectionIndex; chunkSectionIndex++) {
+-            if (chunkPacketInfoAntiXray.isWritten(chunkSectionIndex) && chunkPacketInfoAntiXray.getPresetValues(chunkSectionIndex) != null) {
+-                int[] presetBlockStateBitsTemp;
+-
+-                if (chunkPacketInfoAntiXray.getPalette(chunkSectionIndex) instanceof GlobalPalette) {
+-                    if (engineMode == EngineMode.HIDE) {
+-                        presetBlockStateBitsTemp = switch (level.getWorld().getEnvironment()) {
+-                            case NETHER -> presetBlockStateBitsNetherrackGlobal;
+-                            case THE_END -> presetBlockStateBitsEndStoneGlobal;
+-                            default -> chunkSectionIndex + chunk.getMinSectionY() < 0 ? presetBlockStateBitsDeepslateGlobal : presetBlockStateBitsStoneGlobal;
+-                        };
+-                    } else {
+-                        presetBlockStateBitsTemp = presetBlockStateBitsGlobal;
+-                    }
+-                } else {
+-                    // If it's presetBlockStates, use this.presetBlockStatesFull instead
+-                    BlockState[] presetBlockStatesFull = chunkPacketInfoAntiXray.getPresetValues(chunkSectionIndex) == presetBlockStates ? this.presetBlockStatesFull : chunkPacketInfoAntiXray.getPresetValues(chunkSectionIndex);
+-                    presetBlockStateBitsTemp = presetBlockStateBits;
+-
+-                    for (int i = 0; i < presetBlockStateBitsTemp.length; i++) {
+-                        // This is thread safe because we only request IDs that are guaranteed to be in the palette and are visible
+-                        // For more details see the comments in the readPalette method
+-                        presetBlockStateBitsTemp[i] = chunkPacketInfoAntiXray.getPalette(chunkSectionIndex).idFor(presetBlockStatesFull[i], PaletteResize.noResizeExpected());
+-                    }
+-                }
+-
+-                bitStorageWriter.setIndex(chunkPacketInfoAntiXray.getIndex(chunkSectionIndex));
+-
+-                // Check if the chunk section below was not obfuscated
+-                if (chunkSectionIndex == 0 || !chunkPacketInfoAntiXray.isWritten(chunkSectionIndex - 1) || chunkPacketInfoAntiXray.getPresetValues(chunkSectionIndex - 1) == null) {
+-                    // If so, initialize some stuff
+-                    bitStorageReader.setBits(chunkPacketInfoAntiXray.getBits(chunkSectionIndex));
+-                    bitStorageReader.setIndex(chunkPacketInfoAntiXray.getIndex(chunkSectionIndex));
+-                    solidTemp = readPalette(chunkPacketInfoAntiXray.getPalette(chunkSectionIndex), solid, solidGlobal);
+-                    obfuscateTemp = readPalette(chunkPacketInfoAntiXray.getPalette(chunkSectionIndex), obfuscate, obfuscateGlobal);
+-                    // Read the blocks of the upper layer of the chunk section below if it exists
+-                    LevelChunkSection belowChunkSection = null;
+-                    boolean skipFirstLayer = chunkSectionIndex == 0 || (belowChunkSection = chunk.getSections()[chunkSectionIndex - 1]) == EMPTY_SECTION;
+-
+-                    for (int z = 0; z < 16; z++) {
+-                        for (int x = 0; x < 16; x++) {
+-                            current[z][x] = true;
+-                            next[z][x] = skipFirstLayer || isTransparent(belowChunkSection, x, 15, z);
+-                        }
+-                    }
+-
+-                    // Abuse the obfuscateLayer method to read the blocks of the first layer of the current chunk section
+-                    bitStorageWriter.setBits(0);
+-                    obfuscateLayer(-1, bitStorageReader, bitStorageWriter, solidTemp, obfuscateTemp, presetBlockStateBitsTemp, current, next, nextNext, emptyNearbyChunkSections, random);
+-                }
+-
+-                bitStorageWriter.setBits(chunkPacketInfoAntiXray.getBits(chunkSectionIndex));
+-                nearbyChunkSections[0] = chunkPacketInfoAntiXray.getNearbyChunks()[0] == null ? EMPTY_SECTION : chunkPacketInfoAntiXray.getNearbyChunks()[0].getSections()[chunkSectionIndex];
+-                nearbyChunkSections[1] = chunkPacketInfoAntiXray.getNearbyChunks()[1] == null ? EMPTY_SECTION : chunkPacketInfoAntiXray.getNearbyChunks()[1].getSections()[chunkSectionIndex];
+-                nearbyChunkSections[2] = chunkPacketInfoAntiXray.getNearbyChunks()[2] == null ? EMPTY_SECTION : chunkPacketInfoAntiXray.getNearbyChunks()[2].getSections()[chunkSectionIndex];
+-                nearbyChunkSections[3] = chunkPacketInfoAntiXray.getNearbyChunks()[3] == null ? EMPTY_SECTION : chunkPacketInfoAntiXray.getNearbyChunks()[3].getSections()[chunkSectionIndex];
+-
+-                // Obfuscate all layers of the current chunk section except the upper one
+-                for (int y = 0; y < 15; y++) {
+-                    boolean[][] temp = current;
+-                    current = next;
+-                    next = nextNext;
+-                    nextNext = temp;
+-                    random.nextLayer();
+-                    obfuscateLayer(y, bitStorageReader, bitStorageWriter, solidTemp, obfuscateTemp, presetBlockStateBitsTemp, current, next, nextNext, nearbyChunkSections, random);
+-                }
+-
+-                // Check if the chunk section above doesn't need obfuscation
+-                if (chunkSectionIndex == maxChunkSectionIndex || !chunkPacketInfoAntiXray.isWritten(chunkSectionIndex + 1) || chunkPacketInfoAntiXray.getPresetValues(chunkSectionIndex + 1) == null) {
+-                    // If so, obfuscate the upper layer of the current chunk section by reading blocks of the first layer from the chunk section above if it exists
+-                    LevelChunkSection aboveChunkSection;
+-
+-                    if (chunkSectionIndex != chunk.getSectionsCount() - 1 && (aboveChunkSection = chunk.getSections()[chunkSectionIndex + 1]) != EMPTY_SECTION) {
+-                        boolean[][] temp = current;
+-                        current = next;
+-                        next = nextNext;
+-                        nextNext = temp;
+-
+-                        for (int z = 0; z < 16; z++) {
+-                            for (int x = 0; x < 16; x++) {
+-                                if (isTransparent(aboveChunkSection, x, 0, z)) {
+-                                    current[z][x] = true;
+-                                }
+-                            }
+-                        }
+-
+-                        // There is nothing to read anymore
+-                        bitStorageReader.setBits(0);
+-                        solid[0] = true;
+-                        random.nextLayer();
+-                        obfuscateLayer(15, bitStorageReader, bitStorageWriter, solid, obfuscateTemp, presetBlockStateBitsTemp, current, next, nextNext, nearbyChunkSections, random);
+-                    }
+-                } else {
+-                    // If not, initialize the reader and other stuff for the chunk section above to obfuscate the upper layer of the current chunk section
+-                    bitStorageReader.setBits(chunkPacketInfoAntiXray.getBits(chunkSectionIndex + 1));
+-                    bitStorageReader.setIndex(chunkPacketInfoAntiXray.getIndex(chunkSectionIndex + 1));
+-                    solidTemp = readPalette(chunkPacketInfoAntiXray.getPalette(chunkSectionIndex + 1), solid, solidGlobal);
+-                    obfuscateTemp = readPalette(chunkPacketInfoAntiXray.getPalette(chunkSectionIndex + 1), obfuscate, obfuscateGlobal);
+-                    boolean[][] temp = current;
+-                    current = next;
+-                    next = nextNext;
+-                    nextNext = temp;
+-                    random.nextLayer();
+-                    obfuscateLayer(15, bitStorageReader, bitStorageWriter, solidTemp, obfuscateTemp, presetBlockStateBitsTemp, current, next, nextNext, nearbyChunkSections, random);
+-                }
+-
+-                bitStorageWriter.flush();
+-            }
+-        }
+-
+-        chunkPacketInfoAntiXray.getChunkPacket().setReady(true);
+-    }
+-
+-    private void obfuscateLayer(int y, BitStorageReader bitStorageReader, BitStorageWriter bitStorageWriter, boolean[] solid, boolean[] obfuscate, int[] presetBlockStateBits, boolean[][] current, boolean[][] next, boolean[][] nextNext, LevelChunkSection[] nearbyChunkSections, IntSupplier random) {
+-        // First block of first line
+-        int bits = bitStorageReader.read();
+-
+-        if (nextNext[0][0] = !solid[bits]) {
+-            bitStorageWriter.skip();
+-            next[0][1] = true;
+-            next[1][0] = true;
+-        } else {
+-            if (current[0][0] || isTransparent(nearbyChunkSections[2], 0, y, 15) || isTransparent(nearbyChunkSections[0], 15, y, 0)) {
+-                bitStorageWriter.skip();
+-            } else {
+-                bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-            }
+-        }
+-
+-        if (!obfuscate[bits]) {
+-            next[0][0] = true;
+-        }
+-
+-        // First line
+-        for (int x = 1; x < 15; x++) {
+-            bits = bitStorageReader.read();
+-
+-            if (nextNext[0][x] = !solid[bits]) {
+-                bitStorageWriter.skip();
+-                next[0][x - 1] = true;
+-                next[0][x + 1] = true;
+-                next[1][x] = true;
+-            } else {
+-                if (current[0][x] || isTransparent(nearbyChunkSections[2], x, y, 15)) {
+-                    bitStorageWriter.skip();
+-                } else {
+-                    bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-                }
+-            }
+-
+-            if (!obfuscate[bits]) {
+-                next[0][x] = true;
+-            }
+-        }
+-
+-        // Last block of first line
+-        bits = bitStorageReader.read();
+-
+-        if (nextNext[0][15] = !solid[bits]) {
+-            bitStorageWriter.skip();
+-            next[0][14] = true;
+-            next[1][15] = true;
+-        } else {
+-            if (current[0][15] || isTransparent(nearbyChunkSections[2], 15, y, 15) || isTransparent(nearbyChunkSections[1], 0, y, 0)) {
+-                bitStorageWriter.skip();
+-            } else {
+-                bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-            }
+-        }
+-
+-        if (!obfuscate[bits]) {
+-            next[0][15] = true;
+-        }
+-
+-        // All inner lines
+-        for (int z = 1; z < 15; z++) {
+-            // First block
+-            bits = bitStorageReader.read();
+-
+-            if (nextNext[z][0] = !solid[bits]) {
+-                bitStorageWriter.skip();
+-                next[z][1] = true;
+-                next[z - 1][0] = true;
+-                next[z + 1][0] = true;
+-            } else {
+-                if (current[z][0] || isTransparent(nearbyChunkSections[0], 15, y, z)) {
+-                    bitStorageWriter.skip();
+-                } else {
+-                    bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-                }
+-            }
+-
+-            if (!obfuscate[bits]) {
+-                next[z][0] = true;
+-            }
+-
+-            // All inner blocks
+-            for (int x = 1; x < 15; x++) {
+-                bits = bitStorageReader.read();
+-
+-                if (nextNext[z][x] = !solid[bits]) {
+-                    bitStorageWriter.skip();
+-                    next[z][x - 1] = true;
+-                    next[z][x + 1] = true;
+-                    next[z - 1][x] = true;
+-                    next[z + 1][x] = true;
+-                } else {
+-                    if (current[z][x]) {
+-                        bitStorageWriter.skip();
+-                    } else {
+-                        bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-                    }
+-                }
+-
+-                if (!obfuscate[bits]) {
+-                    next[z][x] = true;
+-                }
+-            }
+-
+-            // Last block
+-            bits = bitStorageReader.read();
+-
+-            if (nextNext[z][15] = !solid[bits]) {
+-                bitStorageWriter.skip();
+-                next[z][14] = true;
+-                next[z - 1][15] = true;
+-                next[z + 1][15] = true;
+-            } else {
+-                if (current[z][15] || isTransparent(nearbyChunkSections[1], 0, y, z)) {
+-                    bitStorageWriter.skip();
+-                } else {
+-                    bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-                }
+-            }
+-
+-            if (!obfuscate[bits]) {
+-                next[z][15] = true;
+-            }
+-        }
+-
+-        // First block of last line
+-        bits = bitStorageReader.read();
+-
+-        if (nextNext[15][0] = !solid[bits]) {
+-            bitStorageWriter.skip();
+-            next[15][1] = true;
+-            next[14][0] = true;
+-        } else {
+-            if (current[15][0] || isTransparent(nearbyChunkSections[3], 0, y, 0) || isTransparent(nearbyChunkSections[0], 15, y, 15)) {
+-                bitStorageWriter.skip();
+-            } else {
+-                bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-            }
+-        }
+-
+-        if (!obfuscate[bits]) {
+-            next[15][0] = true;
+-        }
+-
+-        // Last line
+-        for (int x = 1; x < 15; x++) {
+-            bits = bitStorageReader.read();
+-
+-            if (nextNext[15][x] = !solid[bits]) {
+-                bitStorageWriter.skip();
+-                next[15][x - 1] = true;
+-                next[15][x + 1] = true;
+-                next[14][x] = true;
+-            } else {
+-                if (current[15][x] || isTransparent(nearbyChunkSections[3], x, y, 0)) {
+-                    bitStorageWriter.skip();
+-                } else {
+-                    bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-                }
+-            }
+-
+-            if (!obfuscate[bits]) {
+-                next[15][x] = true;
+-            }
+-        }
+-
+-        // Last block of last line
+-        bits = bitStorageReader.read();
+-
+-        if (nextNext[15][15] = !solid[bits]) {
+-            bitStorageWriter.skip();
+-            next[15][14] = true;
+-            next[14][15] = true;
+-        } else {
+-            if (current[15][15] || isTransparent(nearbyChunkSections[3], 15, y, 0) || isTransparent(nearbyChunkSections[1], 0, y, 15)) {
+-                bitStorageWriter.skip();
+-            } else {
+-                bitStorageWriter.write(presetBlockStateBits[random.getAsInt()]);
+-            }
+-        }
+-
+-        if (!obfuscate[bits]) {
+-            next[15][15] = true;
+-        }
+-    }
+-
+-    private boolean isTransparent(LevelChunkSection chunkSection, int x, int y, int z) {
+-        if (chunkSection == EMPTY_SECTION) {
+-            return true;
+-        }
+-
+-        try {
+-            return !solidGlobal[GLOBAL_BLOCKSTATE_PALETTE.idFor(chunkSection.getBlockState(x, y, z), PaletteResize.noResizeExpected())];
+-        } catch (MissingPaletteEntryException e) {
+-            // Race condition / visibility issue / no happens-before relationship
+-            // We don't care and treat the block as transparent
+-            // Internal implementation details of PalettedContainer, LinearPalette, HashMapPalette, CrudeIncrementalIntIdentityHashBiMap, ... guarantee us that no (other) exceptions will occur
+-            return true;
+-        }
+-    }
+-
+-    private boolean[] readPalette(Palette<BlockState> palette, boolean[] temp, boolean[] global) {
+-        if (palette instanceof GlobalPalette) {
+-            return global;
+-        }
+-
+-        try {
+-            for (int i = 0; i < palette.getSize(); i++) {
+-                temp[i] = global[GLOBAL_BLOCKSTATE_PALETTE.idFor(palette.valueFor(i), PaletteResize.noResizeExpected())];
+-            }
+-        } catch (MissingPaletteEntryException e) {
+-            // Race condition / visibility issue / no happens-before relationship
+-            // We don't care because we at least see the state as it was when the chunk packet was created
+-            // Internal implementation details of PalettedContainer, LinearPalette, HashMapPalette, CrudeIncrementalIntIdentityHashBiMap, ... guarantee us that no (other) exceptions will occur until we have all the data that we need here
+-            // Since all palettes have a fixed initial maximum size and there is no internal restructuring and no values are removed from palettes, we are also guaranteed to see the data
+-        }
+-
+-        return temp;
+-    }
+-
+-    @Override
+-    public void onBlockChange(Level level, BlockPos blockPos, BlockState newBlockState, BlockState oldBlockState, @Block.UpdateFlags int flags, int maxUpdateDepth) {
+-        if (oldBlockState != null && solidGlobal[GLOBAL_BLOCKSTATE_PALETTE.idFor(oldBlockState, PaletteResize.noResizeExpected())] && !solidGlobal[GLOBAL_BLOCKSTATE_PALETTE.idFor(newBlockState, PaletteResize.noResizeExpected())] && blockPos.getY() <= maxBlockHeightUpdatePosition) {
+-            updateNearbyBlocks(level, blockPos);
+-        }
+-    }
+-
+-    @Override
+-    public void onPlayerLeftClickBlock(ServerPlayerGameMode serverPlayerGameMode, BlockPos blockPos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence) {
+-        if (blockPos.getY() <= maxBlockHeightUpdatePosition) {
+-            updateNearbyBlocks(serverPlayerGameMode.level, blockPos);
+-        }
+-    }
+-
+-    private void updateNearbyBlocks(Level level, BlockPos blockPos) {
+-        if (updateRadius >= 2) {
+-            BlockPos temp = blockPos.west();
+-            updateBlock(level, temp);
+-            updateBlock(level, temp.west());
+-            updateBlock(level, temp.below());
+-            updateBlock(level, temp.above());
+-            updateBlock(level, temp.north());
+-            updateBlock(level, temp.south());
+-            updateBlock(level, temp = blockPos.east());
+-            updateBlock(level, temp.east());
+-            updateBlock(level, temp.below());
+-            updateBlock(level, temp.above());
+-            updateBlock(level, temp.north());
+-            updateBlock(level, temp.south());
+-            updateBlock(level, temp = blockPos.below());
+-            updateBlock(level, temp.below());
+-            updateBlock(level, temp.north());
+-            updateBlock(level, temp.south());
+-            updateBlock(level, temp = blockPos.above());
+-            updateBlock(level, temp.above());
+-            updateBlock(level, temp.north());
+-            updateBlock(level, temp.south());
+-            updateBlock(level, temp = blockPos.north());
+-            updateBlock(level, temp.north());
+-            updateBlock(level, temp = blockPos.south());
+-            updateBlock(level, temp.south());
+-        } else if (updateRadius == 1) {
+-            updateBlock(level, blockPos.west());
+-            updateBlock(level, blockPos.east());
+-            updateBlock(level, blockPos.below());
+-            updateBlock(level, blockPos.above());
+-            updateBlock(level, blockPos.north());
+-            updateBlock(level, blockPos.south());
+-        } else {
+-            // Do nothing if updateRadius <= 0 (test mode)
+-        }
+-    }
+-
+-    private void updateBlock(Level level, BlockPos blockPos) {
+-        BlockState blockState = level.getBlockStateIfLoaded(blockPos);
+-
+-        if (blockState != null && obfuscateGlobal[GLOBAL_BLOCKSTATE_PALETTE.idFor(blockState, PaletteResize.noResizeExpected())]) {
+-            ((ServerLevel) level).getChunkSource().blockChanged(blockPos);
+-        }
+-    }
+-
+-    @FunctionalInterface
+-    private interface LayeredIntSupplier extends IntSupplier {
+-        default void nextLayer() {
+-
+-        }
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketInfo.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketInfo.java
+deleted file mode 100644
+index a33a4d45d478ededff27244fcb910d3f369f2151..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/antixray/ChunkPacketInfo.java
++++ /dev/null
+@@ -1,80 +0,0 @@
+-package io.papermc.paper.antixray;
+-
+-import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+-import net.minecraft.world.level.chunk.LevelChunk;
+-import net.minecraft.world.level.chunk.Palette;
+-
+-public class ChunkPacketInfo<T> {
+-
+-    private final ClientboundLevelChunkWithLightPacket chunkPacket;
+-    private final LevelChunk chunk;
+-    private final int[] bits;
+-    private final Object[] palettes;
+-    private final int[] indexes;
+-    private final Object[][] presetValues;
+-    private byte[] buffer;
+-
+-    public ChunkPacketInfo(ClientboundLevelChunkWithLightPacket chunkPacket, LevelChunk chunk) {
+-        this.chunkPacket = chunkPacket;
+-        this.chunk = chunk;
+-        int sections = chunk.getSectionsCount();
+-        bits = new int[sections];
+-        palettes = new Object[sections];
+-        indexes = new int[sections];
+-        presetValues = new Object[sections][];
+-    }
+-
+-    public ClientboundLevelChunkWithLightPacket getChunkPacket() {
+-        return chunkPacket;
+-    }
+-
+-    public LevelChunk getChunk() {
+-        return chunk;
+-    }
+-
+-    public byte[] getBuffer() {
+-        return buffer;
+-    }
+-
+-    public void setBuffer(byte[] buffer) {
+-        this.buffer = buffer;
+-    }
+-
+-    public int getBits(int chunkSectionIndex) {
+-        return bits[chunkSectionIndex];
+-    }
+-
+-    public void setBits(int chunkSectionIndex, int bits) {
+-        this.bits[chunkSectionIndex] = bits;
+-    }
+-
+-    @SuppressWarnings("unchecked")
+-    public Palette<T> getPalette(int chunkSectionIndex) {
+-        return (Palette<T>) palettes[chunkSectionIndex];
+-    }
+-
+-    public void setPalette(int chunkSectionIndex, Palette<T> palette) {
+-        palettes[chunkSectionIndex] = palette;
+-    }
+-
+-    public int getIndex(int chunkSectionIndex) {
+-        return indexes[chunkSectionIndex];
+-    }
+-
+-    public void setIndex(int chunkSectionIndex, int index) {
+-        indexes[chunkSectionIndex] = index;
+-    }
+-
+-    @SuppressWarnings("unchecked")
+-    public T[] getPresetValues(int chunkSectionIndex) {
+-        return (T[]) presetValues[chunkSectionIndex];
+-    }
+-
+-    public void setPresetValues(int chunkSectionIndex, T[] presetValues) {
+-        this.presetValues[chunkSectionIndex] = presetValues;
+-    }
+-
+-    public boolean isWritten(int chunkSectionIndex) {
+-        return bits[chunkSectionIndex] != 0;
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketInfoAntiXray.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketInfoAntiXray.java
+deleted file mode 100644
+index 7d8dff55bfe6779244fcddda284d1faadf2fd261..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/antixray/ChunkPacketInfoAntiXray.java
++++ /dev/null
+@@ -1,29 +0,0 @@
+-package io.papermc.paper.antixray;
+-
+-import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+-import net.minecraft.world.level.block.state.BlockState;
+-import net.minecraft.world.level.chunk.LevelChunk;
+-
+-public final class ChunkPacketInfoAntiXray extends ChunkPacketInfo<BlockState> implements Runnable {
+-
+-    private final ChunkPacketBlockControllerAntiXray chunkPacketBlockControllerAntiXray;
+-    private LevelChunk[] nearbyChunks;
+-
+-    public ChunkPacketInfoAntiXray(ClientboundLevelChunkWithLightPacket chunkPacket, LevelChunk chunk, ChunkPacketBlockControllerAntiXray chunkPacketBlockControllerAntiXray) {
+-        super(chunkPacket, chunk);
+-        this.chunkPacketBlockControllerAntiXray = chunkPacketBlockControllerAntiXray;
+-    }
+-
+-    public LevelChunk[] getNearbyChunks() {
+-        return nearbyChunks;
+-    }
+-
+-    public void setNearbyChunks(LevelChunk... nearbyChunks) {
+-        this.nearbyChunks = nearbyChunks;
+-    }
+-
+-    @Override
+-    public void run() {
+-        chunkPacketBlockControllerAntiXray.obfuscate(this);
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/command/MSPTCommand.java b/src/main/java/io/papermc/paper/command/MSPTCommand.java
+deleted file mode 100644
+index 04b8097b147350f97fdee16c0b8aa78a87fddd33..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/command/MSPTCommand.java
++++ /dev/null
+@@ -1,99 +0,0 @@
+-package io.papermc.paper.command;
+-
+-import ca.spottedleaf.moonrise.common.time.TickData;
+-import net.kyori.adventure.text.Component;
+-import net.minecraft.server.MinecraftServer;
+-import org.bukkit.Location;
+-import org.bukkit.command.Command;
+-import org.bukkit.command.CommandSender;
+-
+-import java.text.DecimalFormat;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.Collections;
+-import java.util.List;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+-import org.checkerframework.framework.qual.DefaultQualifier;
+-
+-import static net.kyori.adventure.text.Component.text;
+-import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
+-import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+-import static net.kyori.adventure.text.format.NamedTextColor.RED;
+-import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
+-
+-@DefaultQualifier(NonNull.class)
+-public final class MSPTCommand extends Command {
+-    private static final ThreadLocal<DecimalFormat> ONE_DECIMAL_PLACES = ThreadLocal.withInitial(() -> {
+-        return new DecimalFormat("########0.0");
+-    });
+-
+-    private static final Component SLASH = text("/");
+-
+-    public MSPTCommand(final String name) {
+-        super(name);
+-        this.description = "View server tick times";
+-        this.usageMessage = "/mspt";
+-        this.setPermission("bukkit.command.mspt");
+-    }
+-
+-    @Override
+-    public List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
+-        return Collections.emptyList();
+-    }
+-
+-    @Override
+-    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+-        if (!testPermission(sender)) return true;
+-
+-        MinecraftServer server = MinecraftServer.getServer();
+-
+-        List<Component> times = new ArrayList<>();
+-        times.addAll(eval(server.tickTimes5s));
+-        times.addAll(eval(server.tickTimes10s));
+-        times.addAll(eval(server.tickTimes1m));
+-
+-        sender.sendMessage(text().content("Server tick times ").color(GOLD)
+-            .append(text().color(YELLOW)
+-                .append(
+-                    text("("),
+-                    text("avg", GRAY),
+-                    text("/"),
+-                    text("min", GRAY),
+-                    text("/"),
+-                    text("max", GRAY),
+-                    text(")")
+-                )
+-            ).append(
+-                text(" from last 5s"),
+-                text(",", GRAY),
+-                text(" 10s"),
+-                text(",", GRAY),
+-                text(" 1m"),
+-                text(":", YELLOW)
+-            )
+-        );
+-        sender.sendMessage(text().content("◴ ").color(GOLD)
+-            .append(text().color(GRAY)
+-                .append(
+-                    times.get(0), SLASH, times.get(1), SLASH, times.get(2), text(", ", YELLOW),
+-                    times.get(3), SLASH, times.get(4), SLASH, times.get(5), text(", ", YELLOW),
+-                    times.get(6), SLASH, times.get(7), SLASH, times.get(8)
+-                )
+-            )
+-        );
+-        return true;
+-    }
+-
+-    private static List<Component> eval(TickData tickData) {
+-        TickData.TickReportData reportData = tickData.generateTickReport(null, System.nanoTime(), MinecraftServer.getServer().tickRateManager().nanosecondsPerTick());
+-        double avgD = reportData == null ? 0.0 : reportData.timePerTickData().segmentAll().average() * 1.0E-6D;
+-        double minD = reportData == null ? 0.0 : reportData.timePerTickData().segmentAll().least() * 1.0E-6D;
+-        double maxD = reportData == null ? 0.0 : reportData.timePerTickData().segmentAll().greatest() * 1.0E-6D;
+-        return Arrays.asList(getColor(avgD), getColor(minD), getColor(maxD));
+-    }
+-
+-    private static Component getColor(double avg) {
+-        return text(ONE_DECIMAL_PLACES.get().format(avg), avg >= 50 ? RED : avg >= 40 ? YELLOW : GREEN);
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/command/PaperCommand.java b/src/main/java/io/papermc/paper/command/PaperCommand.java
+index b629a9a37ce7099c8c7426a8114e29d2cea94792..b6a9d516fcf8fd220286e6708465f251123ad44a 100644
+--- a/src/main/java/io/papermc/paper/command/PaperCommand.java
++++ b/src/main/java/io/papermc/paper/command/PaperCommand.java
+@@ -1,25 +1,8 @@
+ package io.papermc.paper.command;
+ 
+ import io.papermc.paper.FeatureHooks;
+-import io.papermc.paper.command.subcommands.DumpItemCommand;
+-import io.papermc.paper.command.subcommands.DumpListenersCommand;
+-import io.papermc.paper.command.subcommands.DumpPluginsCommand;
+-import io.papermc.paper.command.subcommands.EntityCommand;
+-import io.papermc.paper.command.subcommands.HeapDumpCommand;
+-import io.papermc.paper.command.subcommands.MobcapsCommand;
+-import io.papermc.paper.command.subcommands.ReloadCommand;
+-import io.papermc.paper.command.subcommands.SyncLoadInfoCommand;
+-import io.papermc.paper.command.subcommands.VersionCommand;
++import io.papermc.paper.command.subcommands.*;
+ import it.unimi.dsi.fastutil.Pair;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.Collections;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Locale;
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.stream.Collectors;
+ import net.minecraft.util.Util;
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+@@ -32,6 +15,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
+ import org.checkerframework.checker.nullness.qual.Nullable;
+ import org.checkerframework.framework.qual.DefaultQualifier;
+ 
++import java.util.*;
++import java.util.stream.Collectors;
++
+ import static net.kyori.adventure.text.Component.text;
+ import static net.kyori.adventure.text.format.NamedTextColor.RED;
+ 
+@@ -45,9 +31,7 @@ public final class PaperCommand extends Command {
+         commands.put(Set.of("heap"), new HeapDumpCommand());
+         commands.put(Set.of("entity"), new EntityCommand());
+         commands.put(Set.of("reload"), new ReloadCommand());
+-        commands.put(Set.of("version"), new VersionCommand());
+         commands.put(Set.of("dumpplugins"), new DumpPluginsCommand());
+-        commands.put(Set.of("syncloadinfo"), new SyncLoadInfoCommand());
+         commands.put(Set.of("dumpitem"), new DumpItemCommand());
+         commands.put(Set.of("mobcaps", "playermobcaps"), new MobcapsCommand());
+         commands.put(Set.of("dumplisteners"), new DumpListenersCommand());
+@@ -59,15 +43,6 @@ public final class PaperCommand extends Command {
+     });
+     private static final Set<String> COMPLETABLE_SUBCOMMANDS = SUBCOMMANDS.entrySet().stream().filter(entry -> entry.getValue().tabCompletes()).map(Map.Entry::getKey).collect(Collectors.toSet());
+     // alias -> subcommand label
+-    private static final Map<String, String> ALIASES = Util.make(() -> {
+-        final Map<String, Set<String>> aliases = new HashMap<>();
+-
+-        aliases.put("version", Set.of("ver"));
+-
+-        return aliases.entrySet().stream()
+-            .flatMap(entry -> entry.getValue().stream().map(s -> Map.entry(s, entry.getKey())))
+-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+-    });
+ 
+     public PaperCommand(final String name) {
+         super(name);
+@@ -141,14 +116,6 @@ public final class PaperCommand extends Command {
+     private static @Nullable Pair<String, PaperSubcommand> resolveCommand(String label) {
+         label = label.toLowerCase(Locale.ROOT);
+         @Nullable PaperSubcommand subCommand = SUBCOMMANDS.get(label);
+-        if (subCommand == null) {
+-            final @Nullable String command = ALIASES.get(label);
+-            if (command != null) {
+-                label = command;
+-                subCommand = SUBCOMMANDS.get(command);
+-            }
+-        }
+-
+         if (subCommand != null) {
+             return Pair.of(label, subCommand);
+         }
+diff --git a/src/main/java/io/papermc/paper/command/PaperCommands.java b/src/main/java/io/papermc/paper/command/PaperCommands.java
+index 6dfd0b1a85d518828b15158c01472ae4383b8882..e2d565ccec598d1b1bb3ba6a4d5f3c2b2c000d5c 100644
+--- a/src/main/java/io/papermc/paper/command/PaperCommands.java
++++ b/src/main/java/io/papermc/paper/command/PaperCommands.java
+@@ -5,13 +5,13 @@ import io.papermc.paper.command.brigadier.CommandRegistrationFlag;
+ import io.papermc.paper.command.brigadier.CommandSourceStack;
+ import net.minecraft.server.MinecraftServer;
+ import org.bukkit.command.Command;
++import org.checkerframework.checker.nullness.qual.NonNull;
++import org.checkerframework.framework.qual.DefaultQualifier;
+ 
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+-import org.checkerframework.framework.qual.DefaultQualifier;
+ 
+ @DefaultQualifier(NonNull.class)
+ public final class PaperCommands {
+@@ -23,7 +23,6 @@ public final class PaperCommands {
+ 
+     public static void registerCommands(final MinecraftServer server) {
+         COMMANDS.put("paper", new PaperCommand("paper"));
+-        COMMANDS.put("mspt", new MSPTCommand("mspt"));
+ 
+         COMMANDS.forEach((s, command) -> {
+             server.server.getCommandMap().register(s, "Paper", command);
+@@ -32,7 +31,6 @@ public final class PaperCommands {
+ 
+     public static void registerCommands() {
+         // Paper commands go here
+-        registerInternalCommand(PaperVersionCommand.create(), "bukkit", PaperVersionCommand.DESCRIPTION, List.of("ver", "about"), Set.of());
+         registerInternalCommand(PaperPluginsCommand.create(), "bukkit", PaperPluginsCommand.DESCRIPTION, List.of("pl"), Set.of());
+     }
+ 
+diff --git a/src/main/java/io/papermc/paper/command/PaperVersionCommand.java b/src/main/java/io/papermc/paper/command/PaperVersionCommand.java
+deleted file mode 100644
+index bfacb856623b5cb6af4f1b65ee89200cdfb1ef13..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/command/PaperVersionCommand.java
++++ /dev/null
+@@ -1,184 +0,0 @@
+-package io.papermc.paper.command;
+-
+-import com.destroystokyo.paper.util.VersionFetcher;
+-import com.mojang.brigadier.Command;
+-import com.mojang.brigadier.arguments.StringArgumentType;
+-import com.mojang.brigadier.context.CommandContext;
+-import com.mojang.brigadier.suggestion.Suggestions;
+-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+-import com.mojang.brigadier.tree.LiteralCommandNode;
+-import io.papermc.paper.command.brigadier.CommandSourceStack;
+-import io.papermc.paper.command.brigadier.Commands;
+-import io.papermc.paper.plugin.configuration.PluginMeta;
+-import java.util.Arrays;
+-import java.util.List;
+-import java.util.Locale;
+-import java.util.concurrent.CompletableFuture;
+-import net.kyori.adventure.text.Component;
+-import net.kyori.adventure.text.JoinConfiguration;
+-import net.kyori.adventure.text.TextComponent;
+-import net.kyori.adventure.text.event.ClickEvent;
+-import net.kyori.adventure.text.format.NamedTextColor;
+-import net.kyori.adventure.text.format.TextDecoration;
+-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+-import net.minecraft.server.MinecraftServer;
+-import org.bukkit.Bukkit;
+-import org.bukkit.command.CommandSender;
+-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+-import org.bukkit.plugin.Plugin;
+-import org.bukkit.util.StringUtil;
+-import org.jspecify.annotations.NullMarked;
+-
+-@NullMarked
+-public class PaperVersionCommand {
+-    public static final String DESCRIPTION = "Gets the version of this server including any plugins in use";
+-
+-    private static final Component NOT_RUNNING = Component.text()
+-        .append(Component.text("This server is not running any plugin by that name."))
+-        .appendNewline()
+-        .append(Component.text("Use /plugins to get a list of plugins.").clickEvent(ClickEvent.suggestCommand("/plugins")))
+-        .build();
+-    private static final JoinConfiguration PLAYER_JOIN_CONFIGURATION = JoinConfiguration.separators(
+-        Component.text(", ", NamedTextColor.WHITE),
+-        Component.text(", and ", NamedTextColor.WHITE)
+-    );
+-    private static final Component FAILED_TO_FETCH = Component.text("Could not fetch version information!", NamedTextColor.RED);
+-    private static final Component FETCHING = Component.text("Checking version, please wait...", NamedTextColor.WHITE, TextDecoration.ITALIC);
+-
+-    private final VersionFetcher versionFetcher = CraftMagicNumbers.INSTANCE.getVersionFetcher();
+-    private CompletableFuture<ComputedVersion> computedVersion = CompletableFuture.completedFuture(new ComputedVersion(Component.empty(), -1)); // Precompute-- someday move that stuff out of bukkit
+-
+-    public static LiteralCommandNode<CommandSourceStack> create() {
+-        final PaperVersionCommand command = new PaperVersionCommand();
+-
+-        return Commands.literal("version")
+-            .requires(source -> source.getSender().hasPermission("bukkit.command.version"))
+-            .then(Commands.argument("plugin", StringArgumentType.word())
+-                .suggests(command::suggestPlugins)
+-                .executes(command::pluginVersion))
+-            .executes(command::serverVersion)
+-            .build();
+-    }
+-
+-    private int pluginVersion(final CommandContext<CommandSourceStack> context) {
+-        final CommandSender sender = context.getSource().getSender();
+-        final String pluginName = context.getArgument("plugin", String.class).toLowerCase(Locale.ROOT);
+-
+-        Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
+-        if (plugin == null) {
+-            plugin = Arrays.stream(Bukkit.getPluginManager().getPlugins())
+-                .filter(checkPlugin -> checkPlugin.getName().toLowerCase(Locale.ROOT).contains(pluginName))
+-                .findAny()
+-                .orElse(null);
+-        }
+-
+-        if (plugin != null) {
+-            this.sendPluginInfo(plugin, sender);
+-        } else {
+-            sender.sendMessage(NOT_RUNNING);
+-        }
+-
+-        return Command.SINGLE_SUCCESS;
+-    }
+-
+-    private CompletableFuture<Suggestions> suggestPlugins(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) {
+-        for (final Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+-            final String name = plugin.getName();
+-            if (StringUtil.startsWithIgnoreCase(name, builder.getRemainingLowerCase())) {
+-                builder.suggest(name);
+-            }
+-        }
+-
+-        return CompletableFuture.completedFuture(builder.build());
+-    }
+-
+-    private void sendPluginInfo(final Plugin plugin, final CommandSender sender) {
+-        final PluginMeta meta = plugin.getPluginMeta();
+-
+-        final TextComponent.Builder builder = Component.text()
+-            .append(Component.text(meta.getName()))
+-            .append(Component.text(" version "))
+-            .append(Component.text(meta.getVersion(), NamedTextColor.GREEN)
+-                .hoverEvent(Component.translatable("chat.copy.click"))
+-                .clickEvent(ClickEvent.copyToClipboard(meta.getVersion()))
+-            );
+-
+-        if (meta.getDescription() != null) {
+-            builder
+-                .appendNewline()
+-                .append(Component.text(meta.getDescription()));
+-        }
+-
+-        if (meta.getWebsite() != null) {
+-            Component websiteComponent = Component.text(meta.getWebsite(), NamedTextColor.GREEN).clickEvent(ClickEvent.openUrl(meta.getWebsite()));
+-            builder.appendNewline().append(Component.text("Website: ").append(websiteComponent));
+-        }
+-
+-        if (!meta.getAuthors().isEmpty()) {
+-            String prefix = meta.getAuthors().size() == 1 ? "Author: " : "Authors: ";
+-            builder.appendNewline().append(Component.text(prefix).append(formatNameList(meta.getAuthors())));
+-        }
+-
+-        if (!meta.getContributors().isEmpty()) {
+-            builder.appendNewline().append(Component.text("Contributors: ").append(formatNameList(meta.getContributors())));
+-        }
+-        sender.sendMessage(builder.build());
+-    }
+-
+-    private static Component formatNameList(final List<String> names) {
+-        return Component.join(PLAYER_JOIN_CONFIGURATION, names.stream().map(Component::text).toList()).color(NamedTextColor.GREEN);
+-    }
+-
+-    private int serverVersion(CommandContext<CommandSourceStack> context) {
+-        sendVersion(context.getSource().getSender());
+-        return Command.SINGLE_SUCCESS;
+-    }
+-
+-    private void sendVersion(final CommandSender sender) {
+-        final CompletableFuture<ComputedVersion> version = getVersionOrFetch();
+-        if (!version.isDone()) {
+-            sender.sendMessage(FETCHING);
+-        }
+-
+-        version.whenComplete((computedVersion, throwable) -> {
+-            if (computedVersion != null) {
+-                sender.sendMessage(computedVersion.message);
+-            } else if (throwable != null) {
+-                sender.sendMessage(FAILED_TO_FETCH);
+-                MinecraftServer.LOGGER.warn("Could not fetch version information!", throwable);
+-            }
+-        });
+-    }
+-
+-    private CompletableFuture<ComputedVersion> getVersionOrFetch() {
+-        if (!this.computedVersion.isDone()) {
+-            return this.computedVersion;
+-        }
+-
+-        if (this.computedVersion.isCompletedExceptionally() || System.currentTimeMillis() - this.computedVersion.resultNow().computedTime() > this.versionFetcher.getCacheTime()) {
+-            this.computedVersion = this.fetchVersionMessage();
+-        }
+-
+-        return this.computedVersion;
+-    }
+-
+-    private CompletableFuture<ComputedVersion> fetchVersionMessage() {
+-       return CompletableFuture.supplyAsync(() -> {
+-           final Component message = Component.textOfChildren(
+-               Component.text(Bukkit.getVersionMessage(), NamedTextColor.WHITE),
+-               Component.newline(),
+-               this.versionFetcher.getVersionMessage()
+-           );
+-
+-           return new ComputedVersion(
+-               message.hoverEvent(Component.translatable("chat.copy.click", NamedTextColor.WHITE))
+-                   .clickEvent(ClickEvent.copyToClipboard(PlainTextComponentSerializer.plainText().serialize(message))),
+-               System.currentTimeMillis()
+-           );
+-       });
+-    }
+-
+-    record ComputedVersion(Component message, long computedTime) {
+-
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/command/subcommands/SyncLoadInfoCommand.java b/src/main/java/io/papermc/paper/command/subcommands/SyncLoadInfoCommand.java
+deleted file mode 100644
+index 95d6022c9cfb2e36ec5a71be6e34354027c2ec08..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/command/subcommands/SyncLoadInfoCommand.java
++++ /dev/null
+@@ -1,88 +0,0 @@
+-package io.papermc.paper.command.subcommands;
+-
+-import com.destroystokyo.paper.io.SyncLoadFinder;
+-import com.google.gson.JsonObject;
+-import com.google.gson.internal.Streams;
+-import com.google.gson.stream.JsonWriter;
+-import io.papermc.paper.command.CommandUtil;
+-import io.papermc.paper.command.PaperSubcommand;
+-import java.io.File;
+-import java.io.FileOutputStream;
+-import java.io.PrintStream;
+-import java.io.StringWriter;
+-import java.nio.charset.StandardCharsets;
+-import java.time.LocalDateTime;
+-import java.time.format.DateTimeFormatter;
+-import java.util.List;
+-
+-import net.kyori.adventure.text.event.ClickEvent;
+-import net.kyori.adventure.text.event.HoverEvent;
+-import net.minecraft.server.MinecraftServer;
+-import org.bukkit.command.CommandSender;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+-import org.checkerframework.framework.qual.DefaultQualifier;
+-
+-import static net.kyori.adventure.text.Component.text;
+-import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+-import static net.kyori.adventure.text.format.NamedTextColor.RED;
+-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+-
+-@DefaultQualifier(NonNull.class)
+-public final class SyncLoadInfoCommand implements PaperSubcommand {
+-    @Override
+-    public boolean execute(final CommandSender sender, final String subCommand, final String[] args) {
+-        this.doSyncLoadInfo(sender, args);
+-        return true;
+-    }
+-
+-    @Override
+-    public List<String> tabComplete(final CommandSender sender, final String subCommand, final String[] args) {
+-        return CommandUtil.getListMatchingLast(sender, args, "clear");
+-    }
+-
+-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
+-
+-    private void doSyncLoadInfo(final CommandSender sender, final String[] args) {
+-        if (!SyncLoadFinder.ENABLED) {
+-            String systemFlag = "-Dpaper.debug-sync-loads=true";
+-            sender.sendMessage(text().color(RED).append(text("This command requires the server startup flag '")).append(
+-                text(systemFlag, WHITE).clickEvent(ClickEvent.copyToClipboard(systemFlag))
+-                                       .hoverEvent(HoverEvent.showText(text("Click to copy the system flag")))).append(
+-                text("' to be set.")));
+-            return;
+-        }
+-
+-        if (args.length > 0 && args[0].equals("clear")) {
+-            SyncLoadFinder.clear();
+-            sender.sendMessage(text("Sync load data cleared.", GRAY));
+-            return;
+-        }
+-
+-        File file = new File(new File(new File("."), "debug"),
+-            "sync-load-info-" + FORMATTER.format(LocalDateTime.now()) + ".txt");
+-        file.getParentFile().mkdirs();
+-        sender.sendMessage(text("Writing sync load info to " + file, GREEN));
+-
+-
+-        try {
+-            final JsonObject data = SyncLoadFinder.serialize();
+-
+-            StringWriter stringWriter = new StringWriter();
+-            JsonWriter jsonWriter = new JsonWriter(stringWriter);
+-            jsonWriter.setIndent(" ");
+-            jsonWriter.setLenient(false);
+-            Streams.write(data, jsonWriter);
+-
+-            try (
+-                PrintStream out = new PrintStream(new FileOutputStream(file), false, StandardCharsets.UTF_8)
+-            ) {
+-                out.print(stringWriter);
+-            }
+-            sender.sendMessage(text("Successfully written sync load information!", GREEN));
+-        } catch (Throwable thr) {
+-            sender.sendMessage(text("Failed to write sync load information! See the console for more info.", RED));
+-            MinecraftServer.LOGGER.warn("Error occurred while dumping sync chunk load info", thr);
+-        }
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/command/subcommands/VersionCommand.java b/src/main/java/io/papermc/paper/command/subcommands/VersionCommand.java
+deleted file mode 100644
+index acb764b71bb3e8f159a758002f7d1077637d188d..0000000000000000000000000000000000000000
+--- a/src/main/java/io/papermc/paper/command/subcommands/VersionCommand.java
++++ /dev/null
+@@ -1,21 +0,0 @@
+-package io.papermc.paper.command.subcommands;
+-
+-import io.papermc.paper.command.PaperSubcommand;
+-import net.minecraft.server.MinecraftServer;
+-import org.bukkit.command.Command;
+-import org.bukkit.command.CommandSender;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+-import org.checkerframework.checker.nullness.qual.Nullable;
+-import org.checkerframework.framework.qual.DefaultQualifier;
+-
+-@DefaultQualifier(NonNull.class)
+-public final class VersionCommand implements PaperSubcommand {
+-    @Override
+-    public boolean execute(final CommandSender sender, final String subCommand, final String[] args) {
+-        final @Nullable Command redirect = MinecraftServer.getServer().server.getCommandMap().getCommand("version");
+-        if (redirect != null) {
+-            redirect.execute(sender, "paper", me.titaniumtown.ArrayConstants.emptyStringArray); // Gale - JettPack - reduce array allocations
+-        }
+-        return true;
+-    }
+-}
+diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+index cc1906ef871de6a4ff82039d8ddfcd764139f37d..61eb4a33d8d15a27091eef030237052c8b2839d9 100644
+--- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+@@ -1,7 +1,6 @@
+ package io.papermc.paper.configuration;
+ 
+ import com.mojang.logging.LogUtils;
+-import io.papermc.paper.FeatureHooks;
+ import io.papermc.paper.configuration.constraint.Constraints;
+ import io.papermc.paper.configuration.serializer.collection.map.WriteKeyBack;
+ import io.papermc.paper.configuration.type.number.DoubleOr;
+@@ -108,11 +107,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+     public Proxies proxies;
+ 
+     public class Proxies extends ConfigurationPart {
+-        public BungeeCord bungeeCord;
+-
+-        public class BungeeCord extends ConfigurationPart {
+-            public boolean onlineMode = true;
+-        }
+ 
+         public Velocity velocity;
+ 
+@@ -138,7 +132,7 @@ public class GlobalConfiguration extends ConfigurationPart {
+         }
+         public boolean proxyProtocol = false;
+         public boolean isProxyOnlineMode() {
+-            return org.bukkit.Bukkit.getOnlineMode() || (org.spigotmc.SpigotConfig.bungee && this.bungeeCord.onlineMode) || (this.velocity.enabled && this.velocity.onlineMode);
++            return org.bukkit.Bukkit.getOnlineMode() || (this.velocity.enabled && this.velocity.onlineMode);
+         }
+     }
+ 
+@@ -207,12 +201,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+         public boolean rideCommandAllowPlayerAsVehicle = false;
+     }
+ 
+-    public Logging logging;
+-
+-    public class Logging extends ConfigurationPart {
+-        public boolean deobfuscateStacktraces = true;
+-    }
+-
+     public Scoreboards scoreboards;
+ 
+     public class Scoreboards extends ConfigurationPart {
+@@ -237,16 +225,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+     public ItemValidation itemValidation;
+ 
+     public class ItemValidation extends ConfigurationPart {
+-        public int displayName = 8192;
+-        public int loreLine = 8192;
+-        public Book book;
+-
+-        public class Book extends ConfigurationPart {
+-            public int title = 8192;
+-            public int author = 8192;
+-            public int page = 16384;
+-        }
+-
+         public BookSize bookSize;
+ 
+         public class BookSize extends ConfigurationPart {
+@@ -286,7 +264,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+ 
+     public class Collisions extends ConfigurationPart {
+         public boolean enablePlayerCollisions = true;
+-        public boolean sendFullPosForHardCollidingEntities = true;
+     }
+ 
+     public PlayerAutoSave playerAutoSave;
+@@ -332,7 +309,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+         }
+         public int maxJoinsPerTick = 5;
+         public boolean sendFullPosForItemEntities = false;
+-        public boolean loadPermissionsYmlBeforePlugins = true;
+         @Constraints.Min(4)
+         public int regionFileCacheSize = 256;
+         @Comment("See https://luckformula.emc.gs")
+@@ -357,10 +333,10 @@ public class GlobalConfiguration extends ConfigurationPart {
+     public BlockUpdates blockUpdates;
+ 
+     public class BlockUpdates extends ConfigurationPart {
+-        public boolean disableNoteblockUpdates = false;
+-        public boolean disableTripwireUpdates = false;
+-        public boolean disableChorusPlantUpdates = false;
+-        public boolean disableMushroomBlockUpdates = false;
++        public boolean disableNoteblockUpdates = true;
++        public boolean disableTripwireUpdates = true;
++        public boolean disableChorusPlantUpdates = true;
++        public boolean disableMushroomBlockUpdates = true;
+     }
+ 
+     public Anticheat anticheat;
+@@ -400,9 +376,4 @@ public class GlobalConfiguration extends ConfigurationPart {
+         }
+     }
+ 
+-    public UpdateChecker updateChecker;
+-
+-    public class UpdateChecker extends ConfigurationPart {
+-        public boolean enabled = true;
+-    }
+ }
+diff --git a/src/main/java/io/papermc/paper/configuration/PaperServerConfiguration.java b/src/main/java/io/papermc/paper/configuration/PaperServerConfiguration.java
+index b957d5837117f91c43873379172019c9be60f70f..ced3de1a23b9a2d995f58784c100d7eea8ac4afa 100644
+--- a/src/main/java/io/papermc/paper/configuration/PaperServerConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/PaperServerConfiguration.java
+@@ -1,7 +1,5 @@
+ package io.papermc.paper.configuration;
+ 
+-import org.spigotmc.SpigotConfig;
+-
+ public class PaperServerConfiguration implements ServerConfiguration {
+ 
+     @Override
+@@ -11,6 +9,6 @@ public class PaperServerConfiguration implements ServerConfiguration {
+ 
+     @Override
+     public boolean isProxyEnabled() {
+-        return GlobalConfiguration.get().proxies.velocity.enabled || SpigotConfig.bungee;
++        return GlobalConfiguration.get().proxies.velocity.enabled;
+     }
+ }
+diff --git a/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java b/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
+index 31338ff8bf53fba34182fb34216407e6ea42f853..605052931456d40152aefaf46da565708ae27be1 100644
+--- a/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
+@@ -14,37 +14,19 @@ import io.papermc.paper.configuration.type.BooleanOrDefault;
+ import io.papermc.paper.configuration.type.DespawnRange;
+ import io.papermc.paper.configuration.type.Duration;
+ import io.papermc.paper.configuration.type.DurationOrDisabled;
+-import io.papermc.paper.configuration.type.EngineMode;
+ import io.papermc.paper.configuration.type.fallback.ArrowDespawnRate;
+ import io.papermc.paper.configuration.type.fallback.AutosavePeriod;
+ import io.papermc.paper.configuration.type.number.BelowZeroToEmpty;
+ import io.papermc.paper.configuration.type.number.DoubleOr;
+ import io.papermc.paper.configuration.type.number.IntOr;
+-import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+-import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+-import it.unimi.dsi.fastutil.objects.Reference2LongMap;
+-import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
+-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+-import java.util.Arrays;
+-import java.util.IdentityHashMap;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.OptionalDouble;
+-import java.util.OptionalInt;
+-import java.util.function.Function;
+-import java.util.stream.Collectors;
+-import net.minecraft.util.Util;
++import it.unimi.dsi.fastutil.objects.*;
+ import net.minecraft.commands.arguments.NbtPathArgument;
+ import net.minecraft.core.Holder;
+ import net.minecraft.core.registries.BuiltInRegistries;
+ import net.minecraft.resources.Identifier;
++import net.minecraft.util.Util;
+ import net.minecraft.world.Difficulty;
+-import net.minecraft.world.entity.Display;
+-import net.minecraft.world.entity.Entity;
+-import net.minecraft.world.entity.EntityType;
+-import net.minecraft.world.entity.ExperienceOrb;
+-import net.minecraft.world.entity.MobCategory;
++import net.minecraft.world.entity.*;
+ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+ import net.minecraft.world.entity.decoration.HangingEntity;
+ import net.minecraft.world.entity.item.ItemEntity;
+@@ -55,8 +37,6 @@ import net.minecraft.world.item.Item;
+ import net.minecraft.world.item.Items;
+ import net.minecraft.world.level.NaturalSpawner;
+ import net.minecraft.world.level.block.BambooStalkBlock;
+-import net.minecraft.world.level.block.Block;
+-import net.minecraft.world.level.block.Blocks;
+ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+ import org.slf4j.Logger;
+ import org.spigotmc.SpigotWorldConfig;
+@@ -67,6 +47,10 @@ import org.spongepowered.configurate.objectmapping.meta.Required;
+ import org.spongepowered.configurate.objectmapping.meta.Setting;
+ import org.spongepowered.configurate.serialize.SerializationException;
+ 
++import java.util.*;
++import java.util.function.Function;
++import java.util.stream.Collectors;
++
+ @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "NotNullFieldNotInitialized", "InnerClassMayBeStatic"})
+ public class WorldConfiguration extends ConfigurationPart {
+     private static final Logger LOGGER = LogUtils.getClassLogger();
+@@ -87,50 +71,6 @@ public class WorldConfiguration extends ConfigurationPart {
+     @Setting(Configuration.VERSION_FIELD)
+     public int version = CURRENT_VERSION;
+ 
+-    public Anticheat anticheat;
+-
+-    public class Anticheat extends ConfigurationPart {
+-
+-        public AntiXray antiXray;
+-
+-        public class AntiXray extends ConfigurationPart {
+-            public boolean enabled = false;
+-            public EngineMode engineMode = EngineMode.HIDE;
+-            public int maxBlockHeight = 64;
+-            public int updateRadius = 2;
+-            public boolean lavaObscures = false;
+-            public boolean usePermission = false;
+-            public List<Block> hiddenBlocks = List.of(
+-                //<editor-fold desc="Anti-Xray Hidden Blocks" defaultstate="collapsed">
+-                Blocks.COPPER_ORE,
+-                Blocks.DEEPSLATE_COPPER_ORE,
+-                Blocks.RAW_COPPER_BLOCK,
+-                Blocks.GOLD_ORE,
+-                Blocks.DEEPSLATE_GOLD_ORE,
+-                Blocks.IRON_ORE,
+-                Blocks.DEEPSLATE_IRON_ORE,
+-                Blocks.RAW_IRON_BLOCK,
+-                Blocks.COAL_ORE,
+-                Blocks.DEEPSLATE_COAL_ORE,
+-                Blocks.LAPIS_ORE,
+-                Blocks.DEEPSLATE_LAPIS_ORE,
+-                Blocks.MOSSY_COBBLESTONE,
+-                Blocks.OBSIDIAN,
+-                Blocks.CHEST,
+-                Blocks.DIAMOND_ORE,
+-                Blocks.DEEPSLATE_DIAMOND_ORE,
+-                Blocks.REDSTONE_ORE,
+-                Blocks.DEEPSLATE_REDSTONE_ORE,
+-                Blocks.CLAY,
+-                Blocks.EMERALD_ORE,
+-                Blocks.DEEPSLATE_EMERALD_ORE,
+-                Blocks.ENDER_CHEST
+-                //</editor-fold>
+-            );
+-            public List<Block> replacementBlocks = List.of(Blocks.STONE, Blocks.OAK_PLANKS, Blocks.DEEPSLATE);
+-        }
+-    }
+-
+     public Entities entities;
+ 
+     public class Entities extends ConfigurationPart {
+@@ -149,8 +89,8 @@ public class WorldConfiguration extends ConfigurationPart {
+         public ArmorStands armorStands;
+ 
+         public class ArmorStands extends ConfigurationPart {
+-            public boolean doCollisionEntityLookups = true;
+-            public boolean tick = true;
++            public boolean doCollisionEntityLookups = false;
++            public boolean tick = false;
+         }
+ 
+         public Markers markers;
+@@ -176,7 +116,7 @@ public class WorldConfiguration extends ConfigurationPart {
+             public List<NbtPathArgument.NbtPath> filteredEntityTagNbtPaths = NbtPathSerializer.fromString(List.of("Pos", "Motion", "sleeping_pos"));
+             public boolean disableMobSpawnerSpawnEggTransformation = false;
+             public boolean perPlayerMobSpawns = true;
+-            public boolean scanForLegacyEnderDragon = true;
++            public boolean scanForLegacyEnderDragon = false;
+             @MergeMap
+             public Reference2IntMap<MobCategory> spawnLimits = Util.make(new Reference2IntOpenHashMap<>(NaturalSpawner.SPAWNING_CATEGORIES.length), map -> Arrays.stream(NaturalSpawner.SPAWNING_CATEGORIES).forEach(mobCategory -> map.put(mobCategory, -1)));
+             @MergeMap
+@@ -256,7 +196,7 @@ public class WorldConfiguration extends ConfigurationPart {
+                 public int spawnChanceMax = 75;
+             }
+ 
+-            public boolean allChunksAreSlimeChunks = false;
++            public boolean allChunksAreSlimeChunks = true;
+             @BelowZeroToEmpty
+             public DoubleOr.Default skeletonHorseThunderSpawnChance = DoubleOr.Default.USE_DEFAULT;
+             public boolean ironGolemsCanSpawnInAir = false;
+@@ -287,7 +227,7 @@ public class WorldConfiguration extends ConfigurationPart {
+             public boolean disableChestCatDetection = false;
+             public boolean spawnerNerfedMobsShouldJump = false;
+             public int experienceMergeMaxValue = -1;
+-            public boolean shouldRemoveDragon = false;
++            public boolean shouldRemoveDragon = true;
+             public boolean zombiesTargetTurtleEggs = true;
+             public boolean piglinsGuardChests = true;
+             public double babyZombieMovementModifier = 0.5;
+@@ -420,8 +360,8 @@ public class WorldConfiguration extends ConfigurationPart {
+     public Environment environment;
+ 
+     public class Environment extends ConfigurationPart {
+-        public boolean disableThunder = false;
+-        public boolean disableIceAndSnow = false;
++        public boolean disableThunder = true;
++        public boolean disableIceAndSnow = true;
+         public boolean optimizeExplosions = false;
+         public boolean disableExplosionKnockback = false;
+         public boolean generateFlatBedrock = false;
+@@ -441,7 +381,7 @@ public class WorldConfiguration extends ConfigurationPart {
+ 
+         public TreasureMaps treasureMaps;
+         public class TreasureMaps extends ConfigurationPart {
+-            public boolean enabled = true;
++            public boolean enabled = false;
+             @NestedSetting({"find-already-discovered", "villager-trade"})
+             public boolean findAlreadyDiscoveredVillager = false;
+             @NestedSetting({"find-already-discovered", "loot-tables"})
+@@ -583,7 +523,7 @@ public class WorldConfiguration extends ConfigurationPart {
+         public boolean showSignClickCommandFailureMsgsToPlayer = false;
+         public RedstoneImplementation redstoneImplementation = RedstoneImplementation.VANILLA;
+         public AlternateCurrentUpdateOrder alternateCurrentUpdateOrder = AlternateCurrentUpdateOrder.HORIZONTAL_FIRST_OUTWARD;
+-        public boolean disableEndCredits = false;
++        public boolean disableEndCredits = true;
+         public DoubleOr.Default maxLeashDistance = DoubleOr.Default.USE_DEFAULT;
+         public boolean disableSprintInterruptionOnAttack = false;
+         public boolean disableRelativeProjectileVelocity = false;
+diff --git a/src/main/java/io/papermc/paper/configuration/transformation/world/LegacyPaperWorldConfig.java b/src/main/java/io/papermc/paper/configuration/transformation/world/LegacyPaperWorldConfig.java
+index f64cc8381d944d8e0531cff68d75ea21075b04b2..ba260452168dd09d20bfe2afc1b85f21a1e182b0 100644
+--- a/src/main/java/io/papermc/paper/configuration/transformation/world/LegacyPaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/configuration/transformation/world/LegacyPaperWorldConfig.java
+@@ -54,25 +54,6 @@ public final class LegacyPaperWorldConfig {
+                 newPath[newPath.length - 1] = "nether-ceiling-void-damage-height";
+                 return newPath;
+             }).build())
+-            .addVersion(19, ConfigurationTransformation.builder()
+-                .addAction(path("anti-xray", "hidden-blocks"), (path, value) -> {
+-                    final List<String> hiddenBlocks = value.getList(String.class);
+-                    if (hiddenBlocks != null) {
+-                        hiddenBlocks.remove("lit_redstone_ore");
+-                    }
+-                    return null;
+-                })
+-                .addAction(path("anti-xray", "replacement-blocks"), (path, value) -> {
+-                    final List<String> replacementBlocks = value.getList(String.class);
+-                    if (replacementBlocks != null) {
+-                        final int index = replacementBlocks.indexOf("planks");
+-                        if (index != -1) {
+-                            replacementBlocks.set(index, "oak_planks");
+-                        }
+-                    }
+-                    value.raw(replacementBlocks);
+-                    return null;
+-                }).build())
+             .addVersion(20, ConfigurationTransformation.builder().addAction(path("baby-zombie-movement-speed"), TransformAction.rename("baby-zombie-movement-modifier")).build())
+             .addVersion(22, ConfigurationTransformation.builder().addAction(path("per-player-mob-spawns"), (path, value) -> {
+                 value.raw(true);
+@@ -162,8 +143,6 @@ public final class LegacyPaperWorldConfig {
+         final ConfigurationTransformation.Builder builder = ConfigurationTransformation.builder()
+             .addAction(path("verbose"), TransformAction.remove()); // not needed
+ 
+-        moveFromRoot(builder, "anti-xray", "anticheat");
+-
+         moveFromRootAndRename(builder, "armor-stands-do-collision-entity-lookups", "do-collision-entity-lookups", "entities", "armor-stands");
+         moveFromRootAndRename(builder, "armor-stands-tick", "tick", "entities", "armor-stands");
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 91fce90f96662f4807f856a0df74e24322149a66..8dc831bb08aa482149fcb69bd6a7222591a50e19 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -16,7 +16,6 @@ import io.papermc.paper.configuration.GlobalConfiguration;
+ import io.papermc.paper.configuration.PaperServerConfiguration;
+ import io.papermc.paper.configuration.ServerConfiguration;
+ import io.papermc.paper.world.PaperWorldLoader;
+-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+ import java.awt.image.BufferedImage;
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+@@ -569,9 +568,6 @@ public final class CraftServer implements Server {
+         }
+ 
+         if (type == PluginLoadOrder.POSTWORLD) {
+-            // Spigot start - Allow vanilla commands to be forced to be the main command
+-            this.commandMap.setFallbackCommands();
+-            // Spigot end
+             DefaultPermissions.registerCorePermissions();
+             CraftDefaultPermissions.registerCorePermissions();
+             this.syncCommands();
+@@ -855,7 +851,7 @@ public final class CraftServer implements Server {
+     @Override
+     public long getConnectionThrottle() {
+         // Spigot start - Automatically set connection throttle for bungee configurations
+-        if (org.spigotmc.SpigotConfig.bungee || io.papermc.paper.configuration.GlobalConfiguration.get().proxies.velocity.enabled) { // Paper - Add Velocity IP Forwarding Support
++        if (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.velocity.enabled) { // Paper - Add Velocity IP Forwarding Support
+             return -1;
+         } else {
+             return this.configuration.getInt("settings.connection-throttle");
+@@ -2803,7 +2799,7 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public void restart() {
+-        org.spigotmc.RestartCommand.restart();
++
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
+index 7954d56c4fd5c5bd570d5ecdfd79a66276abdc98..d7f55e03bfb93f48857464cd9bae4efc9948b165 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
+@@ -1,30 +1,18 @@
+ package org.bukkit.craftbukkit.command;
+ 
+-import java.net.SocketAddress;
+-import net.minecraft.network.chat.Component;
+-import net.minecraft.server.rcon.RconConsoleSource;
+ import org.bukkit.command.RemoteConsoleCommandSender;
+ 
+-public class CraftRemoteConsoleCommandSender extends ServerCommandSender implements RemoteConsoleCommandSender {
+-
+-    private final RconConsoleSource listener;
+-
+-    public CraftRemoteConsoleCommandSender(RconConsoleSource listener) {
+-        this.listener = listener;
+-    }
++import java.net.SocketAddress;
+ 
+-    public RconConsoleSource getListener() {
+-        return this.listener;
+-    }
++public class CraftRemoteConsoleCommandSender extends ServerCommandSender implements RemoteConsoleCommandSender {
+ 
+     @Override
+     public SocketAddress getAddress() {
+-       return this.listener.socketAddress;
++       return null;
+     }
+ 
+     @Override
+     public void sendMessage(String message) {
+-        this.listener.sendSystemMessage(Component.literal(message + "\n")); // Send a newline after each message, to preserve formatting.
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
+index 1eb5ad45103afb6c0975ba885ff26f0098449163..5d2ded38695777ba43cb1dacde5e203ae5a21247 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
+@@ -89,9 +89,6 @@ public class VanillaCommandWrapper extends BukkitCommand { // Paper
+         if (sender instanceof BlockCommandSender) {
+             return ((CraftBlockCommandSender) sender).getWrapper();
+         }
+-        if (sender instanceof RemoteConsoleCommandSender) {
+-            return ((CraftRemoteConsoleCommandSender) sender).getListener().createCommandSourceStack();
+-        }
+         if (sender instanceof ConsoleCommandSender) {
+             return ((CraftServer) sender.getServer()).getServer().createCommandSourceStack();
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/generator/OldCraftChunkData.java b/src/main/java/org/bukkit/craftbukkit/generator/OldCraftChunkData.java
+index b4feddacbd647304bf76a717526ce7b86c9d9817..02b9855562c93dcc903d7bf8acb5c19d0d8a6d4d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/generator/OldCraftChunkData.java
++++ b/src/main/java/org/bukkit/craftbukkit/generator/OldCraftChunkData.java
+@@ -184,7 +184,7 @@ public final class OldCraftChunkData implements ChunkGenerator.ChunkData {
+         int offset = (y - this.minHeight) >> 4;
+         LevelChunkSection section = this.sections[offset];
+         if (create && section == null) {
+-            this.sections[offset] = section = FeatureHooks.createSection(this.palettedContainerFactory, this.world instanceof org.bukkit.craftbukkit.CraftWorld ? ((org.bukkit.craftbukkit.CraftWorld) this.world).getHandle() : null, null, offset + (this.minHeight >> 4)); // Paper - Anti-Xray - Add parameters
++            this.sections[offset] = section = FeatureHooks.createSection(this.palettedContainerFactory);
+         }
+         return section;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index fe7ba61e70592407a4a39c9387ad2606bb703650..e5b665ce307a3335e4e6089af505299c84389a8e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -485,11 +485,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         return CraftRegistry.get(registry, namespacedKey, ApiVersion.CURRENT);
+     }
+ 
+-    @Override
+-    public com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
+-        return new org.dreeam.leaf.version.LeafVersionFetcher(); // Leaf - Rebrand
+-    }
+-
+     @Override
+     public byte[] serializeItem(ItemStack item) {
+         Preconditions.checkNotNull(item, "null cannot be serialized");
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java b/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java
+index aa473abf6008620a1f46f4ecaea99e6ad9aeb689..dc32801e26938b3011c08929bd8704f9cbb8fff6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/permissions/CommandPermissions.java
+@@ -14,10 +14,6 @@ public final class CommandPermissions {
+         Permission commands = DefaultPermissions.registerPermission(CommandPermissions.ROOT, "Gives the user the ability to use all vanilla minecraft commands", parent);
+ 
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "kill", "Allows the user to commit suicide", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "me", "Allows the user to perform a chat action", PermissionDefault.TRUE, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "msg", "Allows the user to privately message another player", PermissionDefault.TRUE, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "help", "Allows the user to access Vanilla command help", PermissionDefault.TRUE, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "say", "Allows the user to talk as the console", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "give", "Allows the user to give items to players", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "teleport", "Allows the user to teleport players", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "kick", "Allows the user to kick players", PermissionDefault.OP, commands);
+@@ -29,15 +25,14 @@ public final class CommandPermissions {
+             Permission gamemodeSelf = DefaultPermissions.registerPermission(PREFIX + "gamemode." + gametype.getName(), "Allows the user to set " + gametype.getName() + " gamemode for self", PermissionDefault.OP);
+             Permission gamemodeOther = DefaultPermissions.registerPermission(PREFIX + "gamemode." + gametype.getName() + ".other", "Allows the user to set " + gametype.getName() + " gamemode for other players", PermissionDefault.OP);
+             gamemodeSelf.addParent(gamemodeOther, true);
+-            gamemodeVanilla.addParent(gamemodeSelf, true);
++            gamemodeVanilla.addParent(gamemodeSelf, true);        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "trigger", "Allows the use of the trigger command", PermissionDefault.TRUE, commands);
++
+         }
+         // Purpur end - Gamemode extra permissions
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "experience", "Allows the user to give themselves or others arbitrary values of experience", PermissionDefault.OP, commands); // Paper - wrong permission; redirects are de-redirected and the root literal name is used, so xp -> experience
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "defaultgamemode", "Allows the user to change the default gamemode of the server", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "seed", "Allows the user to view the seed of the world", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "effect", "Allows the user to add/remove effects on players", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "selector", "Allows the use of selectors", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "trigger", "Allows the use of the trigger command", PermissionDefault.TRUE, commands);
+         // Paper start
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "advancement", "Allows the user to give, remove, or check player advancements", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "attribute", "Allows the user to query, add, remove or set an entity attribute", PermissionDefault.OP, commands);
+@@ -63,7 +58,6 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "function", "Allows the user to run a function", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "gamerule", "Allows a user to set or query a game rule value", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "item", "Allows the user to replace items in inventories", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "jfr", "Allows a user to use the vanilla Java FlightRecorder profiling system", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "locate", "Allows the user to locate the closest structure", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "loot", "Allows the user to drop items from an inventory slot onto the ground", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "op", "Allows the user to grant operator status to a player", PermissionDefault.OP, commands);
+@@ -94,14 +88,11 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "summon", "Allows the user to summon an entity", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "tag", "Allows the user to control entity tags", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "team", "Allows the user to control teams", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "teammsg", "Allows the user to specify the message to send to team", PermissionDefault.TRUE, commands); // defaults to all players
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "tellraw", "Allows the user to display a JSON message to players", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "test", "Allows the user to manage and execute GameTests", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "tick", "Allows the user to control the tick rate of the server", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "time", "Allows the user to change or query the world's game time", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "title", "Allows the user to manage screen titles", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "transfer", "Allows the user to transfer to another server", PermissionDefault.OP, commands);
+-        DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "version", "Shows info related to the server version", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "waypoint", "Allows the management of a waypoints on the server/locator bar", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "weather", "Allows the user to set the weather", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(CommandPermissions.PREFIX + "whitelist", "Allows the user to manage the server whitelist", PermissionDefault.OP, commands);
+diff --git a/src/main/java/org/spigotmc/RestartCommand.java b/src/main/java/org/spigotmc/RestartCommand.java
+deleted file mode 100644
+index 905dde12db8ac8dc0ff8ff6898867039e6e4e550..0000000000000000000000000000000000000000
+--- a/src/main/java/org/spigotmc/RestartCommand.java
++++ /dev/null
+@@ -1,131 +0,0 @@
+-package org.spigotmc;
+-
+-import java.io.File;
+-import java.util.Locale;
+-import net.minecraft.server.MinecraftServer;
+-import net.minecraft.server.level.ServerPlayer;
+-import org.bukkit.command.Command;
+-import org.bukkit.command.CommandSender;
+-import org.bukkit.craftbukkit.util.CraftChatMessage;
+-
+-public class RestartCommand extends Command {
+-
+-    public RestartCommand(String name) {
+-        super(name);
+-        this.description = "Restarts the server";
+-        this.usageMessage = "/restart";
+-        this.setPermission("bukkit.command.restart");
+-    }
+-
+-    @Override
+-    public boolean execute(CommandSender sender, String currentAlias, String[] args) {
+-        if (this.testPermission(sender)) {
+-            MinecraftServer.getServer().processQueue.add(RestartCommand::restart);
+-        }
+-        return true;
+-    }
+-
+-    public static void restart() {
+-        RestartCommand.restart(SpigotConfig.restartScript);
+-    }
+-
+-    private static void restart(final String restartScript) {
+-        try {
+-            // Paper - extract method and cleanup
+-            boolean isRestarting = addShutdownHook(restartScript);
+-            if (isRestarting) {
+-                System.out.println("Attempting to restart with " + SpigotConfig.restartScript);
+-            } else {
+-                System.out.println("Startup script '" + SpigotConfig.restartScript + "' does not exist! Stopping server.");
+-            }
+-            // Stop the watchdog
+-            WatchdogThread.doStop();
+-
+-            shutdownServer(isRestarting);
+-            // Paper end
+-        } catch (Exception ex) {
+-            ex.printStackTrace();
+-        }
+-    }
+-
+-    // Paper start - sync copied from above with minor changes, async added
+-    private static void shutdownServer(boolean isRestarting) {
+-        if (MinecraftServer.getServer().isSameThread()) {
+-            // Kick all players
+-            for (ServerPlayer p : com.google.common.collect.ImmutableList.copyOf(MinecraftServer.getServer().getPlayerList().players)) {
+-                p.connection.disconnect(CraftChatMessage.fromStringOrEmpty(SpigotConfig.restartMessage, true), org.bukkit.event.player.PlayerKickEvent.Cause.RESTART_COMMAND); // Paper - kick event reason (cause is never used)
+-            }
+-            // Give the socket a chance to send the packets
+-            try {
+-                Thread.sleep(100);
+-            } catch (InterruptedException ex) {
+-            }
+-
+-            closeSocket();
+-
+-            // Actually shutdown
+-            try {
+-                MinecraftServer.getServer().close(); // calls stop()
+-            } catch (Throwable t) {
+-            }
+-
+-            // Actually stop the JVM
+-            System.exit(0);
+-        } else {
+-            // Mark the server to shutdown at the end of the tick
+-            MinecraftServer.getServer().safeShutdown(false, isRestarting);
+-
+-            // wait 10 seconds to see if we're actually going to try shutdown
+-            try {
+-                Thread.sleep(10000);
+-            } catch (InterruptedException ignored) {}
+-
+-            // Check if we've actually hit a state where the server is going to safely shutdown
+-            // if we have, let the server stop as usual
+-            if (MinecraftServer.getServer().isStopped()) return;
+-
+-            // If the server hasn't stopped by now, assume worse case and kill
+-            closeSocket();
+-            System.exit(0);
+-        }
+-    }
+-    // Paper end
+-
+-    // Paper - Split from moved code
+-    private static void closeSocket() {
+-        // Close the socket so we can rebind with the new process
+-        MinecraftServer.getServer().getConnection().stop();
+-
+-        // Give time for it to kick in
+-        try {
+-            Thread.sleep(100);
+-        } catch (InterruptedException ignored) {}
+-    }
+-    // Paper end
+-
+-    // Paper start - copied from above and modified to return if the hook registered
+-    public static boolean addShutdownHook(String restartScript) {
+-        String[] split = restartScript.split(" ");
+-        if (split.length > 0 && new File(split[0]).isFile()) {
+-            Thread shutdownHook = new Thread(() -> {
+-                try {
+-                    String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+-                    if (os.contains("win")) {
+-                        Runtime.getRuntime().exec("cmd /c start " + restartScript);
+-                    } else {
+-                        Runtime.getRuntime().exec("sh " + restartScript);
+-                    }
+-                } catch (Exception e) {
+-                    e.printStackTrace();
+-                }
+-            });
+-
+-            shutdownHook.setDaemon(true);
+-            Runtime.getRuntime().addShutdownHook(shutdownHook);
+-            return true;
+-        } else {
+-            return false;
+-        }
+-    }
+-    // Paper end
+-}
+diff --git a/src/main/java/org/spigotmc/SpigotCommand.java b/src/main/java/org/spigotmc/SpigotCommand.java
+deleted file mode 100644
+index 5d63133d015b79f7a7167098dbac6d350cec2d79..0000000000000000000000000000000000000000
+--- a/src/main/java/org/spigotmc/SpigotCommand.java
++++ /dev/null
+@@ -1,50 +0,0 @@
+-package org.spigotmc;
+-
+-import java.io.File;
+-import net.kyori.adventure.text.format.NamedTextColor;
+-import net.minecraft.server.MinecraftServer;
+-import net.minecraft.server.level.ServerLevel;
+-import org.bukkit.command.Command;
+-import org.bukkit.command.CommandSender;
+-
+-import static net.kyori.adventure.text.Component.text;
+-
+-public class SpigotCommand extends Command {
+-
+-    public SpigotCommand(String name) {
+-        super(name);
+-        this.description = "Spigot related commands";
+-        this.usageMessage = "/spigot reload";
+-        this.setPermission("bukkit.command.spigot");
+-    }
+-
+-    @Override
+-    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+-        if (!this.testPermission(sender)) return true;
+-
+-        if (args.length != 1 || !args[0].equals("reload")) {
+-            sender.sendMessage(text("Usage: " + this.usageMessage, NamedTextColor.RED));
+-            return false;
+-        }
+-
+-
+-        Command.broadcastCommandMessage(sender, text().color(NamedTextColor.RED)
+-            .append(text("Please note that this command is not supported and may cause issues."))
+-            .appendNewline()
+-            .append(text("If you encounter any issues please use the /stop command to restart your server."))
+-            .build()
+-        );
+-
+-        MinecraftServer console = MinecraftServer.getServer();
+-        org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings"));
+-        for (ServerLevel world : console.getAllLevels()) {
+-            world.spigotConfig.init();
+-        }
+-        console.server.reloadCount++;
+-
+-        Command.broadcastCommandMessage(sender, text("Reload complete.", NamedTextColor.GREEN));
+-        
+-
+-        return true;
+-    }
+-}
+diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
+index f21403e8d7b8365030b66620fa320290caa6b70a..95973e8b543b2fcde8b707dbcf93dccd090ac115 100644
+--- a/src/main/java/org/spigotmc/SpigotConfig.java
++++ b/src/main/java/org/spigotmc/SpigotConfig.java
+@@ -1,19 +1,6 @@
+ package org.spigotmc;
+ 
+ import com.google.common.base.Throwables;
+-import java.io.File;
+-import java.io.IOException;
+-import java.lang.reflect.InvocationTargetException;
+-import java.lang.reflect.Method;
+-import java.lang.reflect.Modifier;
+-import java.util.Arrays;
+-import java.util.HashMap;
+-import java.util.HashSet;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Objects;
+-import java.util.Set;
+-import java.util.logging.Level;
+ import net.minecraft.core.registries.BuiltInRegistries;
+ import net.minecraft.resources.Identifier;
+ import net.minecraft.server.MinecraftServer;
+@@ -29,6 +16,14 @@ import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.configuration.InvalidConfigurationException;
+ import org.bukkit.configuration.file.YamlConfiguration;
+ 
++import java.io.File;
++import java.io.IOException;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import java.util.*;
++import java.util.logging.Level;
++
+ public class SpigotConfig {
+ 
+     private static File CONFIG_FILE;
+@@ -66,7 +61,6 @@ public class SpigotConfig {
+         SpigotConfig.config.options().copyDefaults(true);
+ 
+         SpigotConfig.commands = new HashMap<>();
+-        SpigotConfig.commands.put("spigot", new SpigotCommand("spigot"));
+ 
+         SpigotConfig.version = SpigotConfig.getInt("config-version", 12);
+         SpigotConfig.set("config-version", 12);
+@@ -132,12 +126,14 @@ public class SpigotConfig {
+     }
+ 
+     public static boolean logCommands;
++
+     private static void logCommands() {
+         SpigotConfig.logCommands = SpigotConfig.getBoolean("commands.log", true);
+     }
+ 
+     public static int tabComplete;
+     public static boolean sendNamespaced;
++
+     private static void tabComplete() {
+         if (SpigotConfig.version < 6) {
+             boolean oldValue = SpigotConfig.getBoolean("commands.tab-complete", true);
+@@ -176,21 +172,12 @@ public class SpigotConfig {
+     public static boolean restartOnCrash = true;
+     public static String restartScript = "./start.sh";
+     public static String restartMessage;
++
+     private static void watchdog() {
+         SpigotConfig.timeoutTime = SpigotConfig.getInt("settings.timeout-time", SpigotConfig.timeoutTime);
+         SpigotConfig.restartOnCrash = SpigotConfig.getBoolean("settings.restart-on-crash", SpigotConfig.restartOnCrash);
+         SpigotConfig.restartScript = SpigotConfig.getString("settings.restart-script", SpigotConfig.restartScript);
+         SpigotConfig.restartMessage = SpigotConfig.transform(SpigotConfig.getString("messages.restart", "Server is restarting"));
+-        SpigotConfig.commands.put("restart", new RestartCommand("restart"));
+-    }
+-
+-    public static boolean bungee;
+-    private static void bungee() {
+-        if (SpigotConfig.version < 4) {
+-            SpigotConfig.set("settings.bungeecord", false);
+-            System.out.println("Outdated config, disabling BungeeCord support!");
+-        }
+-        SpigotConfig.bungee = SpigotConfig.getBoolean("settings.bungeecord", false);
+     }
+ 
+     private static void nettyThreads() {
+@@ -231,18 +218,21 @@ public class SpigotConfig {
+     }
+ 
+     public static int playerSample;
++
+     private static void playerSample() {
+         SpigotConfig.playerSample = Math.max(SpigotConfig.getInt("settings.sample-count", 12), 0); // Paper - Avoid negative counts
+         Bukkit.getLogger().log(Level.INFO, "Server Ping Player Sample Count: {0}", playerSample); // Paper - Use logger
+     }
+ 
+     public static int playerShuffle;
++
+     private static void playerShuffle() {
+         SpigotConfig.playerShuffle = SpigotConfig.getInt("settings.player-shuffle", 0);
+     }
+ 
+     public static boolean enableSpamExclusions = false;
+     public static List<String> spamExclusions;
++
+     private static void spamExclusions() {
+         SpigotConfig.spamExclusions = SpigotConfig.getList("commands.spam-exclusions", List.of("/skill"));
+         Object enabled = SpigotConfig.config.get("commands.enable-spam-exclusions");
+@@ -261,11 +251,13 @@ public class SpigotConfig {
+     }
+ 
+     public static boolean silentCommandBlocks;
++
+     private static void silentCommandBlocks() {
+         SpigotConfig.silentCommandBlocks = SpigotConfig.getBoolean("commands.silent-commandblock-console", false);
+     }
+ 
+     public static Set<String> replaceCommands;
++
+     private static void replaceCommands() {
+         if (SpigotConfig.config.contains("replace-commands")) {
+             SpigotConfig.set("commands.replace-commands", SpigotConfig.config.getStringList("replace-commands"));
+@@ -276,21 +268,25 @@ public class SpigotConfig {
+     }
+ 
+     public static int userCacheCap;
++
+     private static void userCacheCap() {
+         SpigotConfig.userCacheCap = SpigotConfig.getInt("settings.user-cache-size", 1000);
+     }
+ 
+     public static boolean saveUserCacheOnStopOnly;
++
+     private static void saveUserCacheOnStopOnly() {
+         SpigotConfig.saveUserCacheOnStopOnly = SpigotConfig.getBoolean("settings.save-user-cache-on-stop-only", false);
+     }
+ 
+     public static double movedWronglyThreshold;
++
+     private static void movedWronglyThreshold() {
+         SpigotConfig.movedWronglyThreshold = SpigotConfig.getDouble("settings.moved-wrongly-threshold", 0.0625D);
+     }
+ 
+     public static double movedTooQuicklyMultiplier;
++
+     private static void movedTooQuicklyMultiplier() {
+         SpigotConfig.movedTooQuicklyMultiplier = SpigotConfig.getDouble("settings.moved-too-quickly-multiplier", 10.0D);
+     }
+@@ -299,6 +295,7 @@ public class SpigotConfig {
+     public static double maxHealth = 1024;
+     public static double movementSpeed = 1024;
+     public static double attackDamage = 2048;
++
+     private static void attributeMaxes() {
+         SpigotConfig.maxAbsorption = SpigotConfig.getDouble("settings.attribute.maxAbsorption.max", SpigotConfig.maxAbsorption);
+         ((RangedAttribute) Attributes.MAX_ABSORPTION.value()).maxValue = SpigotConfig.maxAbsorption;
+@@ -311,6 +308,7 @@ public class SpigotConfig {
+     }
+ 
+     public static boolean debug;
++
+     private static void debug() {
+         SpigotConfig.debug = SpigotConfig.getBoolean("settings.debug", false);
+ 
+@@ -329,6 +327,7 @@ public class SpigotConfig {
+ 
+     public static boolean disableAdvancementSaving;
+     public static List<String> disabledAdvancements;
++
+     private static void disabledAdvancements() {
+         SpigotConfig.disableAdvancementSaving = SpigotConfig.getBoolean("advancements.disable-saving", false);
+         SpigotConfig.disabledAdvancements = SpigotConfig.getList("advancements.disabled", List.of("minecraft:story/disabled"));
+@@ -336,17 +335,20 @@ public class SpigotConfig {
+ 
+     public static boolean logVillagerDeaths;
+     public static boolean logNamedDeaths;
++
+     private static void logDeaths() {
+         SpigotConfig.logVillagerDeaths = SpigotConfig.getBoolean("settings.log-villager-deaths", true);
+         SpigotConfig.logNamedDeaths = SpigotConfig.getBoolean("settings.log-named-deaths", true);
+     }
+ 
+     public static boolean disablePlayerDataSaving;
++
+     private static void disablePlayerDataSaving() {
+         SpigotConfig.disablePlayerDataSaving = SpigotConfig.getBoolean("players.disable-saving", false);
+     }
+ 
+     public static boolean belowZeroGenerationInExistingChunks;
++
+     private static void belowZeroGenerationInExistingChunks() {
+         SpigotConfig.belowZeroGenerationInExistingChunks = SpigotConfig.getBoolean("world-settings.default.below-zero-generation-in-existing-chunks", true);
+     }
+diff --git a/src/main/java/org/spigotmc/TickLimiter.java b/src/main/java/org/spigotmc/TickLimiter.java
+deleted file mode 100644
+index 961489499e220d71339771dcabf151edeaf6d231..0000000000000000000000000000000000000000
+--- a/src/main/java/org/spigotmc/TickLimiter.java
++++ /dev/null
+@@ -1,20 +0,0 @@
+-package org.spigotmc;
+-
+-public class TickLimiter {
+-
+-    private final int maxTime;
+-    private long startTime;
+-
+-    public TickLimiter(int maxTime) {
+-        this.maxTime = maxTime;
+-    }
+-
+-    public void initTick() {
+-        this.startTime = System.currentTimeMillis();
+-    }
+-
+-    public boolean shouldContinue() {
+-        long remaining = System.currentTimeMillis() - this.startTime;
+-        return remaining < this.maxTime;
+-    }
+-}
+diff --git a/src/main/java/org/spigotmc/TicksPerSecondCommand.java b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
+index f2b9331227ffecc2a2a6b66647b7f78f9f1af828..db8114fa031fa942caf0507395ab277b93477d5f 100644
+--- a/src/main/java/org/spigotmc/TicksPerSecondCommand.java
++++ b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
+@@ -1,17 +1,25 @@
+ package org.spigotmc;
+ 
++import ca.spottedleaf.moonrise.common.time.TickData;
+ import net.kyori.adventure.text.Component;
+ import net.kyori.adventure.text.JoinConfiguration;
+ import net.kyori.adventure.text.TextComponent;
+ import net.kyori.adventure.text.format.NamedTextColor;
+ import net.kyori.adventure.text.format.TextColor;
++import net.minecraft.server.MinecraftServer;
+ import org.bukkit.command.Command;
+ import org.bukkit.command.CommandSender;
++
+ import java.text.DecimalFormat;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
+ 
+ import static net.kyori.adventure.text.Component.text;
++import static net.kyori.adventure.text.format.NamedTextColor.*;
+ 
+ public class TicksPerSecondCommand extends Command {
++    private static final Component SLASH = text("/");
+ 
+     private boolean hasShownMemoryWarning; // Paper
+     private static final ThreadLocal<DecimalFormat> ONE_DECIMAL_PLACES = ThreadLocal.withInitial(() -> {
+@@ -50,33 +58,50 @@ public class TicksPerSecondCommand extends Command {
+         builder.append(text("TPS from last 5s, 1m, 5m, 15m: ", NamedTextColor.GOLD)); // Gale - Purpur - 5 second TPS average
+         builder.append(Component.join(JoinConfiguration.commas(true), tpsAvg));
+         sender.sendMessage(builder.asComponent());
+-        // Gale start - YAPFA - last tick time - in TPS command
+-        if (org.galemc.gale.configuration.GaleGlobalConfiguration.get().misc.lastTickTimeInTpsCommand.enabled) {
+-            long lastTickProperTime = net.minecraft.server.MinecraftServer.lastTickProperTime;
+-            long lastTickOversleepTime = net.minecraft.server.MinecraftServer.lastTickOversleepTime;
+-            var lastTickTimeMessage = text("Last tick: ")
+-                .append(formatTickTimeDuration(lastTickProperTime, 44, 50, 51));
+-
+-            if (org.galemc.gale.configuration.GaleGlobalConfiguration.get().misc.lastTickTimeInTpsCommand.addOversleep) {
+-                lastTickTimeMessage = lastTickTimeMessage.append(text(" self + "))
+-                    .append(formatTickTimeDuration(lastTickOversleepTime, Math.max(1, 51 - lastTickProperTime), Math.max(2, 52 - lastTickProperTime), Math.max(3, 53 - lastTickProperTime)))
+-                    .append(text(" oversleep = "))
+-                    .append(formatTickTimeDuration(lastTickProperTime + lastTickOversleepTime, 51, 52, 53));
+-            }
+-
+-            lastTickTimeMessage = lastTickTimeMessage.color(NamedTextColor.GOLD);
+-            sender.sendMessage(lastTickTimeMessage);
+-        }
+-        // Gale end - YAPFA - last tick time - in TPS command
+-        if (args.length > 0 && args[0].equals("mem") && sender.hasPermission("bukkit.command.tpsmemory")) {
+-            sender.sendMessage(text()
+-                .append(text("Current Memory Usage: ", NamedTextColor.GOLD))
+-                .append(text(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024)) + "/" + (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + " mb (Max: " + (Runtime.getRuntime().maxMemory() / (1024 * 1024)) + " mb)", NamedTextColor.GREEN))
+-            );
+-            if (!this.hasShownMemoryWarning) {
+-                sender.sendMessage(WARN_MSG);
+-                this.hasShownMemoryWarning = true;
+-            }
++
++        MinecraftServer server = MinecraftServer.getServer();
++
++        List<Component> times = new ArrayList<>();
++        times.addAll(eval(server.tickTimes5s));
++        times.addAll(eval(server.tickTimes10s));
++        times.addAll(eval(server.tickTimes1m));
++
++        sender.sendMessage(text().content("Server tick times ").color(GOLD)
++            .append(text().color(YELLOW)
++                .append(
++                    text("("),
++                    text("avg", GRAY),
++                    text("/"),
++                    text("min", GRAY),
++                    text("/"),
++                    text("max", GRAY),
++                    text(")")
++                )
++            ).append(
++                text(" from last 5s"),
++                text(",", GRAY),
++                text(" 10s"),
++                text(",", GRAY),
++                text(" 1m"),
++                text(":", YELLOW)
++            )
++        );
++        sender.sendMessage(text().content("◴ ").color(GOLD)
++            .append(text().color(GRAY)
++                .append(
++                    times.get(0), SLASH, times.get(1), SLASH, times.get(2), text(", ", YELLOW),
++                    times.get(3), SLASH, times.get(4), SLASH, times.get(5), text(", ", YELLOW),
++                    times.get(6), SLASH, times.get(7), SLASH, times.get(8)
++                )
++            )
++        );
++        sender.sendMessage(text()
++            .append(text("Current Memory Usage: ", NamedTextColor.GOLD))
++            .append(text(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024)) + "/" + (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + " mb (Max: " + (Runtime.getRuntime().maxMemory() / (1024 * 1024)) + " mb)", NamedTextColor.GREEN))
++        );
++        if (!this.hasShownMemoryWarning) {
++            sender.sendMessage(WARN_MSG);
++            this.hasShownMemoryWarning = true;
+         }
+         // Paper end
+ 
+@@ -91,15 +116,15 @@ public class TicksPerSecondCommand extends Command {
+         // Paper end
+     }
+ 
+-    // Gale start - YAPFA - last tick time - in TPS command
+-    private static final TextColor safeColor = NamedTextColor.GREEN;
+-    private static final TextColor closeColor = NamedTextColor.YELLOW;
+-    private static final TextColor problematicColor = TextColor.color(0xf77c1e);
+-    private static final TextColor severeColor = NamedTextColor.RED;
++    private static List<Component> eval(TickData tickData) {
++        TickData.TickReportData reportData = tickData.generateTickReport(null, System.nanoTime(), MinecraftServer.getServer().tickRateManager().nanosecondsPerTick());
++        double avgD = reportData == null ? 0.0 : reportData.timePerTickData().segmentAll().average() * 1.0E-6D;
++        double minD = reportData == null ? 0.0 : reportData.timePerTickData().segmentAll().least() * 1.0E-6D;
++        double maxD = reportData == null ? 0.0 : reportData.timePerTickData().segmentAll().greatest() * 1.0E-6D;
++        return Arrays.asList(getColor(avgD), getColor(minD), getColor(maxD));
++    }
+ 
+-    private static Component formatTickTimeDuration(long ms, long safeLimit, long closeLimit, long nonSevereLimit) {
+-        return text(ms + " ", ms <= safeLimit ? safeColor : ms <= closeLimit ? closeColor : ms <= nonSevereLimit ? problematicColor : severeColor)
+-            .append(text("ms", NamedTextColor.GOLD));
++    private static Component getColor(double avg) {
++        return text(ONE_DECIMAL_PLACES.get().format(avg), avg >= 50 ? RED : avg >= 40 ? YELLOW : GREEN);
+     }
+-    // Gale end - YAPFA - last tick time - in TPS command
+ }
+diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
+index 023360cb1e9a852b22d52ed82b24574f39f963cf..3722e7856a667710ee464b03dc500079a1d9fb71 100644
+--- a/src/main/java/org/spigotmc/WatchdogThread.java
++++ b/src/main/java/org/spigotmc/WatchdogThread.java
+@@ -2,9 +2,12 @@ package org.spigotmc;
+ 
+ import io.papermc.paper.FeatureHooks;
+ import io.papermc.paper.configuration.GlobalConfiguration;
++
++import java.io.File;
+ import java.lang.management.ManagementFactory;
+ import java.lang.management.MonitorInfo;
+ import java.lang.management.ThreadInfo;
++import java.util.Locale;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ import net.minecraft.server.MinecraftServer;
+@@ -159,7 +162,25 @@ public class WatchdogThread extends ca.spottedleaf.moonrise.common.util.TickThre
+                     if (!server.hasStopped()) {
+                         server.forceTicks = true;
+                         if (this.restart) {
+-                            RestartCommand.addShutdownHook(SpigotConfig.restartScript);
++                            String restartScript = SpigotConfig.restartScript;
++                            String[] split = restartScript.split(" ");
++                            if (split.length > 0 && new File(split[0]).isFile()) {
++                                Thread shutdownHook = new Thread(() -> {
++                                    try {
++                                        String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
++                                        if (os.contains("win")) {
++                                            Runtime.getRuntime().exec("cmd /c start " + restartScript);
++                                        } else {
++                                            Runtime.getRuntime().exec("sh " + restartScript);
++                                        }
++                                    } catch (Exception e) {
++                                        e.printStackTrace();
++                                    }
++                                });
++
++                                shutdownHook.setDaemon(true);
++                                Runtime.getRuntime().addShutdownHook(shutdownHook);
++                            }
+                         }
+                         // try one last chance to safe shutdown on main in case it 'comes back'
+                         server.abnormalExit = true;
+diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
+index 7441a667831a2f26c73bd03754846a9fd2a3353a..e93c9e18353d34b7e6dbd4962c55aaf32186a17d 100644
+--- a/src/main/resources/log4j2.xml
++++ b/src/main/resources/log4j2.xml
+@@ -1,18 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <Configuration status="WARN" shutdownHook="disable">
+     <Appenders>
+-        <Queue name="ServerGuiConsole">
+-            <!-- Purpur start - copied from TerminalConsole -->
+-            <PatternLayout>
+-                <LoggerNamePatternSelector defaultPattern="%highlightGUIError{[%d{HH:mm:ss} %level]: [%logger] %stripAnsi{%msg}%n%xEx{full}}">
+-                    <!-- Log root, Minecraft, Mojang and Bukkit loggers without prefix -->
+-                    <!-- Disable prefix for various plugins that bypass the plugin logger -->
+-                    <PatternMatch key=",net.minecraft.,Minecraft,com.mojang.,com.sk89q.,ru.tehkode.,Minecraft.AWE"
+-                                  pattern="%highlightGUIError{[%d{HH:mm:ss} %level]: %stripAnsi{%msg}%n%xEx{full}}" />
+-                </LoggerNamePatternSelector>
+-            </PatternLayout>
+-            <!-- Purpur end -->
+-        </Queue>
+         <TerminalConsole name="TerminalConsole">
+             <PatternLayout>
+                 <LoggerNamePatternSelector defaultPattern="%highlightError{[%d{HH:mm:ss} %level]: [%logger] %msg%n%xEx{full}}">
+@@ -41,7 +29,6 @@
+         <Async name="Async">
+             <AppenderRef ref="File"/>
+             <AppenderRef ref="TerminalConsole" level="info"/>
+-            <AppenderRef ref="ServerGuiConsole" level="info"/>
+         </Async>
+     </Appenders>
+     <Loggers>
