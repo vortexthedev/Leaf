@@ -14,8 +14,6 @@ public class VT4ProfileExecutor extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath() + ".use-virtual-thread-for-profile-executor", enabled,
-            config.pickStringRegionBased(
-                "Use the new Virtual Thread introduced in JDK 21 for profile lookup executor.",
-                "是否为档案查询执行器使用虚拟线程（如果可用）。"));
+                "Use the new Virtual Thread introduced in JDK 21 for profile lookup executor.");
     }
 }

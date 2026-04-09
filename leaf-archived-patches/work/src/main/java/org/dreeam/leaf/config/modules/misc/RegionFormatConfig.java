@@ -40,7 +40,6 @@ public class RegionFormatConfig extends ConfigModules {
                 切换到Linear前请备份服务器.""");
 
         regionFormatTypeName = config.getString(getBasePath() + ".region-format", regionFormatTypeName,
-            config.pickStringRegionBased(
                 "Available region formats: MCA, LINEAR",
                 "可用格式: MCA, LINEAR"));
         linearCompressionLevel = config.getInt(getBasePath() + ".linear-compress-level", linearCompressionLevel);

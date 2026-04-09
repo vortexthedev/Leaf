@@ -13,12 +13,8 @@ public class SkipInactiveEntityForExecute extends ConfigModules {
 
     @Override
     public void onLoaded() {
-        skipInactiveEntityForExecute = config.getBoolean(getBasePath() + ".skip-inactive-entity-for-execute-command", skipInactiveEntityForExecute,
-            config.pickStringRegionBased("""
+        skipInactiveEntityForExecute = config.getBoolean(getBasePath() + ".skip-inactive-entity-for-execute-command", skipInactiveEntityForExecute,"""
                     Skip selecting inactive entities when using execute command.
-                    Will improve performance on servers with massive datapack functions.""",
-                """
-                    execute 命令执行时跳过不活跃实体.
-                    将会提升有大量数据包函数的服务器性能."""));
+                    Will improve performance on servers with massive datapack functions.""");
     }
 }

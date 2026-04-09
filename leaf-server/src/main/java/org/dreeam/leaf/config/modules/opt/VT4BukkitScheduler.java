@@ -14,8 +14,6 @@ public class VT4BukkitScheduler extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath() + ".use-virtual-thread-for-async-scheduler", enabled,
-            config.pickStringRegionBased(
-                "Use the new Virtual Thread introduced in JDK 21 for CraftAsyncScheduler.",
-                "是否为异步任务调度器使用虚拟线程."));
+                "Use the new Virtual Thread introduced in JDK 21 for CraftAsyncScheduler.");
     }
 }

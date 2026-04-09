@@ -25,10 +25,7 @@ public class SparklyPaperParallelWorldTicking extends ConfigModules {
     public void onLoaded() {
         config.addCommentRegionBased(getBasePath(), """
                 **Experimental feature**
-                Enables parallel world ticking to improve performance on multi-core systems.""",
-            """
-                **实验性功能**
-                启用并行世界处理以提高多核 CPU 使用率.""");
+                Enables parallel world ticking to improve performance on multi-core systems.""");
 
         enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
         threads = config.getInt(getBasePath() + ".threads", threads);

@@ -16,21 +16,12 @@ public class DeathItemDropKnockback extends ConfigModules {
     @Override
     public void onLoaded() {
         dropAround = config.getBoolean(getBasePath() + ".drop-around", dropAround,
-            config.pickStringRegionBased(
-                "If true, items will drop randomly around the player on death.",
-                "如果为 “true”，物品会在玩家死亡时随机掉落在其周围."
-            ));
+                "If true, items will drop randomly around the player on death.");
 
         horizontalForce = config.getDouble(getBasePath() + ".horizontal-force", horizontalForce,
-            config.pickStringRegionBased(
-                "Base speed for horizontal velocity when randomly dropping items.",
-                "随机掉落物品时水平速度的基本速度."
-            ));
+                "Base speed for horizontal velocity when randomly dropping items.");
 
         verticalForce = config.getDouble(getBasePath() + ".vertical-force", verticalForce,
-            config.pickStringRegionBased(
-                "Upward motion for randomly dropped items.",
-                "随机掉落物品的向上运动."
-            ));
+                "Upward motion for randomly dropped items.");
     }
 }

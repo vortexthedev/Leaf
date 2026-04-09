@@ -1448,8 +1448,8 @@ index e158d614abed8d16e80192c0c9abd8537c92b9dc..0a21d7aec3ae4a6b2b5dcca25f0225ab
          ItemStack item = handItem.copy();
          // CraftBukkit end
          if (item.has(DataComponents.WRITABLE_BOOK_CONTENT)) {
--            List<Filterable<String>> list = pages.stream().map(this::filterableFromOutgoing).toList();
-+            List<Filterable<String>> list = pages.stream().map(filteredText -> filterableFromOutgoing(filteredText).map(s -> color(s, hasPerm))).toList(); // Purpur - Allow color codes in books
+-            List<String> list = pages.stream().map(this::filterableFromOutgoing).toList();
++            List<String> list = pages.stream().map(filteredText -> filterableFromOutgoing(filteredText).map(s -> color(s, hasPerm))).toList(); // Purpur - Allow color codes in books
              item.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(list));
              this.player.getInventory().setItem(index, CraftEventFactory.handleEditBookEvent(this.player, index, handItem, item)); // CraftBukkit // Paper - Don't ignore result (see other callsite for handleEditBookEvent)
          }
@@ -1465,8 +1465,8 @@ index e158d614abed8d16e80192c0c9abd8537c92b9dc..0a21d7aec3ae4a6b2b5dcca25f0225ab
          if (item.has(DataComponents.WRITABLE_BOOK_CONTENT)) {
              ItemStack itemStack = item.transmuteCopy(Items.WRITTEN_BOOK);
              itemStack.remove(DataComponents.WRITABLE_BOOK_CONTENT);
--            List<Filterable<Component>> list = pages.stream().map(filteredText -> this.filterableFromOutgoing(filteredText).<Component>map(Component::literal)).toList();
-+            List<Filterable<Component>> list = pages.stream().map((filteredText) -> this.filterableFromOutgoing(filteredText).map(s -> hexColor(s, hasPerm))).toList(); // Purpur - Allow color codes in books
+-            List<Component> list = pages.stream().map(filteredText -> this.filterableFromOutgoing(filteredText).<Component>map(Component::literal)).toList();
++            List<Component> list = pages.stream().map((filteredText) -> this.filterableFromOutgoing(filteredText).map(s -> hexColor(s, hasPerm))).toList(); // Purpur - Allow color codes in books
              itemStack.set(
                  DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(this.filterableFromOutgoing(title), this.player.getPlainTextName(), 0, list, true)
              );

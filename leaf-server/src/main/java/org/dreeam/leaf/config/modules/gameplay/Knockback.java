@@ -20,20 +20,11 @@ public class Knockback extends ConfigModules {
     @Override
     public void onLoaded() {
         snowballCanKnockback = config.getBoolean(getBasePath() + ".snowball-knockback-players", snowballCanKnockback,
-            config.pickStringRegionBased(
-                "Make snowball can knockback players.",
-                "使雪球可以击退玩家."
-            ));
+                "Make snowball can knockback players.");
         eggCanKnockback = config.getBoolean(getBasePath() + ".egg-knockback-players", eggCanKnockback,
-            config.pickStringRegionBased(
-                "Make egg can knockback players.",
-                "使鸡蛋可以击退玩家."
-            ));
+                "Make egg can knockback players.");
         canPlayerKnockbackZombie = config.getBoolean(getBasePath() + ".can-player-knockback-zombie", canPlayerKnockbackZombie,
-            config.pickStringRegionBased(
-                "Make players can knockback zombie.",
-                "使玩家可以击退僵尸."
-            ));
+                "Make players can knockback zombie.");
         flushKnockback = config.getBoolean(getBasePath() + ".flush-location-while-knockback-player", flushKnockback);
         oldBlastProtectionKnockbackBehavior = config.getBoolean(getBasePath() + ".old-blast-protection-explosion-knockback", oldBlastProtectionKnockbackBehavior);
     }

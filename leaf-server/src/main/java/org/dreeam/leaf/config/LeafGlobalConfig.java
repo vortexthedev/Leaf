@@ -22,20 +22,13 @@ public class LeafGlobalConfig {
         LeafConfig.loadConfigVersion(getString("config-version"), CURRENT_VERSION);
         configFile.set("config-version", CURRENT_VERSION);
 
-        configFile.addComments("config-version", pickStringRegionBased("""
+        configFile.addComments("config-version", """
                 Leaf Config
 
                 Website: https://www.leafmc.one/
                 Docs: https://www.leafmc.one/docs/getting-started
                 GitHub Repo: https://github.com/Winds-Studio/Leaf
-                Discord: https://discord.com/invite/gfgAwdSEuM""",
-            """
-                Leaf 配置
-
-                官网: https://www.leafmc.one/zh/
-                文档: https://www.leafmc.one/zh/docs/getting-started
-                GitHub 仓库: https://github.com/Winds-Studio/Leaf
-                QQ社区群: 619278377"""));
+                Discord: https://discord.com/invite/gfgAwdSEuM""");
 
         // Pre-structure to force order
         structureConfig();
@@ -212,11 +205,8 @@ public class LeafGlobalConfig {
         }
     }
 
-    public void addCommentRegionBased(String path, String en, String cn) {
-        configFile.addComment(path, isCN ? cn : en);
+    public void addCommentRegionBased(String path, String en) {
+        configFile.addComment(path, en);
     }
 
-    public String pickStringRegionBased(String en, String cn) {
-        return isCN ? cn : en;
-    }
 }

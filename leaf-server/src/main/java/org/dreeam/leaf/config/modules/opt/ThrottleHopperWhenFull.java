@@ -14,13 +14,9 @@ public class ThrottleHopperWhenFull extends ConfigModules {
 
     @Override
     public void onLoaded() {
-        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, config.pickStringRegionBased("""
-                Throttles the hopper if target container is full.""",
-            """
-                是否在目标容器已满时阻塞漏斗."""));
-        skipTicks = config.getInt(getBasePath() + ".skip-ticks", skipTicks, config.pickStringRegionBased("""
-                How many ticks to throttle when the Hopper is throttled.""",
-            """
-                每次阻塞多少 tick."""));
+        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, """
+                Throttles the hopper if target container is full.""");
+        skipTicks = config.getInt(getBasePath() + ".skip-ticks", skipTicks, """
+                How many ticks to throttle when the Hopper is throttled.""");
     }
 }

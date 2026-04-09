@@ -83,13 +83,8 @@ public class LeafConfig {
     // Init config
     public static void loadConfig() {
         try {
-            long begin = System.nanoTime();
-            LOGGER.info("Loading config...");
-
             purgeOutdated();
             loadConfig(true);
-
-            LOGGER.info("Successfully loaded config in {}ms.", (System.nanoTime() - begin) / 1_000_000);
         } catch (Exception e) {
             LOGGER.error("Failed to load config modules!", e);
         }

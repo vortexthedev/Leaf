@@ -14,12 +14,8 @@ public class OptimizedPoweredRails extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath(), enabled,
-            config.pickStringRegionBased(
                 """
                     Whether to use optimized powered rails.
-                    The implementation is based on RailOptimization made by GitHub@FxMorin""",
-                """
-                    是否使用铁轨优化。
-                    优化实现基于 GitHub@FxMori 的 RailOptimization 模组。"""));
+                    The implementation is based on RailOptimization made by GitHub@FxMorin""");
     }
 }

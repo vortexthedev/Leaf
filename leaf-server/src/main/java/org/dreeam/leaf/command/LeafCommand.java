@@ -13,7 +13,6 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.dreeam.leaf.command.subcommands.MSPTCommand;
-import org.dreeam.leaf.command.subcommands.ReloadCommand;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -25,12 +24,9 @@ public final class LeafCommand extends Command {
     public static final String BASE_PERM = LeafCommands.COMMAND_BASE_PERM + "." + COMMAND_LABEL;
     private static final Permission basePermission = new Permission(BASE_PERM, PermissionDefault.OP);
     // subcommand label -> subcommand
-    private static final LeafSubcommand RELOAD_SUBCOMMAND = new ReloadCommand();
     private static final LeafSubcommand MSPT_SUBCOMMAND = new MSPTCommand();
     private static final Map<String, LeafSubcommand> SUBCOMMANDS = Util.make(() -> {
         final Map<Set<String>, LeafSubcommand> commands = new HashMap<>();
-
-        commands.put(Set.of(ReloadCommand.LITERAL_ARGUMENT), RELOAD_SUBCOMMAND);
         commands.put(Set.of(MSPTCommand.LITERAL_ARGUMENT), MSPT_SUBCOMMAND);
 
         return commands.entrySet().stream()

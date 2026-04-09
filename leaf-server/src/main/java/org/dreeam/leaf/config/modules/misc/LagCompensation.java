@@ -17,10 +17,7 @@ public class LagCompensation extends ConfigModules {
     public void onLoaded() {
         config.addCommentRegionBased(getBasePath(), """
                 This section contains lag compensation features,
-                which could ensure basic playing experience during a lag.""",
-            """
-                这部分包含滞后补偿功能,
-                可以在卡顿情况下保障基本游戏体验.""");
+                which could ensure basic playing experience during a lag.""");
 
         enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
         enableForWater = config.getBoolean(getBasePath() + ".enable-for-water", enableForWater);

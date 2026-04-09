@@ -22,10 +22,7 @@ public class MultithreadedTracker extends ConfigModules {
         config.addCommentRegionBased(getBasePath(), """
                 ** Experimental Feature **
                 Make entity tracking asynchronously, can improve performance significantly,
-                especially in some massive entities in small area situations.""", """
-                ** 实验性功能 **
-                异步实体跟踪,
-                在实体数量多且密集的情况下效果明显.""");
+                especially in some massive entities in small area situations.""");
 
         if (asyncMultithreadedTrackerInitialized) {
             config.getConfigSection(getBasePath());

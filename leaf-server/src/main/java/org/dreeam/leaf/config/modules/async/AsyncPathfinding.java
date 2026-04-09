@@ -23,11 +23,7 @@ public class AsyncPathfinding extends ConfigModules {
         config.addCommentRegionBased(getBasePath() + ".reject-policy", """
                 The policy to use when the queue is full and a new task is submitted.
                 FLUSH_ALL: All pending tasks will be run on server thread.
-                CALLER_RUNS: Newly submitted task will be run on server thread.""",
-            """
-                当队列满时, 新提交的任务将使用以下策略处理.
-                FLUSH_ALL: 所有等待中的任务都将在主线程上运行.
-                CALLER_RUNS: 新提交的任务将在主线程上运行."""
+                CALLER_RUNS: Newly submitted task will be run on server thread."""
         );
         if (asyncPathfindingInitialized) {
             config.getConfigSection(getBasePath());

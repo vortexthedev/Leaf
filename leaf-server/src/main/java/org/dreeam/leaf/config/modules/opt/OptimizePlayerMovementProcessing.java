@@ -13,9 +13,7 @@ public class OptimizePlayerMovementProcessing extends ConfigModules {
 
     @Override
     public void onLoaded() {
-        enabled = config.getBoolean(getBasePath() + ".optimize-player-movement", enabled, config.pickStringRegionBased("""
-                Whether to optimize player movement processing by skipping unnecessary edge checks and avoiding redundant view distance updates.""",
-            """
-                是否优化玩家移动处理，跳过不必要的边缘检查并避免冗余的视距更新。"""));
+        enabled = config.getBoolean(getBasePath() + ".optimize-player-movement", enabled, """
+                Whether to optimize player movement processing by skipping unnecessary edge checks and avoiding redundant view distance updates.""");
     }
 }

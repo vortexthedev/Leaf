@@ -10,11 +10,9 @@ public class ServerBrand extends ConfigModules {
     }
 
     public static String serverModName = io.papermc.paper.ServerBuildInfo.buildInfo().brandName();
-    public static String serverGUIName = io.papermc.paper.ServerBuildInfo.buildInfo().brandName() + " Console";
 
     @Override
     public void onLoaded() {
         serverModName = config.getString(getBasePath() + ".server-mod-name", serverModName);
-        serverGUIName = config.getString(getBasePath() + ".server-gui-name", serverGUIName);
     }
 }

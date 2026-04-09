@@ -14,16 +14,11 @@ public class MCBugFix extends ConfigModules {
     @Override
     public void onLoaded() {
         config.addCommentRegionBased(getBasePath(),
-            "Fixes for vanilla Minecraft bugs.",
-            "针对 Minecraft 原版的漏洞修复。"
+            "Fixes for vanilla Minecraft bugs."
         );
-        mc270656 = config.getBoolean(getBasePath() + ".mc-270656", mc270656, config.pickStringRegionBased(
+        mc270656 = config.getBoolean(getBasePath() + ".mc-270656", mc270656,
             """
                 Whether to fix incorrect granting of 'Who needs rockets?' advancement.
-                Mojira link: https://mojira.dev/MC-270656""",
-            """
-                是否修复“还要啥火箭啊？”进度触发的错误检查逻辑。
-                漏洞跟踪器链接：https://mojira.dev/MC-270656"""
-        ));
+                Mojira link: https://mojira.dev/MC-270656""");
     }
 }

@@ -98,7 +98,7 @@ index 0000000000000000000000000000000000000000..8ca03c5abfb9e11dfbb6e65453052780
 +
 +    @Override
 +    public void onLoaded() {
-+        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, config.pickStringRegionBased("""
++        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, """
 +                Enable this feature to handle a large amount of stacked minecarts better.
 +                By skipping tick collisions to reduce expensive getEntities
 +                and bukkit event calls, useful for anarchy servers.

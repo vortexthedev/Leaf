@@ -13,15 +13,10 @@ public class UnknownCommandMessage extends ConfigModules {
 
     @Override
     public void onLoaded() {
-        unknownCommandMessage = config.getString(getBasePath() + ".unknown-command", unknownCommandMessage, config.pickStringRegionBased("""
+        unknownCommandMessage = config.getString(getBasePath() + ".unknown-command", unknownCommandMessage, """
                 Unknown command message, using MiniMessage format, set to "default" to use vanilla message,
                 placeholder:
                 <message>, show message of the command exception.
-                <detail>, shows detail of the command exception.""",
-            """
-                发送未知命令时的消息, 使用 MiniMessage 格式, 设置为 "default" 使用原版消息.
-                变量:
-                <message>, 显示命令错误所附提示消息.
-                <detail>, 显示命令错误详细信息."""));
+                <detail>, shows detail of the command exception.""");
     }
 }
