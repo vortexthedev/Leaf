@@ -1448,8 +1448,8 @@ index e158d614abed8d16e80192c0c9abd8537c92b9dc..0a21d7aec3ae4a6b2b5dcca25f0225ab
          ItemStack item = handItem.copy();
          // CraftBukkit end
          if (item.has(DataComponents.WRITABLE_BOOK_CONTENT)) {
--            List<String> list = pages.stream().map(this::filterableFromOutgoing).toList();
-+            List<String> list = pages.stream().map(filteredText -> filterableFromOutgoing(filteredText).map(s -> color(s, hasPerm))).toList(); // Purpur - Allow color codes in books
+-            List<Filterable<String>> list = pages.stream().map(this::filterableFromOutgoing).toList();
++            List<Filterable<String>> list = pages.stream().map(filteredText -> filterableFromOutgoing(filteredText).map(s -> color(s, hasPerm))).toList(); // Purpur - Allow color codes in books
              item.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(list));
              this.player.getInventory().setItem(index, CraftEventFactory.handleEditBookEvent(this.player, index, handItem, item)); // CraftBukkit // Paper - Don't ignore result (see other callsite for handleEditBookEvent)
          }
@@ -1465,8 +1465,8 @@ index e158d614abed8d16e80192c0c9abd8537c92b9dc..0a21d7aec3ae4a6b2b5dcca25f0225ab
          if (item.has(DataComponents.WRITABLE_BOOK_CONTENT)) {
              ItemStack itemStack = item.transmuteCopy(Items.WRITTEN_BOOK);
              itemStack.remove(DataComponents.WRITABLE_BOOK_CONTENT);
--            List<Component> list = pages.stream().map(filteredText -> this.filterableFromOutgoing(filteredText).<Component>map(Component::literal)).toList();
-+            List<Component> list = pages.stream().map((filteredText) -> this.filterableFromOutgoing(filteredText).map(s -> hexColor(s, hasPerm))).toList(); // Purpur - Allow color codes in books
+-            List<Filterable<Component>> list = pages.stream().map(filteredText -> this.filterableFromOutgoing(filteredText).<Component>map(Component::literal)).toList();
++            List<Filterable<Component>> list = pages.stream().map((filteredText) -> this.filterableFromOutgoing(filteredText).map(s -> hexColor(s, hasPerm))).toList(); // Purpur - Allow color codes in books
              itemStack.set(
                  DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(this.filterableFromOutgoing(title), this.player.getPlainTextName(), 0, list, true)
              );
@@ -16692,7 +16692,7 @@ index 24215493601ff724032660178c1261f3c40edd61..dd4d0c2fa77fc62ce2c3dfb2be902dcd
                          if (!level.addFreshEntity(witherBoss, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BUILD_WITHER)) {
                              return;
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index c8bfa1eeb847d6d9972d2f6625cc1f60063713d4..c58bc63a0e9af0088921050549cd2c0d68fa1b3e 100644
+index 1215ac44fd30dc872f9d319be34e5e08ba880ea2..c0bb687b94f3baa9ffda9c47c69a1d6d244acd4e 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -187,6 +187,21 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
