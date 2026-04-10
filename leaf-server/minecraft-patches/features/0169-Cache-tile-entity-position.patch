@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Fri, 25 Oct 2024 22:27:07 -0400
+Subject: [PATCH] Cache tile entity position
+
+Dreeam TODO: Check if there is a way to cache isRemoved without problem
+
+diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
+index 34dda09e316054da564e0c3dd3a87f254aa83648..d55053418bdbb0095187cb08f1d6b79e90f6c9d1 100644
+--- a/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -989,10 +989,12 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+         private final T blockEntity;
+         private final BlockEntityTicker<T> ticker;
+         private boolean loggedInvalidBlockState;
++        private final BlockPos cachedPos; // Leaf - Cache tile entity position
+ 
+         BoundTickingBlockEntity(final T blockEntity, final BlockEntityTicker<T> ticker) {
+             this.blockEntity = blockEntity;
+             this.ticker = ticker;
++            this.cachedPos = this.blockEntity.getBlockPos(); // Leaf - Cache tile entity position
+         }
+ 
+         @Override
+@@ -1037,7 +1039,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+ 
+         @Override
+         public BlockPos getPos() {
+-            return this.blockEntity.getBlockPos();
++            return this.cachedPos; // Leaf - Cache tile entity position
+         }
+ 
+         @Override
+@@ -1064,13 +1066,16 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+ 
+     static class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
+         private TickingBlockEntity ticker;
++        private BlockPos cachedPos; // Leaf - Cache tile entity position
+ 
+         RebindableTickingBlockEntityWrapper(TickingBlockEntity ticker) {
+             this.ticker = ticker;
++            this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
+         }
+ 
+         void rebind(TickingBlockEntity ticker) {
+             this.ticker = ticker;
++            this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
+         }
+ 
+         @Override
+@@ -1085,7 +1090,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+ 
+         @Override
+         public BlockPos getPos() {
+-            return this.ticker.getPos();
++            return this.cachedPos; // Leaf - Cache tile entity position
+         }
+ 
+         @Override
