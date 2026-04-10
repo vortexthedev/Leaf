@@ -14,10 +14,10 @@ I have replaced the unconditional normalization with a conditional check based o
 `length()`, `normalize()`, and `scale()` calls entirely.
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 6827b3b1415f5c1f48808448e9736c683a8ec75d..6fdd38e9879d14caf08484fa79b8afe47ecca286 100644
+index fc95aa945f3c94cda5b39a79779c710a8143a507..e1a08f552cf1cbd6b800e4dd1e73c22340b7248f 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1295,8 +1295,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1277,8 +1277,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              double d = vec3.lengthSqr();
              if (d > 1.0E-7 || movement.lengthSqr() - d < 1.0E-7) {
                  if (this.fallDistance != 0.0 && d >= 1.0) {

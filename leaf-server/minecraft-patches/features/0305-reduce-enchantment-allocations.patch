@@ -6,10 +6,10 @@ Subject: [PATCH] reduce enchantment allocations
 reduce allocation of creating entity loot contexts and unmodifiable set boxing
 
 diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
-index 05d9626aec8b66f5b02e875ad60b853d15c0e02a..960bbeb6854556ff25962a16240fcb95db40236f 100644
+index 620c8465fab550115e6eb192682c813b8813d618..24df33ccd98bc9b1213f11574460db2f009578ca 100644
 --- a/net/minecraft/world/item/enchantment/Enchantment.java
 +++ b/net/minecraft/world/item/enchantment/Enchantment.java
-@@ -202,9 +202,15 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+@@ -232,9 +232,15 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
      }
  
      public boolean isImmuneToDamage(ServerLevel level, int enchantmentLevel, Entity entity, DamageSource damageSource) {
@@ -26,7 +26,7 @@ index 05d9626aec8b66f5b02e875ad60b853d15c0e02a..960bbeb6854556ff25962a16240fcb95
              if (conditionalEffect.matches(lootContext)) {
                  return true;
              }
-@@ -349,8 +355,14 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+@@ -379,8 +385,14 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
      }
  
      public void tick(ServerLevel level, int enchantmentLevel, EnchantedItemInUse item, Entity entity) {

@@ -60,11 +60,7 @@ index 8aed2dead0314811aaebc9735362ae98b1f3fafa..c30c53942005d230e73841c9e6bb4d05
      public final void loadChunksForMoveAsync(AABB box, ca.spottedleaf.concurrentutil.util.Priority priority,
                                               java.util.function.Consumer<List<net.minecraft.world.level.chunk.ChunkAccess>> onLoad) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-<<<<<<<< HEAD:leaf-server/minecraft-patches/features/0303-Prevent-entities-from-moving-into-weak-loaded-chunks.patch
-index 6fdd38e9879d14caf08484fa79b8afe47ecca286..e5a3d6484cab4b8ed75626539e43bc0dfa2b4d2c 100644
-========
-index 65cdafc7280c5f7a30e5ea38e9492bfb349a033a..5ccb070938b371e131c7e504a5aed8285952b056 100644
->>>>>>>> origin/ver/1.21.11:leaf-server/minecraft-patches/features/0299-Prevent-entities-from-moving-into-weak-loaded-chunks.patch
+index e1a08f552cf1cbd6b800e4dd1e73c22340b7248f..b7a883536095251ef988f82358709f97d5e083bd 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -389,6 +389,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name

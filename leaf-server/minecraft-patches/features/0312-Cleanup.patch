@@ -6441,37 +6441,10 @@ index f828d07018d9a17aaa0142aac67ebed58dd84c3e..c9086bca5cbb780fd586f667e31a8fe1
  
              if (buffer.writerIndex() != buffer.capacity()) {
 diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
-index 3c554b57e22644f35ed6520901d9e7b3d6c96551..050bd10e14963ca9beec11d14941663fda530081 100644
+index 4a0d5b4f1ce98b334e7812d3bbe12db2f7f6c958..f83c93f07b58bc4c31e1d3b81f173fcf8d534315 100644
 --- a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
 +++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
-@@ -3,12 +3,6 @@ package net.minecraft.network.protocol.game;
- import com.google.common.collect.Lists;
- import io.netty.buffer.ByteBuf;
- import io.netty.buffer.Unpooled;
--import java.util.EnumMap;
--import java.util.List;
--import java.util.Map;
--import java.util.Map.Entry;
--import java.util.function.Consumer;
--import java.util.stream.Collectors;
- import net.minecraft.core.BlockPos;
- import net.minecraft.core.SectionPos;
- import net.minecraft.core.registries.Registries;
-@@ -24,6 +18,13 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
- import net.minecraft.world.level.levelgen.Heightmap;
- import org.jspecify.annotations.Nullable;
- 
-+import java.util.EnumMap;
-+import java.util.List;
-+import java.util.Map;
-+import java.util.Map.Entry;
-+import java.util.function.Consumer;
-+import java.util.stream.Collectors;
-+
- public class ClientboundLevelChunkPacketData {
-     private static final StreamCodec<ByteBuf, Map<Heightmap.Types, long[]>> HEIGHTMAPS_STREAM_CODEC = ByteBufCodecs.map(
-         i -> new EnumMap<>(Heightmap.Types.class), Heightmap.Types.STREAM_CODEC, ByteBufCodecs.LONG_ARRAY
-@@ -41,23 +42,13 @@ public class ClientboundLevelChunkPacketData {
+@@ -41,23 +41,13 @@ public class ClientboundLevelChunkPacketData {
      }
      // Paper end - Handle oversized block entities in chunks
  
@@ -6496,45 +6469,34 @@ index 3c554b57e22644f35ed6520901d9e7b3d6c96551..050bd10e14963ca9beec11d14941663f
          this.blockEntitiesData = Lists.newArrayList();
          int totalTileEntities = 0; // Paper - Handle oversized block entities in chunks
  
-@@ -76,31 +67,24 @@ public class ClientboundLevelChunkPacketData {
+@@ -76,13 +66,13 @@ public class ClientboundLevelChunkPacketData {
      }
  
-     // Leaf start - Async chunk sending
+     // Leaf start - async chunk sender
 -    public ClientboundLevelChunkPacketData(LevelChunk levelChunk, io.papermc.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo, BlockEntity[] blockEntities, Map<Heightmap.Types, long[]> heightmaps) {
 +    public ClientboundLevelChunkPacketData(LevelChunk levelChunk, BlockEntity[] blockEntities, Map<Heightmap.Types, long[]> heightmaps) {
          this.heightmaps = heightmaps;
- 
-         if (Thread.currentThread() instanceof org.dreeam.leaf.async.chunk.AsyncChunkSendThread) {
-             int size = calculateChunkSize(levelChunk);
-             ByteBuf buffer = Unpooled.buffer(size);
--            extractChunkData(new FriendlyByteBuf(buffer), levelChunk, chunkPacketInfo);
-+            extractChunkData(new FriendlyByteBuf(buffer), levelChunk);
-             // make sure all sections is latest
-             while (size != buffer.writerIndex()) {
-                 buffer.writerIndex(0);
-                 size = calculateChunkSize(levelChunk);
--                extractChunkData(new FriendlyByteBuf(buffer), levelChunk, chunkPacketInfo);
-+                extractChunkData(new FriendlyByteBuf(buffer), levelChunk);
-             }
--            byte[] array = it.unimi.dsi.fastutil.bytes.ByteArrays.setLength(buffer.array(), buffer.writerIndex());
--            if (chunkPacketInfo != null) {
--                chunkPacketInfo.setBuffer(array);
--            }
--            this.buffer = array;
-+
-+            this.buffer = it.unimi.dsi.fastutil.bytes.ByteArrays.setLength(buffer.array(), buffer.writerIndex());
-         } else {
-             this.buffer = new byte[calculateChunkSize(levelChunk)];
--            // Paper start - Anti-Xray - Add chunk packet info
--            if (chunkPacketInfo != null) {
--                chunkPacketInfo.setBuffer(this.buffer);
--            }
--            extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), levelChunk, chunkPacketInfo);
-+            extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), levelChunk);
-         }
- 
+         int size;
+         ByteBuf buffer;
+         do {
+             buffer = Unpooled.buffer(size = calculateChunkSize(levelChunk));
+-        } while (!extractChunkData(new FriendlyByteBuf(buffer), levelChunk, chunkPacketInfo, size));
++        } while (!extractChunkData(new FriendlyByteBuf(buffer), levelChunk, size));
+         this.buffer = it.unimi.dsi.fastutil.bytes.ByteArrays.setLength(buffer.array(), buffer.writerIndex());
          this.blockEntitiesData = Lists.newArrayList();
-@@ -156,17 +140,9 @@ public class ClientboundLevelChunkPacketData {
+         int totalTileEntities = 0; // Paper - Handle oversized block entities in chunks
+@@ -99,10 +89,6 @@ public class ClientboundLevelChunkPacketData {
+             // Paper end - Handle oversized block entities in chunks
+             this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create(blockEntity));
+         }
+-
+-        if (chunkPacketInfo != null) {
+-            chunkPacketInfo.setBuffer(this.buffer);
+-        }
+     }
+     // Leaf end - async chunk sender
+ 
+@@ -141,17 +127,9 @@ public class ClientboundLevelChunkPacketData {
          return byteBuf;
      }
  
@@ -6552,9 +6514,24 @@ index 3c554b57e22644f35ed6520901d9e7b3d6c96551..050bd10e14963ca9beec11d14941663f
 +            levelChunkSection.write(buffer);
          }
  
-         if (Thread.currentThread() instanceof org.dreeam.leaf.async.chunk.AsyncChunkSendThread) return; // Leaf - Async chunk sending
+         if (buffer.writerIndex() != buffer.capacity()) {
+@@ -159,12 +137,9 @@ public class ClientboundLevelChunkPacketData {
+         }
+     }
+     // Leaf start - async chunk sender
+-    public static boolean extractChunkData(FriendlyByteBuf buffer, LevelChunk chunk, io.papermc.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo, int expected) {
+-        int chunkSectionIndex = 0;
++    public static boolean extractChunkData(FriendlyByteBuf buffer, LevelChunk chunk, int expected) {
+         for (LevelChunkSection levelChunkSection : chunk.getSections()) {
+-            levelChunkSection.write(buffer, chunkPacketInfo, chunkSectionIndex);
+-            chunkSectionIndex++;
+-            // Paper end  - Anti-Xray - Add chunk packet info
++            levelChunkSection.write(buffer);
+         }
+         return buffer.writerIndex() == expected;
+     }
 diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
-index 94115983be9ff1c1c1b2315c32ab9efd301e2cdd..35b268de68a053e271b674abb4f1239a21897dd5 100644
+index 9135e00b339dd5b76dd448b7cda6ee0ed0eb9dd6..928aa1a2feffd45eeea551cb9f9672240c91b0c0 100644
 --- a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
 +++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
 @@ -18,7 +18,6 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
@@ -6585,7 +6562,7 @@ index 94115983be9ff1c1c1b2315c32ab9efd301e2cdd..35b268de68a053e271b674abb4f1239a
 +        setReady(true);
      }
 +
-     // Leaf start - Async chunk sending
+     // Leaf start - async chunk sender
 -    public ClientboundLevelChunkWithLightPacket(LevelChunk chunk, LevelLightEngine lightEngine, @Nullable BitSet skyLight, @Nullable BitSet blockLight, boolean modifyBlocks, net.minecraft.world.level.block.entity.BlockEntity[] blockEntities, java.util.Map<net.minecraft.world.level.levelgen.Heightmap.Types, long[]> heightmaps) {
 -        ChunkPos pos = chunk.getPos();
 -        this.x = pos.x;
@@ -6593,11 +6570,11 @@ index 94115983be9ff1c1c1b2315c32ab9efd301e2cdd..35b268de68a053e271b674abb4f1239a
 -        io.papermc.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo = modifyBlocks ? chunk.getLevel().chunkPacketBlockController.getChunkPacketInfo(this, chunk) : null; // Paper - Ant-Xray
 -        this.chunkData = new ClientboundLevelChunkPacketData(chunk, chunkPacketInfo, blockEntities, heightmaps); // Paper - Anti-Xray
 -        this.lightData = new ClientboundLightUpdatePacketData(pos, lightEngine, skyLight, blockLight);
--        chunk.getLevel().chunkPacketBlockController.modifyBlocks(this, chunkPacketInfo); // Paper - Anti-Xray - Modify blocks
+-        chunk.getLevel().chunkPacketBlockController.leaf$modifyBlocks(this, chunkPacketInfo); // Paper - Anti-Xray - Modify blocks
 +    public ClientboundLevelChunkWithLightPacket(LevelChunk chunk, LevelLightEngine lightEngine, @Nullable BitSet skyLight, @Nullable BitSet blockLight) {
 +        this(chunk, lightEngine, skyLight, blockLight, false);
      }
-     // Leaf end - Async chunk sending
+     // Leaf end - async chunk sender
  
 diff --git a/net/minecraft/network/protocol/game/ClientboundSetPlayerTeamPacket.java b/net/minecraft/network/protocol/game/ClientboundSetPlayerTeamPacket.java
 index 6c8836ea63808b72188263d73a87f00109c56625..f1aa2f5536c163d5770f04e33f7b6f927c5b3d38 100644
@@ -17697,39 +17674,22 @@ index d0dcb199717e13cbbd688127269ac34853d84cbd..00000000000000000000000000000000
 -    }
 -}
 diff --git a/net/minecraft/server/network/PlayerChunkSender.java b/net/minecraft/server/network/PlayerChunkSender.java
-index dc0c1ec1f4d682604638b6a3442d469c73995cec..4742a1aa61c0c6e6d53ff51ae8af4f83bfc18559 100644
+index 342e7f6fbb53966c879b369ffde5fee5fc2f01ef..c2a594d61160213aaeaac74aefd4a2467b9d3280 100644
 --- a/net/minecraft/server/network/PlayerChunkSender.java
 +++ b/net/minecraft/server/network/PlayerChunkSender.java
-@@ -95,26 +95,15 @@ public class PlayerChunkSender {
+@@ -79,10 +79,7 @@ public class PlayerChunkSender {
      }
  
      public static void sendChunk(ServerGamePacketListenerImpl packetListener, ServerLevel level, LevelChunk chunk) { // Paper - rewrite chunk system - public
 -        // Paper start - Anti-Xray
 -        final boolean shouldModify = level.chunkPacketBlockController.shouldModify(packetListener.player, chunk);
-         // Leaf start - Async chunk sending
-         if (org.dreeam.leaf.config.modules.async.AsyncChunkSend.enabled) {
--            var blockEntities = chunk.blockEntities.values().toArray(new net.minecraft.world.level.block.entity.BlockEntity[0]);
--            java.util.Map<net.minecraft.world.level.levelgen.Heightmap.Types, long[]> heightmaps = new java.util.concurrent.ConcurrentHashMap<>();
--
--            for (var entry : chunk.getHeightmaps()) {
--                if (entry.getKey().sendToClient()) {
--                    heightmaps.put(entry.getKey(), entry.getValue().getRawData());
--                }
--            }
-             org.dreeam.leaf.async.chunk.AsyncChunkSend.POOL.execute(
--                () -> packetListener.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null, shouldModify, blockEntities, heightmaps))
-+                () -> packetListener.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null))
-             );
-         } else {
--            packetListener.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null, shouldModify));
-+            packetListener.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null));
-         }
-         // Leaf end - Async chunk sending
+-        packetListener.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null, shouldModify));
 -        // Paper end - Anti-Xray
++        packetListener.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null));
          // Paper start - PlayerChunkLoadEvent
          if (io.papermc.paper.event.packet.PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
              new io.papermc.paper.event.packet.PlayerChunkLoadEvent(new org.bukkit.craftbukkit.CraftChunk(chunk), packetListener.getPlayer().getBukkitEntity()).callEvent();
-@@ -124,8 +113,6 @@ public class PlayerChunkSender {
+@@ -92,22 +89,12 @@ public class PlayerChunkSender {
          if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
              LOGGER.debug("SEN {}", pos);
          }
@@ -17737,7 +17697,22 @@ index dc0c1ec1f4d682604638b6a3442d469c73995cec..4742a1aa61c0c6e6d53ff51ae8af4f83
 -        level.debugSynchronizers().startTrackingChunk(packetListener.player, chunk.getPos());
      }
  
-     private List<LevelChunk> collectChunksToSend(ChunkMap chunkMap, ChunkPos chunkPos) {
+     // Leaf start - async chunk sender
+     public static void sendChunk(ServerGamePacketListenerImpl packetListener, ServerLevel level, LevelChunk chunk, org.dreeam.leaf.async.chunk.AsyncChunkSender chunkSender) {
+-        final boolean shouldModify = level.chunkPacketBlockController.shouldModify(packetListener.player, chunk);
+-        net.minecraft.world.level.block.entity.BlockEntity[] blockEntities = chunk.blockEntities.values().toArray(new net.minecraft.world.level.block.entity.BlockEntity[0]);
+-        java.util.Map<net.minecraft.world.level.levelgen.Heightmap.Types, long[]> heightmaps = new java.util.EnumMap<>(net.minecraft.world.level.levelgen.Heightmap.Types.class);
+-        for (java.util.Map.Entry<net.minecraft.world.level.levelgen.Heightmap.Types, net.minecraft.world.level.levelgen.Heightmap> entry1 : chunk.getHeightmaps()) {
+-            if (entry1.getKey().sendToClient()) {
+-                heightmaps.put(entry1.getKey(), entry1.getValue().getRawData().clone());
+-            }
+-        }
+         chunkSender.submit(
+-            () -> new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null, shouldModify, blockEntities, heightmaps)
++            () -> new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null)
+         );
+     }
+     // Leaf end - async chunk sender
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 index 0ebdd65ce246331f9d27d58b193333e4b2a8ddd0..334693b5702452ea36579b202e75df417d394866 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
@@ -27610,7 +27585,7 @@ index eabbccc18e607411500a3551f927d4fea7402326..e231bcfdbd997e849f2ab32bc1b51921
          return this.entityData.get(DATA_HEIGHT_ID);
      }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a4fc86df6 100644
+index e53545f9a96d3f6f61a242e9629d8b696949d32e..68af203ee31a32629f9178ed3cb20d414c9f5d05 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -81,11 +81,6 @@ import net.minecraft.util.Mth;
@@ -27634,16 +27609,16 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      public static javax.script.ScriptEngine scriptEngine = new javax.script.ScriptEngineManager().getEngineByName("rhino"); // Purpur - Configurable entity base attributes
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
-@@ -565,7 +560,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
-     private @Nullable Vec3 leaf$cached_position = null;
-     // Gale end - JettPack - optimize sun burn tick - cache eye blockpos
+@@ -562,7 +557,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+ 
+     // Purpur start - copied from Mob - API for any mob to burn daylight
      public boolean isSunBurnTick() {
 -        if (!this.level().isClientSide() && this.level().environmentAttributes().getValue(EnvironmentAttributes.MONSTERS_BURN, this.position())) {
 +        if (this.level().environmentAttributes().getValue(EnvironmentAttributes.MONSTERS_BURN, this.position())) {
              // Gale start - JettPack - optimize sun burn tick - optimizations and cache eye blockpos
-             float lightLevelDependentMagicValue = this.getLightLevelDependentMagicValue();
- 
-@@ -989,8 +984,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+             // Leaf start - optimize eye block position
+             final BlockPos blockPos = new BlockPos(this.blockPosition.getX(), Mth.floor(this.getEyeY()), this.blockPosition.getZ());
+@@ -972,8 +967,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      // CraftBukkit end
  
      public void baseTick() {
@@ -27652,7 +27627,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
          if (firstTick && this instanceof net.minecraft.world.entity.NeutralMob neutralMob) neutralMob.tickInitialPersistentAnger(level); // Paper - Prevent entity loading causing async lookups
          this.computeSpeed();
          this.inBlockState = null;
-@@ -1037,22 +1030,18 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1020,22 +1013,18 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
  
          this.checkBelowWorld();
@@ -27682,7 +27657,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      }
  
      protected void computeSpeed() {
-@@ -1273,8 +1262,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1256,8 +1245,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                  }
              }
  
@@ -27691,7 +27666,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
                  if (type != MoverType.PISTON) {
                      movement = movement.multiply(this.stuckSpeedMultiplier);
-@@ -1286,7 +1273,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1269,7 +1256,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              // Paper start - ignore movement changes while inactive.
              if (isTemporarilyActive && !(this instanceof ItemEntity) && movement == getDeltaMovement() && type == MoverType.SELF) {
                  setDeltaMovement(Vec3.ZERO);
@@ -27699,7 +27674,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                  return;
              }
              // Paper end
-@@ -1318,8 +1304,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1301,8 +1287,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                  this.setPos(vec33);
              }
  
@@ -27708,7 +27683,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              boolean flag = !Mth.equal(movement.x, vec3.x);
              boolean flag1 = !Mth.equal(movement.z, vec3.z);
              this.horizontalCollision = flag || flag1;
-@@ -1341,9 +1325,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1324,9 +1308,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                  this.checkFallDamage(vec3.y, this.onGround(), blockState, onPosLegacy);
              }
  
@@ -27719,7 +27694,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                  if (this.horizontalCollision) {
                      Vec3 deltaMovement = this.getDeltaMovement();
                      this.setDeltaMovement(flag ? 0.0 : deltaMovement.x, deltaMovement.y, flag1 ? 0.0 : deltaMovement.z);
-@@ -1377,11 +1359,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1360,11 +1342,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                  }
                  // CraftBukkit end
  
@@ -27734,7 +27709,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                  }
  
                  // Gale start - skip negligible planar movement multiplication
-@@ -1395,7 +1375,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1378,7 +1358,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                      }
                  }
                  // Gale end - skip negligible planar movement multiplication
@@ -27742,7 +27717,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              }
          }
      }
-@@ -1498,7 +1477,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1481,7 +1460,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              }
  
              boolean flag = this.getRemainingFireTicks() > remainingFireTicks;
@@ -27751,7 +27726,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                  this.setRemainingFireTicks(-this.getFireImmuneTicks());
              }
          }
-@@ -1538,19 +1517,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1521,19 +1500,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      protected void playEntityOnFireExtinguishedSound() {
@@ -27782,7 +27757,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      }
  
      public void extinguishFire() {
-@@ -1864,8 +1841,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1847,8 +1824,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          final long[] cachedChunkPos = { Long.MIN_VALUE };
  
          boolean flag = from.distanceToSqr(to) > Mth.square(0.9999900000002526);
@@ -27791,7 +27766,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
          AtomicInteger atomicInteger = new AtomicInteger();
          BlockGetter.forEachBlockIntersectedBetween(
              from,
-@@ -1899,10 +1874,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1882,10 +1857,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
                      final long posLong = pos.asLong();
                      if (blockState.isAir()) {
@@ -27802,7 +27777,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                          return true;
                      } else {
                          VoxelShape entityInsideCollisionShape = blockState.getEntityInsideCollisionShape(level, pos, this);
-@@ -1932,10 +1903,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1915,10 +1886,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                                  blockState.getFluidState().entityInside(level, pos, this, stepBasedCollector);
                              }
  
@@ -27813,7 +27788,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                              return true;
                          } else {
                              return true;
-@@ -1948,19 +1915,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1931,19 +1898,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
      // Leaf end - optimize checkInsideBlocks calls
  
@@ -27833,7 +27808,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      public boolean collidedWithFluid(FluidState fluid, BlockPos pos, Vec3 from, Vec3 to) {
          AABB aabb = fluid.getAABB(this.level(), pos);
          return aabb != null && this.collidedWithShapeMovingFrom(from, to, aabb); // Leaf - optimize collidedAlongVector
-@@ -3188,8 +3142,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3191,8 +3145,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public InteractionResult interact(Player player, InteractionHand hand) {
@@ -27843,7 +27818,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              && this instanceof Leashable leashable
              && leashable.canBeLeashed()
              && this.isAlive()
-@@ -3235,29 +3188,23 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3238,29 +3191,23 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          } else {
              if (this.isAlive() && this instanceof Leashable leashable2) {
                  if (leashable2.getLeashHolder() == player) {
@@ -27883,7 +27858,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                      if (leashable2.canHaveALeashAttachedTo(player)) {
                          if (leashable2.isLeashed()) {
                              // Paper start - EntityUnleashEvent
-@@ -3550,7 +3497,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3553,7 +3500,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              return false;
          } else if (!entity.couldAcceptPassenger()) {
              return false;
@@ -27892,7 +27867,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              return false;
          } else {
              for (Entity entity1 = entity; entity1.vehicle != null; entity1 = entity1.vehicle) {
-@@ -3648,7 +3595,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3651,7 +3598,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                  this.passengers = ImmutableList.of(passenger);
              } else {
                  List<Entity> list = Lists.newArrayList(this.passengers);
@@ -27901,7 +27876,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                      list.add(0, passenger);
                  } else {
                      list.add(passenger);
-@@ -3847,12 +3794,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3850,12 +3797,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              this.processPortalCooldown();
              if (this.portalProcess != null) {
                  if (this.portalProcess.processPortalTeleportation(serverLevel, this, this.canUsePortal(false))) {
@@ -27914,7 +27889,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
                  } else if (this.portalProcess.hasExpired()) {
                      this.portalProcess = null;
                  }
-@@ -3933,8 +3876,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3936,8 +3879,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public boolean isOnFire() {
@@ -27924,7 +27899,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      }
  
      public boolean isPassenger() {
-@@ -4022,7 +3964,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4025,7 +3967,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public boolean isCurrentlyGlowing() {
@@ -27933,7 +27908,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      }
  
      public boolean isInvisible() {
-@@ -4467,15 +4409,12 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4471,15 +4413,12 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              entity.teleport(this.calculatePassengerTransition(teleportTransition, entity));
          }
  
@@ -27949,7 +27924,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
          return this;
      }
  
-@@ -4492,11 +4431,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4496,11 +4435,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              }
          }
  
@@ -27961,7 +27936,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              return null;
          } else {
              // Paper start - Fix item duplication and teleport issues
-@@ -4516,7 +4452,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4520,7 +4456,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              newLevel.resetEmptyTime();
              teleportTransition.postTeleportTransition().onTransition(entityx);
              this.teleportSpectators(teleportTransition, oldLevel);
@@ -27969,8 +27944,8 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              return entityx;
          }
      }
-@@ -4798,8 +4733,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
-         this.leaf$cached_position = null; // Leaf
+@@ -4800,8 +4735,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+         this.eyeHeight = dimensions.eyeHeight();
          this.reapplyPosition();
          boolean flag = dimensions.width() <= 4.0F && dimensions.height() <= 4.0F;
 -        if (!this.level.isClientSide()
@@ -27979,7 +27954,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
              && !this.noPhysics
              && flag
              && (dimensions.width() > entityDimensions.width() || dimensions.height() > entityDimensions.height())
-@@ -5033,7 +4967,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5035,7 +4969,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public final boolean isLocalInstanceAuthoritative() {
@@ -27988,7 +27963,7 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
      }
  
      protected boolean isLocalClientAuthoritative() {
-@@ -5777,10 +5711,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5779,10 +5713,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          return new Entity.EntityPathElement(this);
      }
  
@@ -28000,38 +27975,52 @@ index 4a8b4be07e21956e03f8b151ce4d398526088476..6f19c9fe0edac17a4402ea9a8ac4186a
          @Override
          public String get() {
 diff --git a/net/minecraft/world/entity/EntitySelector.java b/net/minecraft/world/entity/EntitySelector.java
-index 326da0817707fb2cd145c2c387d88b5e6ad780d4..6f83c969340701fd89b1ceff026bf64f12689706 100644
+index 409ffce06e0e38d7e98302a0171b6af2c9603941..b3fde93803bdcd395d768aba8d38d324e86b9bed 100644
 --- a/net/minecraft/world/entity/EntitySelector.java
 +++ b/net/minecraft/world/entity/EntitySelector.java
-@@ -45,27 +45,25 @@ public final class EntitySelector {
+@@ -45,26 +45,26 @@ public final class EntitySelector {
      public static Predicate<Entity> pushableBy(Entity entity) {
          Team team = entity.getTeam();
          Team.CollisionRule collisionRule = team == null ? Team.CollisionRule.ALWAYS : team.getCollisionRule();
 -        return (Predicate<Entity>)(collisionRule == Team.CollisionRule.NEVER
-+        return collisionRule == Team.CollisionRule.NEVER
-             ? Predicates.alwaysFalse()
-             : NO_SPECTATORS.and(
-                 entity1 -> { final Entity pushedEntity = entity1; // Paper - OBFHELPER
-                     if (!pushedEntity.isPushable() || !pushedEntity.canCollideWithBukkit(entity) || !entity.canCollideWithBukkit(pushedEntity)) { // CraftBukkit - collidable API // Paper - Climbing should not bypass cramming gamerule
-                         return false;
+-            ? Predicates.<Entity>alwaysFalse() // Leaf - optimize pushable selector
+-            : (Predicate<Entity>) (entity1) -> { final Entity pushedEntity = entity1; // Paper - OBFHELPER // Leaf - optimize pushable selector
+-                    if (entity1.isSpectator() /*|| !pushedEntity.isPushable()*/ || !pushedEntity.canCollideWithBukkit(entity) || !entity.canCollideWithBukkit(pushedEntity)) { // CraftBukkit - collidable API // Paper - Climbing should not bypass cramming gamerule // Leaf - optimize pushable selector
+-                        return false;
 -                    } else if (!entity.level().isClientSide() || entity1 instanceof Player player && player.isLocalPlayer()) {
-+                    } else {
-                         Team team1 = entity1.getTeam();
-                         Team.CollisionRule collisionRule1 = team1 == null ? Team.CollisionRule.ALWAYS : team1.getCollisionRule();
+-                        Team team1 = entity1.getTeam();
+-                        Team.CollisionRule collisionRule1 = team1 == null ? Team.CollisionRule.ALWAYS : team1.getCollisionRule();
 -                        if (collisionRule1 == Team.CollisionRule.NEVER || (pushedEntity instanceof Player && !io.papermc.paper.configuration.GlobalConfiguration.get().collisions.enablePlayerCollisions)) { // Paper - Configurable player collision
-+                        if (collisionRule1 == Team.CollisionRule.NEVER) {
-                             return false;
-                         } else {
-                             boolean flag = team != null && team.isAlliedTo(team1);
-                             return (collisionRule != Team.CollisionRule.PUSH_OWN_TEAM && collisionRule1 != Team.CollisionRule.PUSH_OWN_TEAM || !flag)
-                                 && (collisionRule != Team.CollisionRule.PUSH_OTHER_TEAMS && collisionRule1 != Team.CollisionRule.PUSH_OTHER_TEAMS || flag);
-                         }
+-                            return false;
+-                        } else {
+-                            boolean flag = team != null && team.isAlliedTo(team1);
+-                            return (collisionRule != Team.CollisionRule.PUSH_OWN_TEAM && collisionRule1 != Team.CollisionRule.PUSH_OWN_TEAM || !flag)
+-                                && (collisionRule != Team.CollisionRule.PUSH_OTHER_TEAMS && collisionRule1 != Team.CollisionRule.PUSH_OTHER_TEAMS || flag);
+-                        }
 -                    } else {
 -                        return false;
-                     }
+-                    }
++        return (collisionRule == Team.CollisionRule.NEVER
++            ? Predicates.alwaysFalse() // Leaf - optimize pushable selector
++            : (entity1) -> { final Entity pushedEntity = entity1; // Paper - OBFHELPER // Leaf - optimize pushable selector
++            if (entity1.isSpectator() /*|| !pushedEntity.isPushable()*/ || !pushedEntity.canCollideWithBukkit(entity) || !entity.canCollideWithBukkit(pushedEntity)) { // CraftBukkit - collidable API // Paper - Climbing should not bypass cramming gamerule // Leaf - optimize pushable selector
++                return false;
++            } else if (!entity.level().isClientSide() || entity1 instanceof Player player && player.isLocalPlayer()) {
++                Team team1 = entity1.getTeam();
++                Team.CollisionRule collisionRule1 = team1 == null ? Team.CollisionRule.ALWAYS : team1.getCollisionRule();
++                if (collisionRule1 == Team.CollisionRule.NEVER) { // Paper - Configurable player collision
++                    return false;
++                } else {
++                    boolean flag = team != null && team.isAlliedTo(team1);
++                    return (collisionRule != Team.CollisionRule.PUSH_OWN_TEAM && collisionRule1 != Team.CollisionRule.PUSH_OWN_TEAM || !flag)
++                        && (collisionRule != Team.CollisionRule.PUSH_OTHER_TEAMS && collisionRule1 != Team.CollisionRule.PUSH_OTHER_TEAMS || flag);
                  }
--            ));
-+            );
+-            ); // Leaf - optimize pushable selector
++            } else {
++                return false;
++            }
++        }
++        ); // Leaf - optimize pushable selector
      }
  
      public static Predicate<Entity> notRiding(Entity entity) {
@@ -28266,7 +28255,7 @@ index e81eabf901e755e1254fff98cdd1e609cf07aab8..5cda8d61c60e2e94788cbb02383c66aa
  
          this.life--;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346e5b27197 100644
+index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef8a2336db 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -70,8 +70,6 @@ import net.minecraft.tags.TagKey;
@@ -28294,8 +28283,8 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
 -        profilerFiller.pop();
      }
  
-     protected boolean shouldTakeDrowningDamage() {
-@@ -622,7 +617,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     // Leaf start - optimize eye block position
+@@ -635,7 +630,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      protected void tickDeath() {
          this.deathTime++;
@@ -28304,7 +28293,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              this.level().broadcastEntityEvent(this, EntityEvent.POOF);
              this.remove(Entity.RemovalReason.KILLED, org.bukkit.event.entity.EntityRemoveEvent.Cause.DEATH); // CraftBukkit - add Bukkit remove cause
          }
-@@ -743,7 +738,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -756,7 +751,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
      public void onEquipItem(EquipmentSlot slot, ItemStack oldItem, ItemStack newItem, boolean silent) {
          // CraftBukkit end
@@ -28313,7 +28302,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              if (!ItemStack.isSameItemSameComponents(oldItem, newItem) && !this.firstTick) {
                  Equippable equippable = newItem.get(DataComponents.EQUIPPABLE);
                  if (!this.isSilent() && equippable != null && slot == equippable.slot() && !silent) { // CraftBukkit
-@@ -849,9 +844,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -862,9 +857,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // Paper end - Extend dropItem API
          if (stack.isEmpty()) {
              return null;
@@ -28323,7 +28312,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          } else {
              ItemEntity itemEntity = this.createItemStackToDrop(stack, randomizeMotion, includeThrower);
              if (itemEntity != null) {
-@@ -905,7 +897,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -918,7 +910,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              }
          });
          // Paper end - Friction API
@@ -28332,7 +28321,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              input.read("attributes", AttributeInstance.Packed.LIST_CODEC).ifPresent(this.getAttributes()::apply);
          }
  
-@@ -1168,9 +1160,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1181,9 +1173,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
      public boolean removeAllEffects(EntityPotionEffectEvent.Cause cause) {
          // CraftBukkit end
@@ -28343,7 +28332,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              return false;
          } else {
              // CraftBukkit start
-@@ -1354,11 +1344,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1367,11 +1357,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      protected void onEffectAdded(MobEffectInstance effectInstance, @Nullable Entity entity) {
@@ -28358,7 +28347,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
      }
  
      public void sendEffectToPassengers(MobEffectInstance effectInstance) {
-@@ -1370,35 +1358,31 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1383,35 +1371,31 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      protected void onEffectUpdated(MobEffectInstance effectInstance, boolean forced, @Nullable Entity entity) {
@@ -28410,7 +28399,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
      }
  
      private void refreshDirtyAttributes() {
-@@ -1987,7 +1971,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2000,7 +1984,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                          this.stopSleeping();
                      }
  
@@ -28419,7 +28408,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
                          if (org.spigotmc.SpigotConfig.logNamedDeaths) LivingEntity.LOGGER.info("Named entity {} died: {}", this, this.getCombatTracker().getDeathMessage().getString()); // Spigot
                      }
  
-@@ -3272,12 +3256,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3285,12 +3269,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          MobEffectInstance effect = this.getEffect(MobEffects.LEVITATION);
          if (effect != null) {
              d += (0.05 * (effect.getAmplifier() + 1) - vec3.y) * 0.2;
@@ -28433,7 +28422,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          }
  
          if (this.shouldDiscardFriction()) {
-@@ -3370,10 +3350,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3383,10 +3363,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              double d = deltaMovement.horizontalDistance();
              this.setDeltaMovement(this.updateFallFlyingMovement(deltaMovement));
              this.move(MoverType.SELF, this.getDeltaMovement());
@@ -28446,7 +28435,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          }
      }
  
-@@ -3445,15 +3423,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3458,15 +3436,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          return this.getSpeed();
      }
  
@@ -28462,7 +28451,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
      protected void updateWalkAnimation(float partialTick) {
          float min = Math.min(partialTick * 4.0F, 1.0F);
          this.walkAnimation.update(min, 0.4F, this.isBaby() ? 3.0F : 1.0F);
-@@ -3547,41 +3516,39 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3560,41 +3529,39 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          super.tick();
          this.updatingUsingItem();
          this.updateSwimAmount();
@@ -28528,7 +28517,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          if (!this.isRemoved()) {
              this.aiStep();
          }
-@@ -3604,11 +3571,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3617,11 +3584,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              f1 = this.getYRot();
          }
  
@@ -28540,7 +28529,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
  
          // Paper start - stop large pitch and yaw changes from crashing the server
          this.yRotO += Math.round((this.getYRot() - this.yRotO) / 360.0F) * 360.0F;
-@@ -3620,7 +3583,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3633,7 +3596,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.yHeadRotO += Math.round((this.yHeadRot - this.yHeadRotO) / 360.0F) * 360.0F;
          // Paper end - stop large pitch and yaw changes from crashing the server
  
@@ -28548,7 +28537,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          if (this.isFallFlying()) {
              this.fallFlyTicks++;
          } else {
-@@ -3856,21 +3818,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3869,21 +3831,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
  
          this.setDeltaMovement(d, d1, d2);
@@ -28571,7 +28560,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          if (this.jumping && this.isAffectedByFluids()) {
              double fluidHeight;
              if (this.isInLava()) {
-@@ -3899,8 +3855,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3912,8 +3868,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.noJumpDelay = 0;
          }
  
@@ -28580,7 +28569,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          if (this.isFallFlying()) {
              this.updateFallFlying();
          }
-@@ -3917,17 +3871,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3930,17 +3884,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.travel(vec3);
          }
  
@@ -28599,7 +28588,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              if ((!this.isInPowderSnow || !this.canFreeze()) && !this.freezeLocked) { // Paper - Freeze Tick Lock API
                  // Leaf start - Only update frozen ticks if changed
                  int ticksForzen = this.getTicksFrozen();
-@@ -3943,18 +3889,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3956,18 +3902,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              if (this.tickCount % 40 == 0 && this.isFullyFrozen() && this.canFreeze()) {
                  this.hurtServer(serverLevel, this.damageSources().freeze(), 1.0F);
              }
@@ -28618,7 +28607,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          // Paper start - Add EntityMoveEvent
          // Purpur start - Ridables
          if (this.xo != this.getX() || this.yo != this.getY() || this.zo != this.getZ() || this.yRotO != this.getYRot() || this.xRotO != this.getXRot()) {
-@@ -4037,39 +3979,37 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4050,39 +3992,37 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      protected void updateFallFlying() {
          this.checkFallDistanceAccumulation();
@@ -28684,7 +28673,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          }
      }
  
-@@ -4215,7 +4155,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4228,7 +4168,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.autoSpinAttackTicks = 0;
          }
  
@@ -28693,7 +28682,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              this.setLivingEntityFlag(LIVING_ENTITY_FLAG_SPIN_ATTACK, false);
              this.autoSpinAttackDmg = 0.0F;
              this.autoSpinAttackItemStack = null;
-@@ -4237,7 +4177,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4250,7 +4190,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      public void stopRiding(boolean suppressCancellation) { // Paper - Force entity dismount during teleportation
          Entity vehicle = this.getVehicle();
          super.stopRiding(suppressCancellation); // Paper - Force entity dismount during teleportation
@@ -28702,7 +28691,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              this.dismountVehicle(vehicle);
          }
      }
-@@ -4272,7 +4212,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4285,7 +4225,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      public void take(Entity entity, int amount) {
          if (!entity.isRemoved()
@@ -28710,7 +28699,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              && (entity instanceof ItemEntity || entity instanceof AbstractArrow || entity instanceof ExperienceOrb)) {
              ((ServerLevel)this.level())
                  .getChunkSource()
-@@ -4448,7 +4387,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4461,7 +4400,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // Paper start - lag compensate eating
          // we add 1 to the expected time to avoid lag compensating when we should not
          final boolean shouldLagCompensate = this.useItem.has(DataComponents.FOOD) && this.eatStartTime != -1 && (System.nanoTime() - this.eatStartTime) > ((1L + this.totalEatTimeTicks) * 50L * (1000L * 1000L));
@@ -28719,7 +28708,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              this.useItemRemaining = 0;
              // Paper end - lag compensate eating
              this.completeUsingItem();
-@@ -4489,36 +4428,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4502,36 +4441,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.useItemRemaining = this.totalEatTimeTicks = itemInHand.getUseDuration(this);
              this.eatStartTime = System.nanoTime();
              // Paper end - lag compensate eating
@@ -28761,7 +28750,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              }
          }
      }
-@@ -4551,51 +4465,49 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4564,51 +4478,49 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public void completeUsingItem() {
@@ -28851,7 +28840,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
              }
          }
      }
-@@ -4634,13 +4546,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4647,13 +4559,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public void stopUsingItem() {
@@ -28870,7 +28859,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
          }
  
          this.useItem = ItemStack.EMPTY;
-@@ -5053,7 +4963,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -5066,7 +4976,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      @Override
      public boolean isCurrentlyGlowing() {
@@ -28880,7 +28869,7 @@ index c482f8ddfcb6b679b52936077275c5bc71a2659b..0a32e23133a16dbf63b2d9b47ff2f346
  
      @Override
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index b6dbe774787be28c9fff7545eddaa9d24643503e..81d498ae32c2c12a0d68dc4f01f1f2ac2328e2b2 100644
+index b60b5c57323be54e2d92c012fbb6e6e7a07c097c..038193bba4fb3d66df0104067dca08c9f8bb62b7 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -17,9 +17,6 @@ import net.minecraft.sounds.SoundEvent;
@@ -30981,10 +30970,10 @@ index cc9d30d1d72679d4d59b36f5c9dc5671deeadba3..67d741211320e2edb7556c672afa8ad9
              LOGGER.debug("Dragon is now in phase {} on the {}", phase, this.dragon.level().isClientSide() ? "client" : "server");
              this.currentPhase.begin();
 diff --git a/net/minecraft/world/entity/boss/wither/WitherBoss.java b/net/minecraft/world/entity/boss/wither/WitherBoss.java
-index eb6dfc7e765616fd26f7a22843e646933f6e933b..6f19d97894e270cf3e5fb8856b702b78dd261414 100644
+index c25ed738b088fb517d76c038a1ad47cae3f7ecbc..dbfd661fe047aad30b1438db9f1ee27f6ef32ae5 100644
 --- a/net/minecraft/world/entity/boss/wither/WitherBoss.java
 +++ b/net/minecraft/world/entity/boss/wither/WitherBoss.java
-@@ -306,7 +306,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
+@@ -305,7 +305,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
      @Override
      public void aiStep() {
          Vec3 vec3 = this.getDeltaMovement().multiply(1.0, 0.6, 1.0);
@@ -32283,7 +32272,7 @@ index 086b637c180748e9d2a9bd9df23a637b1518342b..49fdd0c3c8af6037ddd855ee0c4fcea0
          return this.spellCastingTickCount;
      }
 diff --git a/net/minecraft/world/entity/monster/piglin/Piglin.java b/net/minecraft/world/entity/monster/piglin/Piglin.java
-index 5e04a6792f26fad97b31f819fdf77b105c179564..9fc014114cccee3762654b6705848f33abde640e 100644
+index aaee7eb3b05ef84ae1ff263d54296f03b477a544..d57289fc29804c5c2105e54ae2848ad30acc7263 100644
 --- a/net/minecraft/world/entity/monster/piglin/Piglin.java
 +++ b/net/minecraft/world/entity/monster/piglin/Piglin.java
 @@ -16,8 +16,6 @@ import net.minecraft.tags.ItemTags;
@@ -33659,7 +33648,7 @@ index d2047a83df0b82829b122c176c89ab47fc372af8..f62a185be1f60b430f80bc16cff3696e
          }
  
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
-index 48099ae66045b6e78ec52832e3b972ac9c9bc246..a46dfbfa18d75126ef0a3b77b087bc56f7f88215 100644
+index a297c683850464b9e4102b9db94040c0daae176d..4de563d57dfb2f576353dd4786b95e539e9c432c 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 @@ -601,41 +601,39 @@ public abstract class AbstractMinecart extends VehicleEntity {
@@ -38191,7 +38180,7 @@ index 6f55d5bb180531028cf9c9a2ad67da4585a13ef1..5c5a96795694fd9f12614c946dbf6131
              heightmap = this.heightmaps.get(type);
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe863d54cb 100644
+index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5739f75df 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -3,16 +3,7 @@ package net.minecraft.world.level.chunk;
@@ -38296,7 +38285,7 @@ index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe
                          state.onPlace(this.level, pos, blockState, flag1);
                      }
  
-@@ -593,7 +574,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -599,7 +580,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
      }
  
      private boolean isInLevel() {
@@ -38305,7 +38294,7 @@ index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe
      }
  
      boolean isTicking(BlockPos pos) {
-@@ -670,7 +651,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -676,7 +657,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
              if (blockEntity != null) {
                  if (this.level instanceof ServerLevel serverLevel) {
                      this.removeGameEventListener(blockEntity, serverLevel);
@@ -38313,7 +38302,7 @@ index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe
                  }
  
                  blockEntity.setRemoved();
-@@ -914,32 +894,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -920,32 +900,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          level.getFluidTicks().removeContainer(this.chunkPos);
      }
  
@@ -38346,7 +38335,7 @@ index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe
      @Override
      public ChunkStatus getPersistedStatus() {
          return ChunkStatus.FULL;
-@@ -1031,8 +985,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -1037,8 +991,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
                  BlockPos blockPos = this.blockEntity.getBlockPos();
                  if (LevelChunk.this.isTicking(blockPos)) {
                      try {
@@ -38355,7 +38344,7 @@ index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe
                          BlockState blockState = LevelChunk.this.getBlockState(blockPos);
                          if (this.blockEntity.getType().isValid(blockState)) {
                              this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity);
-@@ -1046,8 +998,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -1052,8 +1004,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
                              }
                              // Paper end - Remove the Block Entity if it's invalid
                          }

@@ -183,7 +183,7 @@ index fd2dab32c1c6b6af79ea765689a1deae206003a0..8afebbd77070a05a020dda472b4b5351
          this.newSize = worldBorder.getLerpTarget();
          this.lerpTime = worldBorder.getLerpTime();
 diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
-index b81b1d5b3e8f4eee65f0f3a622724df0b3852a0b..94115983be9ff1c1c1b2315c32ab9efd301e2cdd 100644
+index 03470810c8dafc87c787fbd2aff2e1d301b0862e..9135e00b339dd5b76dd448b7cda6ee0ed0eb9dd6 100644
 --- a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
 +++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
 @@ -30,7 +30,6 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
@@ -1133,7 +1133,7 @@ index 2af5be11724d921105c3f01fb6410f9f6a796356..eabbccc18e607411500a3551f927d4fe
          public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
              super.onSyncedDataUpdated(key);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 2389e4c09f6ff8f75a51cc20d7eae1a18c648e60..6827b3b1415f5c1f48808448e9736c683a8ec75d 100644
+index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a8143a507 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -61,6 +61,7 @@ import net.minecraft.network.syncher.SyncedDataHolder;
@@ -1144,7 +1144,7 @@ index 2389e4c09f6ff8f75a51cc20d7eae1a18c648e60..6827b3b1415f5c1f48808448e9736c68
  import net.minecraft.server.level.ServerEntity;
  import net.minecraft.server.level.ServerLevel;
  import net.minecraft.server.level.ServerPlayer;
-@@ -635,6 +636,25 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -617,6 +618,25 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          this.updateLastTick(); // Leaf - Rewrite entity despawn time
      }
  
@@ -1170,7 +1170,7 @@ index 2389e4c09f6ff8f75a51cc20d7eae1a18c648e60..6827b3b1415f5c1f48808448e9736c68
      public boolean isColliding(BlockPos pos, BlockState state) {
          VoxelShape voxelShape = state.getCollisionShape(this.level(), pos, CollisionContext.of(this)).move(pos);
          return Shapes.joinIsNotEmpty(voxelShape, Shapes.create(this.getBoundingBox()), BooleanOp.AND);
-@@ -1021,8 +1041,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1003,8 +1023,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              if (this instanceof net.minecraft.world.entity.LivingEntity livingEntity) {
                  this.setSharedFlagOnFire(this.remainingFireTicks > 0 && (!this.level.galeConfig().gameplayMechanics.hideFlamesOnEntitiesWithFireResistance || !livingEntity.hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE)));
              } else {
@@ -1181,7 +1181,7 @@ index 2389e4c09f6ff8f75a51cc20d7eae1a18c648e60..6827b3b1415f5c1f48808448e9736c68
              } // Gale - Slice - hide flames on entities with fire resistance
          }
  
-@@ -1055,7 +1075,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1037,7 +1057,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              && (!(this instanceof Player player) || !player.getAbilities().invulnerable))) {
              // Paper end - Configurable nether ceiling damage
              if (this.level.purpurConfig.teleportOnNetherCeilingDamage && this.level.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER && this instanceof ServerPlayer player) player.teleport(org.bukkit.craftbukkit.util.CraftLocation.toBukkit(this.level.levelData.getRespawnData().pos(), this.level)); else // Purpur - Add option to teleport to spawn on nether ceiling damage
@@ -1508,7 +1508,7 @@ index 2389e4c09f6ff8f75a51cc20d7eae1a18c648e60..6827b3b1415f5c1f48808448e9736c68
      }
  
      public final boolean isInvulnerableToBase(DamageSource damageSource) {
-@@ -4689,11 +4853,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4687,11 +4851,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          // Gale end - VMP - skip entity move if movement is zero
          // CraftBukkit start - block invalid bounding boxes
          double minX = bb.minX,
@@ -1526,7 +1526,7 @@ index 2389e4c09f6ff8f75a51cc20d7eae1a18c648e60..6827b3b1415f5c1f48808448e9736c68
          if (len < 0) maxX = minX;
          if (len > 64) maxX = minX + 64.0;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index b80271880870306244ae1fe0fbdf4e6d1a3fb95a..ff497cdc9877e70bb5132743b84e61cdd329811e 100644
+index fbaa257d4718f01ef336f1407d69989f39981cd5..1b9eb53e8c8b324e1254a3b0d91ae730672f16f0 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -356,6 +356,27 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

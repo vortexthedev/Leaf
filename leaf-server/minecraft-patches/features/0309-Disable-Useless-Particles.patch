@@ -9,10 +9,10 @@ Original project: https://github.com/CraftCanvasMC/Canvas
 It is recommended to enable these options, as the client displays most of these particles already, so the server-side particle logic is not needed
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d5c8a2c9594e3bb9bfbc116f42f5475cfb7f6c88..a9e2068fefcee36dd694f2c42544618b975c0695 100644
+index 1a9bde165f2e44e4771ad5b2afd959312b5e956a..e53545f9a96d3f6f61a242e9629d8b696949d32e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -966,7 +966,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -986,7 +986,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
  
          if (this instanceof ServerPlayer) this.handlePortal(); // CraftBukkit - Moved up to postTick
@@ -21,7 +21,7 @@ index d5c8a2c9594e3bb9bfbc116f42f5475cfb7f6c88..a9e2068fefcee36dd694f2c42544618b
              this.spawnSprintParticle();
          }
  
-@@ -2249,6 +2249,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2269,6 +2269,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
          float f1 = Mth.floor(this.getY());
  
@@ -29,7 +29,7 @@ index d5c8a2c9594e3bb9bfbc116f42f5475cfb7f6c88..a9e2068fefcee36dd694f2c42544618b
          for (int i = 0; i < 1.0F + this.dimensions.width() * 20.0F; i++) {
              double d = (this.random.nextDouble() * 2.0 - 1.0) * this.dimensions.width();
              double d1 = (this.random.nextDouble() * 2.0 - 1.0) * this.dimensions.width();
-@@ -2269,6 +2270,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2289,6 +2290,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              double d1 = (this.random.nextDouble() * 2.0 - 1.0) * this.dimensions.width();
              this.level().addParticle(ParticleTypes.SPLASH, this.getX() + d, f1 + 1.0F, this.getZ() + d1, deltaMovement.x, deltaMovement.y, deltaMovement.z);
          }
@@ -37,7 +37,7 @@ index d5c8a2c9594e3bb9bfbc116f42f5475cfb7f6c88..a9e2068fefcee36dd694f2c42544618b
  
          this.gameEvent(GameEvent.SPLASH);
      }
-@@ -4028,6 +4030,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4192,6 +4194,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      protected static void sendBubbleColumnParticles(Level level, BlockPos pos) {
@@ -46,10 +46,10 @@ index d5c8a2c9594e3bb9bfbc116f42f5475cfb7f6c88..a9e2068fefcee36dd694f2c42544618b
              for (int i = 0; i < 2; i++) {
                  serverLevel.sendParticles(
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index ae094ffcaae6a5b105da157f8b47c86b6e68c03c..b686e9abacdd18d913d642a5911be0f6f8ce2001 100644
+index 47462e321228825103158b5bf66c0e6a14f9daf8..307ada015bb412ba4b08617e69c06a9f1b87bfce 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -1021,7 +1021,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1042,7 +1042,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              }
  
              List<ParticleOptions> list = this.entityData.get(DATA_EFFECT_PARTICLES);
@@ -58,7 +58,7 @@ index ae094ffcaae6a5b105da157f8b47c86b6e68c03c..b686e9abacdd18d913d642a5911be0f6
                  boolean flag = this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
                  int i = this.isInvisible() ? 15 : 4;
                  int i1 = flag ? 5 : 1;
-@@ -2893,7 +2893,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2896,7 +2896,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  this.swapHandItems();
                  break;
              case 60:

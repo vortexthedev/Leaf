@@ -5,7 +5,7 @@ Subject: [PATCH] Skip VehicleEntityCollisionEvent if no listeners
 
 
 diff --git a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
-index 33fb59123ce59b8fd5c9f84bc31e52d21ad060ff..d2e910e6bdf06deeecf8cfb6c256e2d17e07ab04 100644
+index 23fbeee5cc08baf5faa4991b638f24daf7256335..b7f1c13c1d82bbdeffa7a7256a4cc7ffe8ea16c1 100644
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 @@ -188,7 +188,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
@@ -27,7 +27,7 @@ index 33fb59123ce59b8fd5c9f84bc31e52d21ad060ff..d2e910e6bdf06deeecf8cfb6c256e2d1
                      (org.bukkit.entity.Vehicle) this.getBukkitEntity(),
                      entity.getBukkitEntity()
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
-index a297c683850464b9e4102b9db94040c0daae176d..964bffe10bc10e93ff7e2b12db7d973989f28262 100644
+index 4de563d57dfb2f576353dd4786b95e539e9c432c..6ed8a105ec070dd25911f6fce92e3e8ddf12bed9 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 @@ -180,6 +180,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
@@ -38,20 +38,20 @@ index a297c683850464b9e4102b9db94040c0daae176d..964bffe10bc10e93ff7e2b12db7d9739
          org.bukkit.event.vehicle.VehicleEntityCollisionEvent collisionEvent = new org.bukkit.event.vehicle.VehicleEntityCollisionEvent((org.bukkit.entity.Vehicle) this.getBukkitEntity(), entity.getBukkitEntity());
          return collisionEvent.callEvent();
          // Paper end - fix VehicleEntityCollisionEvent not called when colliding with player
-@@ -606,11 +607,13 @@ public abstract class AbstractMinecart extends VehicleEntity {
-                 if (!this.level().paperConfig().collisions.allowVehicleCollisions && this.level().paperConfig().collisions.onlyPlayersCollide && !(entity instanceof Player)) return; // Paper - Collision option for requiring a player participant
-                 if (!this.hasPassenger(entity)) {
-                     // CraftBukkit start
+@@ -605,11 +606,13 @@ public abstract class AbstractMinecart extends VehicleEntity {
+             if (!this.level().paperConfig().collisions.allowVehicleCollisions && this.level().paperConfig().collisions.onlyPlayersCollide && !(entity instanceof Player)) return; // Paper - Collision option for requiring a player participant
+             if (!this.hasPassenger(entity)) {
+                 // CraftBukkit start
 +                    if (org.bukkit.event.vehicle.VehicleEntityCollisionEvent.getHandlerList().getRegisteredListeners().length > 0) { // Leaf - Skip VehicleEntityCollisionEvent if no listeners
-                     org.bukkit.event.vehicle.VehicleEntityCollisionEvent collisionEvent = new org.bukkit.event.vehicle.VehicleEntityCollisionEvent(
-                         (org.bukkit.entity.Vehicle) this.getBukkitEntity(),
-                         entity.getBukkitEntity()
-                     );
-                     if (!collisionEvent.callEvent()) return;
+                 org.bukkit.event.vehicle.VehicleEntityCollisionEvent collisionEvent = new org.bukkit.event.vehicle.VehicleEntityCollisionEvent(
+                     (org.bukkit.entity.Vehicle) this.getBukkitEntity(),
+                     entity.getBukkitEntity()
+                 );
+                 if (!collisionEvent.callEvent()) return;
 +                    } // Leaf - Skip VehicleEntityCollisionEvent if no listeners
-                     // CraftBukkit end
-                     double d = entity.getX() - this.getX();
-                     double d1 = entity.getZ() - this.getZ();
+                 // CraftBukkit end
+                 double d = entity.getX() - this.getX();
+                 double d1 = entity.getZ() - this.getZ();
 diff --git a/net/minecraft/world/entity/vehicle/minecart/NewMinecartBehavior.java b/net/minecraft/world/entity/vehicle/minecart/NewMinecartBehavior.java
 index 4b336bb2690244b5c99bb7dd566e4fd84e031e79..d8af30d57cfe7b3e7ee8620aaaf20b0d7849fe6d 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/NewMinecartBehavior.java

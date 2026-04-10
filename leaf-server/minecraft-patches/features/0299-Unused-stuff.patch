@@ -666,10 +666,10 @@ index a0d23f7c733c315a021e8b2ba8968f41807159a4..326da0817707fb2cd145c2c387d88b5e
      // Paper start - Affects Spawning API
      public static final Predicate<Entity> PLAYER_AFFECTS_SPAWNING = (entity) -> {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index ff497cdc9877e70bb5132743b84e61cdd329811e..aedd57afaf0f019bd9fc3f9f2f7d26394d3d8351 100644
+index 1b9eb53e8c8b324e1254a3b0d91ae730672f16f0..4ae381e547855005611d2422ea8f180808979c67 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -1531,24 +1531,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1544,24 +1544,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  this.stopSleeping();
              }
  

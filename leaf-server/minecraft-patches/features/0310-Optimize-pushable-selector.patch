@@ -6,10 +6,10 @@ Subject: [PATCH] Optimize pushable selector
 Avoid duplicated Bukkit#isPushable check, already checked inside the Bukkit#canCollideWithBukkit
 
 diff --git a/net/minecraft/world/entity/EntitySelector.java b/net/minecraft/world/entity/EntitySelector.java
-index a0d23f7c733c315a021e8b2ba8968f41807159a4..27dc55aa3c2c18a9ade591cf094216736049a44c 100644
+index 326da0817707fb2cd145c2c387d88b5e6ad780d4..409ffce06e0e38d7e98302a0171b6af2c9603941 100644
 --- a/net/minecraft/world/entity/EntitySelector.java
 +++ b/net/minecraft/world/entity/EntitySelector.java
-@@ -48,10 +48,9 @@ public final class EntitySelector {
+@@ -46,10 +46,9 @@ public final class EntitySelector {
          Team team = entity.getTeam();
          Team.CollisionRule collisionRule = team == null ? Team.CollisionRule.ALWAYS : team.getCollisionRule();
          return (Predicate<Entity>)(collisionRule == Team.CollisionRule.NEVER
@@ -23,7 +23,7 @@ index a0d23f7c733c315a021e8b2ba8968f41807159a4..27dc55aa3c2c18a9ade591cf09421673
                          return false;
                      } else if (!entity.level().isClientSide() || entity1 instanceof Player player && player.isLocalPlayer()) {
                          Team team1 = entity1.getTeam();
-@@ -67,7 +66,7 @@ public final class EntitySelector {
+@@ -65,7 +64,7 @@ public final class EntitySelector {
                          return false;
                      }
                  }
