@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sigam <sigamatute@gmail.com>
+Date: Thu, 16 Apr 2026 15:18:03 +0300
+Subject: [PATCH] LZ4 as default
+
+
+diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+index 15cde7eac166e332b36fc68ac04475c937b49b1f..8d7f5de289d71a2c0e65da83e4afd6d74fa4fb4f 100644
+--- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+@@ -173,7 +173,7 @@ public class GlobalConfiguration extends ConfigurationPart {
+         @Comment("This setting controls if the vanilla damage tick should be skipped if damage was blocked via a shield.")
+         public boolean skipVanillaDamageTickWhenShieldBlocked = false;
+         @Comment("This setting controls what compression format is used for region files.")
+-        public CompressionFormat compressionFormat = CompressionFormat.ZLIB;
++        public CompressionFormat compressionFormat = CompressionFormat.LZ4;
+         @Comment("This setting controls if equipment should be updated when handling certain player actions.")
+         public boolean updateEquipmentOnPlayerActions = true;
+         @Comment("This setting controls what item data components don't need to be sanitized in oversized item obfuscation. Adding them re-enables exploits, but may be needed for certain resource packs. (Expected: minecraft:container, minecraft:charged_projectiles and minecraft:bundle_contents)")
