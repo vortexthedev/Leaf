@@ -15,10 +15,10 @@ This problem is entirely exposed since the latest JLine 3.x or 4.x, the strict t
 See jline3#1576 and jline3#1577
 
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 0e77c717d3481aae5d591a08eed1eb5f1439cdbf..a8970516cd737600ac7fca608ad2d27a083f8dab 100644
+index f835061ac95002b92939e45a6f27ba0937d06c97..2283d3104f1425934e15ab38cee7ef823be5da83 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -606,6 +606,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -483,6 +483,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          }
  
          this.hasFullyShutdown = true; // Paper - Improved watchdog support

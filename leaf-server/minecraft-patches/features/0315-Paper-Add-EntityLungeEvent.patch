@@ -12,10 +12,10 @@ Backported from Paper 26.1.1
 Feature implementation for Paper#13634
 
 diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
-index 960bbeb6854556ff25962a16240fcb95db40236f..83c247643993e96241dec2c4802d9038adb8829e 100644
+index 24df33ccd98bc9b1213f11574460db2f009578ca..e0124e1cba88868c73b2d08d21712df4bc79d645 100644
 --- a/net/minecraft/world/item/enchantment/Enchantment.java
 +++ b/net/minecraft/world/item/enchantment/Enchantment.java
-@@ -331,7 +331,22 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+@@ -361,7 +361,22 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
          applyEffects(
              this.getEffects(EnchantmentEffectComponents.POST_PIERCING_ATTACK),
              entityContext(level, enchantmentLevel, entity, entity.position()),

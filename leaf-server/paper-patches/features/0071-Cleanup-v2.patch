@@ -104,7 +104,7 @@ index c40e5e1bf91d75484ae5993cb3460edaab3b4d30..e4546d14d21b17dc806ff32998214298
              node = loader.load();
              this.verifyGlobalConfigVersion(node);
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index 77ab7f6682fb88edd8d6c28e7a22e8851406a1a9..15cde7eac166e332b36fc68ac04475c937b49b1f 100644
+index 61769c0356601cb2537a18bd6bc26c7d0ef9d2cc..32dcd38ada30726ad113228eba3418ecdd840571 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -31,7 +31,6 @@ public class GlobalConfiguration extends ConfigurationPart {

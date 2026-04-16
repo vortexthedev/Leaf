@@ -2462,7 +2462,7 @@ index 04a62e5ab9c0d0b9b7959280b0e0ea3ff388c017..12c8f34288e8081c0965059c51c3197f
  
      private ScoreboardSaveData.Packed store() {
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index f835061ac95002b92939e45a6f27ba0937d06c97..8005eba40f4842bd1e238eaef70f02eecc71da18 100644
+index 2283d3104f1425934e15ab38cee7ef823be5da83..8ab1b64ab50303a2b3b8e0aed24cdd246921e8fa 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -12,10 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
@@ -2634,9 +2634,9 @@ index f835061ac95002b92939e45a6f27ba0937d06c97..8005eba40f4842bd1e238eaef70f02ee
 -        }
 -
          this.hasFullyShutdown = true; // Paper - Improved watchdog support
+         io.papermc.paper.log.LoggerShutdown.shutdownLogging(); // Leaf - Improve logger/terminal shutdown
          System.exit(this.abnormalExit ? 70 : 0); // CraftBukkit // Paper - Improved watchdog support
-     }
-@@ -542,11 +467,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -543,11 +468,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          return true;
      }
  
@@ -2648,7 +2648,7 @@ index f835061ac95002b92939e45a6f27ba0937d06c97..8005eba40f4842bd1e238eaef70f02ee
      @Override
      public boolean useNativeTransport() {
          return this.getProperties().useNativeTransport;
-@@ -647,14 +567,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -648,14 +568,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          this.settings.update(dedicatedServerProperties -> dedicatedServerProperties.playerIdleTimeout.update(this.registryAccess(), idleTimeout));
      }
  
@@ -2663,7 +2663,7 @@ index f835061ac95002b92939e45a6f27ba0937d06c97..8005eba40f4842bd1e238eaef70f02ee
      @Override
      public String getMotd() {
          return null; // Paper
-@@ -789,11 +701,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -790,11 +702,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          return this.settings.getProperties().syncChunkWrites;
      }
  
@@ -2675,7 +2675,7 @@ index f835061ac95002b92939e45a6f27ba0937d06c97..8005eba40f4842bd1e238eaef70f02ee
      @Override
      public @Nullable GameType getForcedGameType() {
          return this.forceGameMode() ? this.worldData.getGameType() : null;
-@@ -841,35 +748,12 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -842,35 +749,12 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          this.settings.update(dedicatedServerProperties -> dedicatedServerProperties.pauseWhenEmptySeconds.update(this.registryAccess(), pauseWhenEmptySeconds));
      }
  

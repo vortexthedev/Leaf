@@ -393,7 +393,7 @@ index bd68139ae635f2ad7ec8e7a21e0056a139c4c62e..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index 61eb4a33d8d15a27091eef030237052c8b2839d9..77ab7f6682fb88edd8d6c28e7a22e8851406a1a9 100644
+index b4cbad5e9e5cc2159cebe03a2ebedf2e907f8353..61769c0356601cb2537a18bd6bc26c7d0ef9d2cc 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -89,8 +89,6 @@ public class GlobalConfiguration extends ConfigurationPart {
@@ -442,8 +442,8 @@ index 61eb4a33d8d15a27091eef030237052c8b2839d9..77ab7f6682fb88edd8d6c28e7a22e885
 -        @Setting(org.purpurmc.purpur.configuration.transformation.FarEndTerrainGenerationMigration.FIX_FAR_END_TERRAIN_GENERATION_KEY) // Purpur - Migrate Setting to reintroduce end void rings
 +        @Setting("fix-far-end-terrain-generation")
          public boolean fixFarEndTerrainGeneration = true;
+         // Leaf - Fix MC-301114 Combat Tracker memory leak - diff on change
      }
- 
 diff --git a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
 index d175dc4afd8cc2595921d4256c492633b301cd01..6a7035637466500c50a4ed8e4001c852db4ce73a 100644
 --- a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java

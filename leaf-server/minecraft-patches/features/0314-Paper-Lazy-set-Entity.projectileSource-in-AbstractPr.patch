@@ -15,7 +15,7 @@ Supersedes Paper#13643
 Supersedes Paper#13481
 
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
-index 7035d9fb406ea846fc8053017aeb6095ce596278..a145dde3da6e5b51402fe5a7c61d9af6884b1385 100644
+index b1c22ae1a6ab3f25abc851c145fb25586099ffe1..20ee8c7c8bf28d6f1cd1ed540c5fb4c3a04ba550 100644
 --- a/net/minecraft/world/entity/projectile/Projectile.java
 +++ b/net/minecraft/world/entity/projectile/Projectile.java
 @@ -102,25 +102,12 @@ public abstract class Projectile extends Entity implements TraceableEntity {

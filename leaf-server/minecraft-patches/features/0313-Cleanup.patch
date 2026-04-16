@@ -27585,7 +27585,7 @@ index eabbccc18e607411500a3551f927d4fea7402326..e231bcfdbd997e849f2ab32bc1b51921
          return this.entityData.get(DATA_HEIGHT_ID);
      }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e53545f9a96d3f6f61a242e9629d8b696949d32e..68af203ee31a32629f9178ed3cb20d414c9f5d05 100644
+index 994473f5496bf9117df358c15666ead449727b5b..8ff5a81873d89742239bac322643292e3570823b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -81,11 +81,6 @@ import net.minecraft.util.Mth;
@@ -28255,7 +28255,7 @@ index e81eabf901e755e1254fff98cdd1e609cf07aab8..5cda8d61c60e2e94788cbb02383c66aa
  
          this.life--;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef8a2336db 100644
+index ead41943e603b3b9d5b514ad512ac654865cc72f..e715481fe96014e3e02575d162b704a64eec4cd8 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -70,8 +70,6 @@ import net.minecraft.tags.TagKey;
@@ -28399,7 +28399,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
      }
  
      private void refreshDirtyAttributes() {
-@@ -2000,7 +1984,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1988,7 +1972,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                          this.stopSleeping();
                      }
  
@@ -28408,7 +28408,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
                          if (org.spigotmc.SpigotConfig.logNamedDeaths) LivingEntity.LOGGER.info("Named entity {} died: {}", this, this.getCombatTracker().getDeathMessage().getString()); // Spigot
                      }
  
-@@ -3285,12 +3269,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3273,12 +3257,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          MobEffectInstance effect = this.getEffect(MobEffects.LEVITATION);
          if (effect != null) {
              d += (0.05 * (effect.getAmplifier() + 1) - vec3.y) * 0.2;
@@ -28422,7 +28422,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          }
  
          if (this.shouldDiscardFriction()) {
-@@ -3383,10 +3363,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3371,10 +3351,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              double d = deltaMovement.horizontalDistance();
              this.setDeltaMovement(this.updateFallFlyingMovement(deltaMovement));
              this.move(MoverType.SELF, this.getDeltaMovement());
@@ -28435,7 +28435,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          }
      }
  
-@@ -3458,15 +3436,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3446,15 +3424,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          return this.getSpeed();
      }
  
@@ -28451,7 +28451,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
      protected void updateWalkAnimation(float partialTick) {
          float min = Math.min(partialTick * 4.0F, 1.0F);
          this.walkAnimation.update(min, 0.4F, this.isBaby() ? 3.0F : 1.0F);
-@@ -3560,41 +3529,39 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3548,41 +3517,39 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          super.tick();
          this.updatingUsingItem();
          this.updateSwimAmount();
@@ -28517,7 +28517,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          if (!this.isRemoved()) {
              this.aiStep();
          }
-@@ -3617,11 +3584,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3605,11 +3572,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              f1 = this.getYRot();
          }
  
@@ -28529,7 +28529,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
  
          // Paper start - stop large pitch and yaw changes from crashing the server
          this.yRotO += Math.round((this.getYRot() - this.yRotO) / 360.0F) * 360.0F;
-@@ -3633,7 +3596,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3621,7 +3584,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.yHeadRotO += Math.round((this.yHeadRot - this.yHeadRotO) / 360.0F) * 360.0F;
          // Paper end - stop large pitch and yaw changes from crashing the server
  
@@ -28537,7 +28537,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          if (this.isFallFlying()) {
              this.fallFlyTicks++;
          } else {
-@@ -3869,21 +3831,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3857,21 +3819,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
  
          this.setDeltaMovement(d, d1, d2);
@@ -28560,7 +28560,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          if (this.jumping && this.isAffectedByFluids()) {
              double fluidHeight;
              if (this.isInLava()) {
-@@ -3912,8 +3868,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3900,8 +3856,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.noJumpDelay = 0;
          }
  
@@ -28569,7 +28569,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          if (this.isFallFlying()) {
              this.updateFallFlying();
          }
-@@ -3930,17 +3884,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3918,17 +3872,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.travel(vec3);
          }
  
@@ -28588,7 +28588,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              if ((!this.isInPowderSnow || !this.canFreeze()) && !this.freezeLocked) { // Paper - Freeze Tick Lock API
                  // Leaf start - Only update frozen ticks if changed
                  int ticksForzen = this.getTicksFrozen();
-@@ -3956,18 +3902,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3944,18 +3890,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              if (this.tickCount % 40 == 0 && this.isFullyFrozen() && this.canFreeze()) {
                  this.hurtServer(serverLevel, this.damageSources().freeze(), 1.0F);
              }
@@ -28607,7 +28607,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          // Paper start - Add EntityMoveEvent
          // Purpur start - Ridables
          if (this.xo != this.getX() || this.yo != this.getY() || this.zo != this.getZ() || this.yRotO != this.getYRot() || this.xRotO != this.getXRot()) {
-@@ -4050,39 +3992,37 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4038,39 +3980,37 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      protected void updateFallFlying() {
          this.checkFallDistanceAccumulation();
@@ -28673,7 +28673,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          }
      }
  
-@@ -4228,7 +4168,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4216,7 +4156,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.autoSpinAttackTicks = 0;
          }
  
@@ -28682,7 +28682,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              this.setLivingEntityFlag(LIVING_ENTITY_FLAG_SPIN_ATTACK, false);
              this.autoSpinAttackDmg = 0.0F;
              this.autoSpinAttackItemStack = null;
-@@ -4250,7 +4190,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4238,7 +4178,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      public void stopRiding(boolean suppressCancellation) { // Paper - Force entity dismount during teleportation
          Entity vehicle = this.getVehicle();
          super.stopRiding(suppressCancellation); // Paper - Force entity dismount during teleportation
@@ -28691,7 +28691,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              this.dismountVehicle(vehicle);
          }
      }
-@@ -4285,7 +4225,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4273,7 +4213,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      public void take(Entity entity, int amount) {
          if (!entity.isRemoved()
@@ -28699,7 +28699,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              && (entity instanceof ItemEntity || entity instanceof AbstractArrow || entity instanceof ExperienceOrb)) {
              ((ServerLevel)this.level())
                  .getChunkSource()
-@@ -4461,7 +4400,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4449,7 +4388,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // Paper start - lag compensate eating
          // we add 1 to the expected time to avoid lag compensating when we should not
          final boolean shouldLagCompensate = this.useItem.has(DataComponents.FOOD) && this.eatStartTime != -1 && (System.nanoTime() - this.eatStartTime) > ((1L + this.totalEatTimeTicks) * 50L * (1000L * 1000L));
@@ -28708,7 +28708,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              this.useItemRemaining = 0;
              // Paper end - lag compensate eating
              this.completeUsingItem();
-@@ -4502,36 +4441,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4490,36 +4429,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              this.useItemRemaining = this.totalEatTimeTicks = itemInHand.getUseDuration(this);
              this.eatStartTime = System.nanoTime();
              // Paper end - lag compensate eating
@@ -28750,7 +28750,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              }
          }
      }
-@@ -4564,51 +4478,49 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4552,51 +4466,49 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public void completeUsingItem() {
@@ -28840,7 +28840,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
              }
          }
      }
-@@ -4647,13 +4559,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4635,13 +4547,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public void stopUsingItem() {
@@ -28859,7 +28859,7 @@ index 307ada015bb412ba4b08617e69c06a9f1b87bfce..79715bd1830fca029956fb7a51df96ef
          }
  
          this.useItem = ItemStack.EMPTY;
-@@ -5066,7 +4976,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -5054,7 +4964,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      @Override
      public boolean isCurrentlyGlowing() {
@@ -38180,7 +38180,7 @@ index 6f55d5bb180531028cf9c9a2ad67da4585a13ef1..5c5a96795694fd9f12614c946dbf6131
              heightmap = this.heightmaps.get(type);
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5739f75df 100644
+index e96a9872152fc3276fedda14f6bc61eafbafca0f..10a4842ed59103ebb691c599550652fe863d54cb 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -3,16 +3,7 @@ package net.minecraft.world.level.chunk;
@@ -38285,7 +38285,7 @@ index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5
                          state.onPlace(this.level, pos, blockState, flag1);
                      }
  
-@@ -599,7 +580,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -593,7 +574,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
      }
  
      private boolean isInLevel() {
@@ -38294,7 +38294,7 @@ index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5
      }
  
      boolean isTicking(BlockPos pos) {
-@@ -676,7 +657,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -670,7 +651,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
              if (blockEntity != null) {
                  if (this.level instanceof ServerLevel serverLevel) {
                      this.removeGameEventListener(blockEntity, serverLevel);
@@ -38302,7 +38302,7 @@ index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5
                  }
  
                  blockEntity.setRemoved();
-@@ -920,32 +900,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -914,32 +894,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          level.getFluidTicks().removeContainer(this.chunkPos);
      }
  
@@ -38335,7 +38335,7 @@ index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5
      @Override
      public ChunkStatus getPersistedStatus() {
          return ChunkStatus.FULL;
-@@ -1037,8 +991,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -1031,8 +985,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
                  BlockPos blockPos = this.blockEntity.getBlockPos();
                  if (LevelChunk.this.isTicking(blockPos)) {
                      try {
@@ -38344,7 +38344,7 @@ index be347691dcf6fc64c1a354ee799a55097990e319..54ad78821a5543d8052ebce5c6fc4aa5
                          BlockState blockState = LevelChunk.this.getBlockState(blockPos);
                          if (this.blockEntity.getType().isValid(blockState)) {
                              this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity);
-@@ -1052,8 +1004,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -1046,8 +998,6 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
                              }
                              // Paper end - Remove the Block Entity if it's invalid
                          }

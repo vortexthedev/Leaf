@@ -5,7 +5,7 @@ Subject: [PATCH] LZ4 as default
 
 
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index 15cde7eac166e332b36fc68ac04475c937b49b1f..8d7f5de289d71a2c0e65da83e4afd6d74fa4fb4f 100644
+index 32dcd38ada30726ad113228eba3418ecdd840571..24c7f19cf06f74c428538c0af52c0475e143167f 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -173,7 +173,7 @@ public class GlobalConfiguration extends ConfigurationPart {

@@ -2153,7 +2153,7 @@ index acb764b71bb3e8f159a758002f7d1077637d188d..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index cc1906ef871de6a4ff82039d8ddfcd764139f37d..61eb4a33d8d15a27091eef030237052c8b2839d9 100644
+index 1e4c5a44f4a29f4cd4313deff8e81a17df90ba23..b4cbad5e9e5cc2159cebe03a2ebedf2e907f8353 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -1,7 +1,6 @@
@@ -2231,7 +2231,7 @@ index cc1906ef871de6a4ff82039d8ddfcd764139f37d..61eb4a33d8d15a27091eef030237052c
          @Constraints.Min(4)
          public int regionFileCacheSize = 256;
          @Comment("See https://luckformula.emc.gs")
-@@ -357,10 +333,10 @@ public class GlobalConfiguration extends ConfigurationPart {
+@@ -358,10 +334,10 @@ public class GlobalConfiguration extends ConfigurationPart {
      public BlockUpdates blockUpdates;
  
      public class BlockUpdates extends ConfigurationPart {
@@ -2246,7 +2246,7 @@ index cc1906ef871de6a4ff82039d8ddfcd764139f37d..61eb4a33d8d15a27091eef030237052c
      }
  
      public Anticheat anticheat;
-@@ -400,9 +376,4 @@ public class GlobalConfiguration extends ConfigurationPart {
+@@ -401,9 +377,4 @@ public class GlobalConfiguration extends ConfigurationPart {
          }
      }
  
