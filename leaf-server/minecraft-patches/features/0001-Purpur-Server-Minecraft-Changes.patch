@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 0eafe23898dc9c093f0ae18e768f716544bb3ee1
+Commit: f57bd8659b5c3cbaf03984ee5a8ecdcc0849040a
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -1955,7 +1955,7 @@ index 1fc9e1ad541c46124183a401b2a7d99aea69cecf..881271f0bc77a8a8a7d31daad9a8188b
      }
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a3bcbf1051bb87e993be8c232c09031968b407d5..9be26e2b9bf764c629d059d9435c4b3be5c9ef36 100644
+index a3bcbf1051bb87e993be8c232c09031968b407d5..13a3a107102d26114cf668c0755a61329d583e49 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -153,6 +153,7 @@ import org.jspecify.annotations.Nullable;
@@ -2028,7 +2028,7 @@ index a3bcbf1051bb87e993be8c232c09031968b407d5..9be26e2b9bf764c629d059d9435c4b3b
          this.type = type;
          this.level = level;
          this.dimensions = type.getDimensions();
-+        this.maxAirTicks = level == null ? Entity.TOTAL_AIR_SUPPLY : this.level.purpurConfig.drowningAirTicks; // Purpur - Drowning Settings
++        this.maxAirTicks = level == null || this.getDefaultMaxAirSupply() != Entity.TOTAL_AIR_SUPPLY ? this.getDefaultMaxAirSupply() : this.level.purpurConfig.drowningAirTicks; // Purpur - Drowning Settings
 +        // Purpur start - Add toggle for RNG manipulation
 +        this.random = level == null || level.purpurConfig.entitySharedRandom ? SHARED_RANDOM : RandomSource.create();
 +        this.uuid = Mth.createInsecureUUID(this.random);

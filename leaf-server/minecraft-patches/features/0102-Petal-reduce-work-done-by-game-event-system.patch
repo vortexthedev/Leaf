@@ -38,7 +38,7 @@ index ab7be4298be22af32c4726f178b93896b96f599d..a757bfd993f1ff1f9ba8c3eecc706f65
              if (entity.getLastHurtByMob() instanceof ServerPlayer serverPlayer) {
                  DamageSource damageSource = entity.getLastDamageSource() == null
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 16b2ea71e5462fa82de02a5bfccb5786e7191b78..34dda09e316054da564e0c3dd3a87f254aa83648 100644
+index 52c1be8673296563d4ff811bb83b2271baf5a718..7d60fec556c5410328dc3e243ffad11ccacd4449 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -90,7 +90,19 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -103,7 +103,7 @@ index 16b2ea71e5462fa82de02a5bfccb5786e7191b78..34dda09e316054da564e0c3dd3a87f25
      }
  
      // Paper start - Perf: Reduce instructions and provide final method
-@@ -636,7 +665,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -630,7 +659,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
      }
  
      private void removeGameEventListenerRegistry(int sectionY) {
