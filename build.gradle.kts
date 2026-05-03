@@ -21,6 +21,7 @@ subprojects {
     }
 
     repositories {
+        mavenLocal()
         mavenCentral()
         maven(paperMavenPublicUrl)
         maven(leafMavenPublicUrl)

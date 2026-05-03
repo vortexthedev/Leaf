@@ -10,13 +10,41 @@ Actually, we can also replace the Rhino with GraalJS to achieve better performan
 there are many people who will use this Purpur feature, we can do it if really needed.
 
 diff --git a/net/minecraft/world/entity/monster/Phantom.java b/net/minecraft/world/entity/monster/Phantom.java
-index 1f3389185ccf997165dc2caf9f78ec560cfd68bd..f669fd71372ea0f05ee05f37fa8343821ff07c16 100644
+index 095e9992ecac5b6e3ae759437261dd1e49e886f3..b76697d9d8eb8b196ae8d8124b0317c400e21456 100644
 --- a/net/minecraft/world/entity/monster/Phantom.java
 +++ b/net/minecraft/world/entity/monster/Phantom.java
-@@ -182,10 +182,10 @@ public class Phantom extends Mob implements Enemy {
+@@ -88,26 +88,6 @@ public class Phantom extends Mob implements Enemy {
+     public static net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder createAttributes() {
+         return Monster.createMonsterAttributes().add(Attributes.FLYING_SPEED, 3.0D);
+     }
+-
+-    @Override
+-    public boolean onSpacebar() {
+-        if (getRider() != null && getRider().getBukkitEntity().hasPermission("allow.special.phantom")) {
+-            shoot();
+-        }
+-        return false;
+-    }
+-
+-    public boolean shoot() {
+-        org.bukkit.Location loc = ((org.bukkit.entity.LivingEntity) getBukkitEntity()).getEyeLocation();
+-        loc.setPitch(-loc.getPitch());
+-        org.bukkit.util.Vector target = loc.getDirection().normalize().multiply(100).add(loc.toVector());
+-
+-        org.purpurmc.purpur.entity.projectile.PhantomFlames flames = new org.purpurmc.purpur.entity.projectile.PhantomFlames(level(), this);
+-        flames.canGrief = level().purpurConfig.phantomAllowGriefing;
+-        flames.shoot(target.getX() - getX(), target.getY() - getY(), target.getZ() - getZ(), 1.0F, 5.0F);
+-        level().addFreshEntity(flames);
+-        return true;
+-    }
+     // Purpur end - Ridables
+ 
+     // Purpur start - Phantoms attracted to crystals and crystals shoot phantoms
+@@ -181,11 +161,10 @@ public class Phantom extends Mob implements Enemy {
+ 
      private void updatePhantomSizeInfo() {
          this.refreshDimensions();
-         if (level().purpurConfig.phantomFlamesOnSwoop && attackPhase == AttackPhase.SWOOP) shoot(); // Purpur - Ridables - Phantom flames on swoop
+-        if (level().purpurConfig.phantomFlamesOnSwoop && attackPhase == AttackPhase.SWOOP) shoot(); // Purpur - Ridables - Phantom flames on swoop
 -        // Purpur start - Configurable entity base attributes
 -        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(getFromCache(() -> this.level().purpurConfig.phantomMaxHealth, () -> this.level().purpurConfig.phantomMaxHealthCache, () -> 20.0D));
 -        this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(getFromCache(() -> this.level().purpurConfig.phantomAttackDamage, () -> this.level().purpurConfig.phantomAttackDamageCache, () -> (double) (6 + this.getPhantomSize())));
@@ -28,7 +56,7 @@ index 1f3389185ccf997165dc2caf9f78ec560cfd68bd..f669fd71372ea0f05ee05f37fa834382
      }
  
      public int getPhantomSize() {
-@@ -222,6 +222,24 @@ public class Phantom extends Mob implements Enemy {
+@@ -222,6 +201,24 @@ public class Phantom extends Mob implements Enemy {
      }
      // Purpur end - Configurable entity base attributes
  
@@ -50,14 +78,14 @@ index 1f3389185ccf997165dc2caf9f78ec560cfd68bd..f669fd71372ea0f05ee05f37fa834382
 +    }
 +    // Leaf end - Improve Purpur JS expression evaluation
 +
+     // Paper start
      @Override
-     public void tick() {
-         super.tick();
+     public boolean isSunBurnTick() {
 diff --git a/net/minecraft/world/entity/monster/Shulker.java b/net/minecraft/world/entity/monster/Shulker.java
-index 12e3ba1a545d5ec208ed33af66429f56fcdbed7f..cdfd361d6f4bba0670382d23c32f750717c9af89 100644
+index bf0c251302754eedd7be0e432dd2ac07b05aa8db..7bc505f09622b01b705808140b29b3b155f67c5f 100644
 --- a/net/minecraft/world/entity/monster/Shulker.java
 +++ b/net/minecraft/world/entity/monster/Shulker.java
-@@ -516,7 +516,7 @@ public class Shulker extends AbstractGolem implements Enemy {
+@@ -493,7 +493,7 @@ public class Shulker extends AbstractGolem implements Enemy {
              if (!this.level().purpurConfig.shulkerSpawnFromBulletNearbyEquation.isBlank()) {
                  int nearby = this.level().getEntities((net.minecraft.world.level.entity.EntityTypeTest) EntityType.SHULKER, boundingBox.inflate(this.level().purpurConfig.shulkerSpawnFromBulletNearbyRange), Entity::isAlive).size();
                  try {
@@ -67,7 +95,7 @@ index 12e3ba1a545d5ec208ed33af66429f56fcdbed7f..cdfd361d6f4bba0670382d23c32f7507
                      e.printStackTrace();
                      chance -= (nearby - 1) / 5.0F;
 diff --git a/net/minecraft/world/entity/monster/Slime.java b/net/minecraft/world/entity/monster/Slime.java
-index d05ee78e20aedd540416645958a64b33856f7fa0..d5182d0d3e50602d9887a87c3b0fe10b9d49a689 100644
+index 08046192f759ed19f9bb856d61275426cde95417..918fe141aba2e3cd923ab3f6b473c70c92e762c4 100644
 --- a/net/minecraft/world/entity/monster/Slime.java
 +++ b/net/minecraft/world/entity/monster/Slime.java
 @@ -149,6 +149,24 @@ public class Slime extends Mob implements Enemy {
@@ -108,7 +136,7 @@ index d05ee78e20aedd540416645958a64b33856f7fa0..d5182d0d3e50602d9887a87c3b0fe10b
              this.setHealth(this.getMaxHealth());
          }
 diff --git a/net/minecraft/world/entity/monster/skeleton/AbstractSkeleton.java b/net/minecraft/world/entity/monster/skeleton/AbstractSkeleton.java
-index 60afd81d3bf671889fbff5d4a3fabb38a8e2d461..55327d98c9a714e8e3f8569f21e08143e23c8bc7 100644
+index 93a077648c24d435580356a5713764ca51d7a616..e3891c524752c357069e3afb24971fcd5099fb15 100644
 --- a/net/minecraft/world/entity/monster/skeleton/AbstractSkeleton.java
 +++ b/net/minecraft/world/entity/monster/skeleton/AbstractSkeleton.java
 @@ -187,7 +187,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
@@ -137,10 +165,10 @@ index 60afd81d3bf671889fbff5d4a3fabb38a8e2d461..55327d98c9a714e8e3f8569f21e08143
          return ProjectileUtil.getMobArrow(this, arrow, velocity, weapon);
      }
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index e56fd037860c4f38862e01f7ab9972a7d7a132b2..f8747851b7f38939591feb98b13c1d4eff3155f4 100644
+index 0edb998ac4717a4edf2fb1ff17d2f1eb923daf81..6d4d94b506676f2a8d4ebcf36b4326b5577e66c6 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
-@@ -1834,7 +1834,10 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1822,7 +1822,10 @@ public abstract class Player extends Avatar implements ContainerUser {
      protected int getBaseExperienceReward(ServerLevel level) {
          // Purpur start - Add player death exp control options
          if (!level.getGameRules().get(GameRules.KEEP_INVENTORY) && !this.isSpectator()) {
@@ -152,7 +180,7 @@ index e56fd037860c4f38862e01f7ab9972a7d7a132b2..f8747851b7f38939591feb98b13c1d4e
              try {
                  toDrop = Math.round(((Number) scriptEngine.eval("let expLevel = " + experienceLevel + "; " +
                      "let expTotal = " + totalExperience + "; " +
-@@ -1844,6 +1847,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1832,6 +1835,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                  e.printStackTrace();
                  toDrop = experienceLevel * 7;
              }
@@ -161,18 +189,18 @@ index e56fd037860c4f38862e01f7ab9972a7d7a132b2..f8747851b7f38939591feb98b13c1d4e
          } else {
              return 0;
 diff --git a/org/purpurmc/purpur/PurpurWorldConfig.java b/org/purpurmc/purpur/PurpurWorldConfig.java
-index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61c7804eac 100644
+index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e73197fb19 100644
 --- a/org/purpurmc/purpur/PurpurWorldConfig.java
 +++ b/org/purpurmc/purpur/PurpurWorldConfig.java
-@@ -464,6 +464,7 @@ public class PurpurWorldConfig {
-     public boolean idleTimeoutUpdateTabList = false;
-     public boolean idleTimeoutTargetPlayer = true;
+@@ -442,6 +442,7 @@ public class PurpurWorldConfig {
+ 
+     public boolean idleTimeoutKick = true;
      public String playerDeathExpDropEquation = "expLevel * 7";
 +    public boolean playerDeathExpDropEquationEnabled; // Leaf - Improve Purpur JS expression evaluation
      public int playerDeathExpDropMax = 100;
      public boolean teleportIfOutsideBorder = false;
      public boolean teleportOnNetherCeilingDamage = false;
-@@ -508,6 +509,7 @@ public class PurpurWorldConfig {
+@@ -475,6 +476,7 @@ public class PurpurWorldConfig {
          shiftRightClickRepairsMendingPoints = getInt("gameplay-mechanics.player.shift-right-click-repairs-mending-points", shiftRightClickRepairsMendingPoints);
          playerExpPickupDelay = getInt("gameplay-mechanics.player.exp-pickup-delay-ticks", playerExpPickupDelay);
          playerVoidTrading = getBoolean("gameplay-mechanics.player.allow-void-trading", playerVoidTrading);
@@ -180,7 +208,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
      }
  
      public boolean silkTouchEnabled = false;
-@@ -2529,6 +2531,10 @@ public class PurpurWorldConfig {
+@@ -2489,6 +2491,10 @@ public class PurpurWorldConfig {
      public boolean phantomAllowGriefing = false;
      public String phantomMaxHealth = "20.0";
      public String phantomAttackDamage = "6 + size";
@@ -191,7 +219,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
      public Map<Integer, Double> phantomMaxHealthCache = new HashMap<>();
      public Map<Integer, Double> phantomAttackDamageCache = new HashMap<>();
      public double phantomAttackedByCrystalRadius = 0.0D;
-@@ -2567,6 +2573,10 @@ public class PurpurWorldConfig {
+@@ -2527,6 +2533,10 @@ public class PurpurWorldConfig {
          }
          phantomMaxHealth = getString("mobs.phantom.attributes.max_health", phantomMaxHealth);
          phantomAttackDamage = getString("mobs.phantom.attributes.attack_damage", phantomAttackDamage);
@@ -202,7 +230,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
          phantomMaxHealthCache.clear();
          phantomAttackDamageCache.clear();
          phantomAttackedByCrystalRadius = getDouble("mobs.phantom.attacked-by-crystal-range", phantomAttackedByCrystalRadius);
-@@ -2939,6 +2949,7 @@ public class PurpurWorldConfig {
+@@ -2899,6 +2909,7 @@ public class PurpurWorldConfig {
      public boolean shulkerSpawnFromBulletRequireOpenLid = true;
      public double shulkerSpawnFromBulletNearbyRange = 8.0D;
      public String shulkerSpawnFromBulletNearbyEquation = "(nearby - 1) / 5.0";
@@ -210,7 +238,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
      public boolean shulkerSpawnFromBulletRandomColor = false;
      public boolean shulkerChangeColorWithDye = false;
      public boolean shulkerAlwaysDropExp = false;
-@@ -2955,6 +2966,7 @@ public class PurpurWorldConfig {
+@@ -2915,6 +2926,7 @@ public class PurpurWorldConfig {
          shulkerScale = Mth.clamp(getDouble("mobs.shulker.attributes.scale", shulkerScale), 0.0625D, Shulker.MAX_SCALE);
          shulkerTakeDamageFromWater = getBoolean("mobs.shulker.takes-damage-from-water", shulkerTakeDamageFromWater);
          shulkerSpawnFromBulletBaseChance = (float) getDouble("mobs.shulker.spawn-from-bullet.base-chance", shulkerSpawnFromBulletBaseChance);
@@ -218,7 +246,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
          shulkerSpawnFromBulletRequireOpenLid = getBoolean("mobs.shulker.spawn-from-bullet.require-open-lid", shulkerSpawnFromBulletRequireOpenLid);
          shulkerSpawnFromBulletNearbyRange = getDouble("mobs.shulker.spawn-from-bullet.nearby-range", shulkerSpawnFromBulletNearbyRange);
          shulkerSpawnFromBulletNearbyEquation = getString("mobs.shulker.spawn-from-bullet.nearby-equation", shulkerSpawnFromBulletNearbyEquation);
-@@ -3006,7 +3018,8 @@ public class PurpurWorldConfig {
+@@ -2966,7 +2978,8 @@ public class PurpurWorldConfig {
      public double skeletonHeadVisibilityPercent = 0.5D;
      public int skeletonFeedWitherRoses = 0;
      public String skeletonBowAccuracy = "14 - difficulty * 4";
@@ -228,7 +256,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
      public Boolean skeletonCanPickUpLoot = null;
      private void skeletonSettings() {
          skeletonRidable = getBoolean("mobs.skeleton.ridable", skeletonRidable);
-@@ -3025,6 +3038,7 @@ public class PurpurWorldConfig {
+@@ -2985,6 +2998,7 @@ public class PurpurWorldConfig {
          skeletonFeedWitherRoses = getInt("mobs.skeleton.feed-wither-roses", skeletonFeedWitherRoses);
          final String defaultSkeletonBowAccuracy = skeletonBowAccuracy;
          skeletonBowAccuracy = getString("mobs.skeleton.bow-accuracy", skeletonBowAccuracy);
@@ -236,7 +264,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
          for (int i = 1; i < 4; i++) {
              final float divergence;
              try {
-@@ -3074,8 +3088,12 @@ public class PurpurWorldConfig {
+@@ -3034,8 +3048,12 @@ public class PurpurWorldConfig {
      public boolean slimeControllable = true;
      public String slimeMaxHealth = "size * size";
      public String slimeAttackDamage = "size";
@@ -251,7 +279,7 @@ index 421e07e767d748fbdd72196a6f0c528ff867b4b2..35749c9a231f0265542dfbbd0e903c61
      public boolean slimeTakeDamageFromWater = false;
      public boolean slimeAlwaysDropExp = false;
      private void slimeSettings() {
-@@ -3089,6 +3107,10 @@ public class PurpurWorldConfig {
+@@ -3049,6 +3067,10 @@ public class PurpurWorldConfig {
          }
          slimeMaxHealth = getString("mobs.slime.attributes.max_health", slimeMaxHealth);
          slimeAttackDamage = getString("mobs.slime.attributes.attack_damage", slimeAttackDamage);
