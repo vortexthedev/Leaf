@@ -272,10 +272,10 @@ index a2a8bdcd9fc3db2fe421e53fdd35bcde2121360a..e359075bdb742dcf5ea634f359886b47
              if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
                  this.connection
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 8d8d69e9e1f63e6abb771f6e1efe47a5db8c04e3..1c60e129b43eb73df0d8b576accfc325829fb4b9 100644
+index 5ff1b76faaca1e7d9c25029669d4a183719ac919..a8130c649e23cc8bbdca379879127a134351b25d 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -446,7 +446,6 @@ public abstract class PlayerList {
+@@ -445,7 +445,6 @@ public abstract class PlayerList {
          this.cserver.getPluginManager().callEvent(playerQuitEvent);
          player.getBukkitEntity().disconnect();
  

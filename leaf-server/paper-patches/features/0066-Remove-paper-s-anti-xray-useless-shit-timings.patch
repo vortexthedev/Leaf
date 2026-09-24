@@ -2153,7 +2153,7 @@ index acb764b71bb3e8f159a758002f7d1077637d188d..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index 1e4c5a44f4a29f4cd4313deff8e81a17df90ba23..b4cbad5e9e5cc2159cebe03a2ebedf2e907f8353 100644
+index 801a3810feb0aed0eb9f440f5fbe65bf6deb59fd..a9deb6262c43da74e43b4f0b4a86de41c8dc6bff 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -1,7 +1,6 @@
@@ -2223,7 +2223,7 @@ index 1e4c5a44f4a29f4cd4313deff8e81a17df90ba23..b4cbad5e9e5cc2159cebe03a2ebedf2e
      }
  
      public PlayerAutoSave playerAutoSave;
-@@ -332,7 +309,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+@@ -334,7 +311,6 @@ public class GlobalConfiguration extends ConfigurationPart {
          }
          public int maxJoinsPerTick = 5;
          public boolean sendFullPosForItemEntities = false;
@@ -2231,7 +2231,7 @@ index 1e4c5a44f4a29f4cd4313deff8e81a17df90ba23..b4cbad5e9e5cc2159cebe03a2ebedf2e
          @Constraints.Min(4)
          public int regionFileCacheSize = 256;
          @Comment("See https://luckformula.emc.gs")
-@@ -358,10 +334,10 @@ public class GlobalConfiguration extends ConfigurationPart {
+@@ -359,10 +335,10 @@ public class GlobalConfiguration extends ConfigurationPart {
      public BlockUpdates blockUpdates;
  
      public class BlockUpdates extends ConfigurationPart {
@@ -2246,7 +2246,7 @@ index 1e4c5a44f4a29f4cd4313deff8e81a17df90ba23..b4cbad5e9e5cc2159cebe03a2ebedf2e
      }
  
      public Anticheat anticheat;
-@@ -401,9 +377,4 @@ public class GlobalConfiguration extends ConfigurationPart {
+@@ -402,9 +378,4 @@ public class GlobalConfiguration extends ConfigurationPart {
          }
      }
  

@@ -4271,7 +4271,7 @@ index a10c6cc93ea42de1d77ab155cc7e9caf94345aef..43465c21b54703ec54ac8e11fdd7291d
                  ProfileLookupCallback profileLookupCallback = new ProfileLookupCallback() {
                      @Override
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 1226c4570041cca13db08f000d874e0eb7e8c900..8d8d69e9e1f63e6abb771f6e1efe47a5db8c04e3 100644
+index ca31e136b5114d35c468981dcb31842e403028e5..5ff1b76faaca1e7d9c25029669d4a183719ac919 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -54,13 +54,11 @@ import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPac
@@ -4313,7 +4313,7 @@ index 1226c4570041cca13db08f000d874e0eb7e8c900..8d8d69e9e1f63e6abb771f6e1efe47a5
          player.sentListPacket = true;
          player.suppressTrackerForLogin = false; // Paper - Fire PlayerJoinEvent when Player is actually ready
          ((ServerLevel)player.level()).getChunkSource().chunkMap.addEntity(player); // Paper - Fire PlayerJoinEvent when Player is actually ready; track entity now
-@@ -1155,34 +1153,22 @@ public abstract class PlayerList {
+@@ -1154,34 +1152,22 @@ public abstract class PlayerList {
      }
  
      public void broadcastChatMessage(PlayerChatMessage message, CommandSourceStack sender, ChatType.Bound boundChatType) {
@@ -4350,7 +4350,7 @@ index 1226c4570041cca13db08f000d874e0eb7e8c900..8d8d69e9e1f63e6abb771f6e1efe47a5
              // Paper start - don't send player chat packets from vanished players
              if (sender != null && !serverPlayer.getBukkitEntity().canSee(sender.getBukkitEntity())) {
                  serverPlayer.connection.send(unsignedFunction != null
-@@ -1190,13 +1176,8 @@ public abstract class PlayerList {
+@@ -1189,13 +1175,8 @@ public abstract class PlayerList {
                      : disguised);
                  continue;
              }

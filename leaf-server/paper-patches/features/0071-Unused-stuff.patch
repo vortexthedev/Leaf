@@ -1001,10 +1001,10 @@ index bfec7d2d24d8f175f00610b6fa6406544d9b46de..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 115560ee7932c39f896e8ac7e8d12ca390ef87f7..9626e175139b8618c8ec7a677fec705e6f43fa7f 100644
+index 018991eed0cbca4d19abdbd7036cf7037007e2b2..bd41f876791b27ca690da69dd4102db73b122693 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -582,15 +582,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -574,15 +574,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
  
      @Override
      public void setPlayerListName(String name) {
@@ -1021,7 +1021,7 @@ index 115560ee7932c39f896e8ac7e8d12ca390ef87f7..9626e175139b8618c8ec7a677fec705e
          if (this.getHandle().connection == null) return; // Paper - Updates are possible before the player has fully joined
          for (ServerPlayer player : this.server.getHandle().players) {
              if (player.getBukkitEntity().canSee(this)) {
-@@ -991,29 +986,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -983,29 +978,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          }
      }
  

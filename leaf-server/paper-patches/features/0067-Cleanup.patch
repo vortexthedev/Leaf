@@ -393,7 +393,7 @@ index bd68139ae635f2ad7ec8e7a21e0056a139c4c62e..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index b4cbad5e9e5cc2159cebe03a2ebedf2e907f8353..61769c0356601cb2537a18bd6bc26c7d0ef9d2cc 100644
+index a9deb6262c43da74e43b4f0b4a86de41c8dc6bff..07c8464fc2bcd6b16fcb27b4e3fcfa3fc1def4ac 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -89,8 +89,6 @@ public class GlobalConfiguration extends ConfigurationPart {
@@ -435,15 +435,15 @@ index b4cbad5e9e5cc2159cebe03a2ebedf2e907f8353..61769c0356601cb2537a18bd6bc26c7d
      public Misc misc;
  
      public class Misc extends ConfigurationPart {
-@@ -326,7 +317,7 @@ public class GlobalConfiguration extends ConfigurationPart {
+@@ -328,7 +319,7 @@ public class GlobalConfiguration extends ConfigurationPart {
          @Comment("Whether the nether dimension is enabled and will be loaded.")
          public boolean enableNether = true;
          @Comment("Keeps Paper's fix for MC-159283 enabled. Disable to use vanilla End ring terrain.")
 -        @Setting(org.purpurmc.purpur.configuration.transformation.FarEndTerrainGenerationMigration.FIX_FAR_END_TERRAIN_GENERATION_KEY) // Purpur - Migrate Setting to reintroduce end void rings
 +        @Setting("fix-far-end-terrain-generation")
          public boolean fixFarEndTerrainGeneration = true;
-         // Leaf - Fix MC-301114 Combat Tracker memory leak - diff on change
      }
+ 
 diff --git a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
 index d175dc4afd8cc2595921d4256c492633b301cd01..6a7035637466500c50a4ed8e4001c852db4ce73a 100644
 --- a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
@@ -716,7 +716,7 @@ index 8dc831bb08aa482149fcb69bd6a7222591a50e19..f43cb62f2b2b534ef08d3a5b999f80e0
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index b41c0741e6a6553449937241d919f1986eda1021..9d1b0cf434f304d5df4917aa68b48b18965a35a0 100644
+index e6ea34b18c6db63efa77bb67d3484e4d66315ed6..d416022fbefd2f9d79985ee1c6ea082c34a63636 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -28,74 +28,71 @@ public class Main {

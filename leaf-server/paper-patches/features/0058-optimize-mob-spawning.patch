@@ -5,7 +5,7 @@ Subject: [PATCH] optimize mob spawning
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index aecd9225bb0c4f12dff918d07f864d9cffd92b5f..403277294d03cc21a073a8296d9f272f55c61f01 100644
+index 67a0466e6804317c1dc85d6bd7e8cad48fb19fc1..f1dd9c35371b231602b1dd94b218050296dcb6a2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -286,7 +286,8 @@ public final class CraftServer implements Server {
@@ -18,7 +18,7 @@ index aecd9225bb0c4f12dff918d07f864d9cffd92b5f..403277294d03cc21a073a8296d9f272f
      private File container;
      private WarningState warningState = WarningState.DEFAULT;
      public ApiVersion minimumAPI;
-@@ -485,6 +486,7 @@ public final class CraftServer implements Server {
+@@ -484,6 +485,7 @@ public final class CraftServer implements Server {
          this.saveCommandsConfig();
          this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
          this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
@@ -26,7 +26,7 @@ index aecd9225bb0c4f12dff918d07f864d9cffd92b5f..403277294d03cc21a073a8296d9f272f
          this.overrideSpawnLimits();
          console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
          this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
-@@ -517,9 +519,9 @@ public final class CraftServer implements Server {
+@@ -515,9 +517,9 @@ public final class CraftServer implements Server {
      }
  
      private void overrideSpawnLimits() {
@@ -38,7 +38,7 @@ index aecd9225bb0c4f12dff918d07f864d9cffd92b5f..403277294d03cc21a073a8296d9f272f
              }
          }
      }
-@@ -2389,7 +2391,7 @@ public final class CraftServer implements Server {
+@@ -2386,7 +2388,7 @@ public final class CraftServer implements Server {
      }
  
      public int getSpawnLimitUnsafe(final SpawnCategory spawnCategory) {

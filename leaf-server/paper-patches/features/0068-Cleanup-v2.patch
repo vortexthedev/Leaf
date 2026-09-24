@@ -92,7 +92,7 @@ index 77451dca02e6ffeaf898b0093a2b6802dae81edc..3f6675fef06dd0a63ab8d7a4bb036801
                  this.sendNative(single.audience(), chatType, msgFunction);
              } else {
 diff --git a/src/main/java/io/papermc/paper/configuration/Configurations.java b/src/main/java/io/papermc/paper/configuration/Configurations.java
-index c40e5e1bf91d75484ae5993cb3460edaab3b4d30..e4546d14d21b17dc806ff3299821429896d827a3 100644
+index 5790ac3a5f900cbc23821996af942b4aa58f1f9f..d842871e15f3e15917fe7427d7c10fd8cb751be8 100644
 --- a/src/main/java/io/papermc/paper/configuration/Configurations.java
 +++ b/src/main/java/io/papermc/paper/configuration/Configurations.java
 @@ -128,7 +128,6 @@ public abstract class Configurations<G, W> {
@@ -104,7 +104,7 @@ index c40e5e1bf91d75484ae5993cb3460edaab3b4d30..e4546d14d21b17dc806ff32998214298
              node = loader.load();
              this.verifyGlobalConfigVersion(node);
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index 61769c0356601cb2537a18bd6bc26c7d0ef9d2cc..32dcd38ada30726ad113228eba3418ecdd840571 100644
+index 07c8464fc2bcd6b16fcb27b4e3fcfa3fc1def4ac..bab5a17b3ce716dd04147fe10595051ca9ff4acf 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -31,7 +31,6 @@ public class GlobalConfiguration extends ConfigurationPart {
@@ -443,7 +443,7 @@ index 2b793c0af8504e43f8710ab037195e677d57f4a8..5ae896895ac5337cadd03c3e97152a61
      }
      // Paper end
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 9626e175139b8618c8ec7a677fec705e6f43fa7f..bd41f876791b27ca690da69dd4102db73b122693 100644
+index 115560ee7932c39f896e8ac7e8d12ca390ef87f7..018991eed0cbca4d19abdbd7036cf7037007e2b2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -331,14 +331,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
@@ -461,7 +461,7 @@ index 9626e175139b8618c8ec7a677fec705e6f43fa7f..bd41f876791b27ca690da69dd4102db7
      @Override
      public boolean isTransferred() {
          return this.getHandle().connection.playerGameConnection.isTransferred();
-@@ -2905,7 +2897,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2929,7 +2921,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          if (getHandle().connection == null) return;
  
          net.minecraft.network.chat.Component component = io.papermc.paper.adventure.PaperAdventure.asVanilla(message);
@@ -470,7 +470,7 @@ index 9626e175139b8618c8ec7a677fec705e6f43fa7f..bd41f876791b27ca690da69dd4102db7
      }
  
      @Override
-@@ -2913,7 +2905,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2937,7 +2929,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          if (getHandle().connection == null) return;
  
          if (signedMessage instanceof PlayerChatMessage.AdventureView view) {

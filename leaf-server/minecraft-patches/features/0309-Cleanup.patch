@@ -19727,7 +19727,7 @@ index 3967d7a500ccca4adf9df334ba3cdaae40062a5f..a10c6cc93ea42de1d77ab155cc7e9caf
          ConversionError(String message, Throwable cause) {
              super(message, cause);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0eb7e8c900 100644
+index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..ca31e136b5114d35c468981dcb31842e403028e5 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -70,7 +70,6 @@ import net.minecraft.server.level.ServerLevel;
@@ -19831,7 +19831,15 @@ index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0e
              );
          }
          // Paper end - Send empty chunk
-@@ -473,16 +451,6 @@ public abstract class PlayerList {
+@@ -457,7 +435,6 @@ public abstract class PlayerList {
+     public net.kyori.adventure.text.@Nullable Component remove(ServerPlayer player, net.kyori.adventure.text.Component leaveMessage) {
+         // Paper end - Fix kick event leave message not being sent
+         org.purpurmc.purpur.task.BossBarTask.removeFromAll(player.getBukkitEntity()); // Purpur - Implement TPSBar
+-        org.dreeam.leaf.protocol.Protocols.disconnected(player); // Leaf - Protocol core
+         ServerLevel serverLevel = player.level();
+         player.awardStat(Stats.LEAVE_GAME);
+         // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
+@@ -473,16 +450,6 @@ public abstract class PlayerList {
          if (this.server.isSameThread()) player.doTick(); // SPIGOT-924 // Paper - Improved watchdog support; don't tick during emergency shutdowns
          // CraftBukkit end
  
@@ -19848,7 +19856,7 @@ index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0e
          // Paper - Drop carried item when player has disconnected
          if (!player.containerMenu.getCarried().isEmpty()) {
              net.minecraft.world.item.ItemStack carried = player.containerMenu.getCarried();
-@@ -525,7 +493,6 @@ public abstract class PlayerList {
+@@ -525,7 +492,6 @@ public abstract class PlayerList {
          player.getAdvancements().stopListening();
          this.players.remove(player);
          this.playersByName.remove(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot
@@ -19856,7 +19864,7 @@ index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0e
          this.removeFromSendAllPlayerInfoBuckets(player); // Gale - Purpur - spread out sending all player info
          this.server.getCustomBossEvents().onPlayerDisconnect(player);
          UUID uuid = player.getUUID();
-@@ -536,7 +503,6 @@ public abstract class PlayerList {
+@@ -536,7 +502,6 @@ public abstract class PlayerList {
              // this.stats.remove(uuid);
              // this.advancements.remove(uuid);
              // CraftBukkit end
@@ -19864,7 +19872,7 @@ index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0e
          }
  
          // CraftBukkit start
-@@ -569,31 +535,9 @@ public abstract class PlayerList {
+@@ -569,31 +534,9 @@ public abstract class PlayerList {
      public LoginResult canPlayerLogin(SocketAddress socketAddress, NameAndId nameAndId) { // Paper - PlayerLoginEvent
          LoginResult whitelistEventResult; // Paper
          // Paper start - Fix MC-158900
@@ -19897,7 +19905,7 @@ index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0e
          } else {
              return this.canBypassFullServerLogin(nameAndId, new LoginResult(Component.translatable("multiplayer.disconnect.server_full"), org.bukkit.event.player.PlayerLoginEvent.Result.KICK_FULL)); // Paper - PlayerServerFullCheckEvent
          }
-@@ -912,14 +856,6 @@ public abstract class PlayerList {
+@@ -912,14 +855,6 @@ public abstract class PlayerList {
          return strings;
      }
  
@@ -19912,7 +19920,7 @@ index cf362a6bd6f9b315ed68cefd9ee725fd5ba0d708..1226c4570041cca13db08f000d874e0e
      public void op(NameAndId nameAndId) {
          this.op(nameAndId, Optional.empty(), Optional.empty());
      }
-@@ -1201,14 +1137,6 @@ public abstract class PlayerList {
+@@ -1201,14 +1136,6 @@ public abstract class PlayerList {
              player.connection.disconnect(java.util.Objects.requireNonNullElseGet(this.server.server.shutdownMessage(), net.kyori.adventure.text.Component::empty)); // CraftBukkit - add custom shutdown message // Paper - Adventure
          }
          // CraftBukkit end
