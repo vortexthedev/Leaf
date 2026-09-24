@@ -4717,7 +4717,7 @@ index f9b63e36fd1ebc697cf6d26ba0b305fe10ff7e79..f6319a1737aa3f9df91ce90c6f7573e3
      );
      public static final Item GLOW_BERRIES = registerItem(
 -        "glow_berries", settings -> new org.purpurmc.purpur.item.GlowBerryItem(Blocks.CAVE_VINES, settings.useItemDescriptionPrefix()), new Item.Properties().food(Foods.GLOW_BERRIES) // Purpur - Eating glow berries adds glow effect
-+        "glow_berries", settings -> registerBlock(Blocks.CAVE_VINES, settings.useItemDescriptionPrefix()), new Item.Properties().food(Foods.GLOW_BERRIES)
++        "glow_berries", createBlockItemWithCustomItemName(Blocks.CAVE_VINES), new Item.Properties().food(Foods.GLOW_BERRIES)
      );
      public static final Item CAMPFIRE = registerBlock(
          Blocks.CAMPFIRE, properties -> properties.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
