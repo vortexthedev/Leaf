@@ -6,7 +6,11 @@ Subject: [PATCH] Leaves: Protocol Core
 Original license: GPL-3.0-only
 Original project: https://github.com/LeavesMC/Leaves
 
+<<<<<<<< HEAD:leaf-archived-patches/work/server/minecraft-patches/features/0106-Leaves-Protocol-Core.patch
 Commit: 93311671d27c3541d6237be20c78d9ea665a995f
+========
+Commit: a04cb9530e6eb291390bc32aa650f64825bd4d73
+>>>>>>>> 12f438e0:leaf-server/minecraft-patches/features/0100-Leaves-Protocol-Core.patch
 
 diff --git a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
 index fb263fa1f30a7dfcb7ec2656abfb38e5fe88eac9..56fd1ed7ccaf96e7eedea60fbdbf7f934939d563 100644

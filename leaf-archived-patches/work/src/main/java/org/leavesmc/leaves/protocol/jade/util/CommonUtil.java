@@ -60,7 +60,7 @@ public class CommonUtil {
             try {
                 groups = provider.getGroups(accessor);
             } catch (Exception e) {
-                LeavesLogger.LOGGER.severe(e.toString());
+                LeavesLogger.LOGGER.error(e.toString());
                 continue;
             }
             if (groups != null) {

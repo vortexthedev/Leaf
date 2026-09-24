@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hayanesuru <hayanesuru@outlook.jp>
+Date: Sat, 30 Aug 2025 20:30:37 +0900
+Subject: [PATCH] optimize tickEffects
+
+
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 28a837aba6b81d8a4eaac61b2e71e3531c963d8a..c61980ea18e0feef3a6aa7ea8d4567300db29ad6 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -977,6 +977,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+ 
+     protected void tickEffects() {
+         if (this.level() instanceof ServerLevel serverLevel) {
++            if (!this.activeEffects.isEmpty()) { // Leaf - optimize tickEffects
+             Iterator<Holder<MobEffect>> iterator = this.activeEffects.keySet().iterator();
+ 
+             this.isTickingEffects = true; // CraftBukkit
+@@ -1002,6 +1003,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+ 
+             // CraftBukkit start
+             this.isTickingEffects = false;
++            } // Leaf - optimize tickEffects
++            if (!effectsToProcess.isEmpty()) { // Leaf - optimize tickEffects
+             for (ProcessableEffect effect : this.effectsToProcess) {
+                 if (effect.effect != null) {
+                     this.addEffect(effect.effect, effect.cause);
+@@ -1010,6 +1013,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+                 }
+             }
+             this.effectsToProcess.clear();
++            } // Leaf - optimize tickEffects
+             // CraftBukkit end
+         } else {
+             for (MobEffectInstance mobEffectInstance1 : this.activeEffects.values()) {

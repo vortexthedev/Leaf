@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alexandra-Myers <bia416cat@gmail.com>
+Date: Tue, 23 Sep 2025 21:10:20 -0400
+Subject: [PATCH] Use legacy tracker ticking
+
+Original license: GPL-3.0-only
+Original project: https://github.com/PaperMC/Paper
+Paper pull request: https://github.com/PaperMC/Paper/pull/13094
+
+Related MC issue: https://mojira.dev/MC-297196
+
+diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
+index 78aaeacd580f9ad7a98d3716009a93117eee5906..1cc1ee9374d0a73d47e8cca6c3555fcc071c2e32 100644
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -501,7 +501,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         if (tickChunks) {
+             ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.level).moonrise$getPlayerChunkLoader().tick(); // Paper - rewrite chunk system
+             this.tickChunks();
+-            this.chunkMap.tick();
++            if (!org.dreeam.leaf.config.modules.gameplay.Knockback.useLegacyTrackerTicking) this.chunkMap.tick(); // Leaf - Use legacy tracker ticking
+         }
+ 
+         this.chunkMap.tick(hasTimeLeft);
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 929955e8d21ff562890d6b63538819148bca658a..e58a5d69ee74c58b83fe6192ad765752e427eccc 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -1006,6 +1006,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+         }
+ 
+         // Paper - rewrite chunk system
++        if (org.dreeam.leaf.config.modules.gameplay.Knockback.useLegacyTrackerTicking) this.getChunkSource().chunkMap.tick(); // Leaf - Use legacy tracker ticking
+         this.environmentAttributes().invalidateTickCache();
+         if (org.dreeam.leaf.config.modules.opt.DespawnTime.proactiveWeakLoading) this.moonrise$getEntityLookup().leaf$tickWeakEntities(); // Leaf - Rewrite entity despawn time
+         if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled) { this.leaf$asyncTracker.onEntitiesTickEnd(); } // Leaf - Multithreaded tracker

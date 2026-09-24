@@ -558,7 +558,11 @@ index 4fbe3d2a7e157f1f06bd0929ee10efd87426554d..fdd2ad453192cfac8dd5310266cbab3b
              com.destroystokyo.paper.profile.CraftPlayerProfile.asBukkitMirror(profile),
              io.papermc.paper.adventure.PaperAdventure.asAdventure(currentResult.message),
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+<<<<<<<< HEAD:leaf-archived-patches/work/server/minecraft-patches/features/0110-Leaves-Replay-Mod-API.patch
 index 763d8e61e36629f625bffad0993ec22da2eefa91..fc104f8f7b09feda9c9de4295c3786c8d31d49a5 100644
+========
+index 6d73a7871eebb6bb2735c3a13c45c473803af01e..b9825444a1df5ae1c50f0ec6db23d2b7c5df22d5 100644
+>>>>>>>> 12f438e0:leaf-server/minecraft-patches/features/0104-Leaves-Replay-Mod-API.patch
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -255,7 +255,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

@@ -17,9 +17,9 @@ public class ThrottleNaturalMobSpawning extends ConfigModules {
     @Override
     public void onLoaded() {
         config.addCommentRegionBased(getBasePath(), """
-            Skip mob spawning for chunks with repeated failures exceeding `min-failed`.
-            Randomly skip 1-`spawn-chance`% of these chunks from spawning attempts.
-            Failure counter does not increment when spawn limits are reached.""");
+            Skip mob spawning for chunks with repeated failures at least `min-failed`.
+            Valid range for `spawn-chance` is 0.0 to 100.0.
+            Failure counter does not increment when reach spawn limits.""");
         enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
         MobCategory[] categories = NaturalSpawner.SPAWNING_CATEGORIES;
         failedAttempts = new long[categories.length];

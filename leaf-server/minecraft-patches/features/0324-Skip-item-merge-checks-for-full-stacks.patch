@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: nostalfinals <yuu8583@proton.me>
+Date: Thu, 16 Apr 2026 16:46:39 +0800
+Subject: [PATCH] Skip item merge checks for full stacks
+
+
+diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
+index 099a27c0012610a068b282958d13a9d0dc4d55d0..11ab9f7d4cfe72f720399bfa7f8a6c8ccbd6cc6c 100644
+--- a/net/minecraft/world/entity/item/ItemEntity.java
++++ b/net/minecraft/world/entity/item/ItemEntity.java
+@@ -256,8 +256,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
+                         }
+                     }
+                     // Paper end - Fix items merging through walls
+-                    this.tryToMerge(itemEntity);
+-                    if (this.isRemoved()) {
++                    // Leaf start - Skip item merge checks for full stacks
++                    final ItemStack item = this.getItem();
++                    this.tryToMerge(itemEntity, item, itemEntity.getItem());
++                    if (this.isRemoved() || item.getCount() >= item.getMaxStackSize()) {
++                        // Leaf end - Skip item merge checks for full stacks
+                         break;
+                     }
+                 }
+@@ -273,6 +276,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
+     private void tryToMerge(ItemEntity itemEntity) {
+         ItemStack item = this.getItem();
+         ItemStack item1 = itemEntity.getItem();
++        // Leaf start - Skip item merge checks for full stacks
++        tryToMerge(itemEntity, item, item1);
++    }
++    private void tryToMerge(ItemEntity itemEntity, ItemStack item, ItemStack item1) {
++        // Leaf end - Skip item merge checks for full stacks
+         if (Objects.equals(this.target, itemEntity.target) && areMergable(item, item1)) {
+             if (org.dreeam.leaf.config.modules.gameplay.UseSpigotItemMergingMech.enabled || item1.getCount() < item.getCount()) { // Leaf - KeYi - Configurable spigot item merging mechanism
+                 merge(this, item, itemEntity, item1);
