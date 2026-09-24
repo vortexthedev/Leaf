@@ -12,10 +12,10 @@ Backported from Paper 26.1.1
 Feature implementation for Paper#13634
 
 diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
-index 24df33ccd98bc9b1213f11574460db2f009578ca..e0124e1cba88868c73b2d08d21712df4bc79d645 100644
+index 24df33ccd98bc9b1213f11574460db2f009578ca..690c2dfa617eccedeb87f6e1cfc92353f3e41906 100644
 --- a/net/minecraft/world/item/enchantment/Enchantment.java
 +++ b/net/minecraft/world/item/enchantment/Enchantment.java
-@@ -361,7 +361,22 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+@@ -361,7 +361,21 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
          applyEffects(
              this.getEffects(EnchantmentEffectComponents.POST_PIERCING_ATTACK),
              entityContext(level, enchantmentLevel, entity, entity.position()),
@@ -25,7 +25,6 @@ index 24df33ccd98bc9b1213f11574460db2f009578ca..e0124e1cba88868c73b2d08d21712df4
 +                int enchLevel = enchantmentLevel;
 +                if (entity instanceof LivingEntity livingEntity) {
 +                    final io.papermc.paper.event.entity.EntityLungeEvent event = new io.papermc.paper.event.entity.EntityLungeEvent(livingEntity.getBukkitLivingEntity(), enchLevel);
-+
 +                    if (!event.callEvent()) {
 +                        return;
 +                    }

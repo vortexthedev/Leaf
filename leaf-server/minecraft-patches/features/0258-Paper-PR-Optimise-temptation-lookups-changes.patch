@@ -12,7 +12,7 @@ Some changes to the original temptation lookups optimization patch
     - Happy ghast
 
 diff --git a/io/papermc/paper/entity/temptation/GlobalTemptationLookup.java b/io/papermc/paper/entity/temptation/GlobalTemptationLookup.java
-index 1f206998a61af887e312953319e69fc79e10e7e1..a7d9bc5821c0202462376b06ddc44aac1c95f063 100644
+index 1f206998a61af887e312953319e69fc79e10e7e1..427fffff1230d7c73906fdeeac1281b01ab67f61 100644
 --- a/io/papermc/paper/entity/temptation/GlobalTemptationLookup.java
 +++ b/io/papermc/paper/entity/temptation/GlobalTemptationLookup.java
 @@ -18,6 +18,7 @@ public class GlobalTemptationLookup {
@@ -62,8 +62,8 @@ index 1f206998a61af887e312953319e69fc79e10e7e1..a7d9bc5821c0202462376b06ddc44aac
          for (int i = 0; i < registeredPredicateCounter; i++) {
 -            this.precalculatedTemptItems.get(i).clear();
 +            this.precalculatedTemptItems[i].clear();
-+            this.calculatedThisTick.clear();
-+        }
+         }
+         this.calculatedThisTick.clear();
 +
 +        int j = 0;
 +        final net.minecraft.server.level.ServerPlayer[] array = world.players().toArray(EMPTY_PLAYERS);
@@ -73,8 +73,7 @@ index 1f206998a61af887e312953319e69fc79e10e7e1..a7d9bc5821c0202462376b06ddc44aac
 +                array[j] = p;
 +                j++;
 +            }
-         }
--        this.calculatedThisTick.clear();
++        }
 +        this.players = it.unimi.dsi.fastutil.objects.ObjectArrays.setLength(array, j);
      }
 +    // Leaf end - Paper PR: Optimise temptation lookups changes
@@ -96,7 +95,7 @@ index 1f206998a61af887e312953319e69fc79e10e7e1..a7d9bc5821c0202462376b06ddc44aac
 +    // Leaf end - Paper PR: Optimise temptation lookups changes
  }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 8fece10d6e2e51019589b1b7933fbe06b37d97d2..d39e06fd6cb4dfeb81f74d9fbb485f9693102d0e 100644
+index c8931f598ab759e3738a66f3de17a8b7a62c276b..4fa0a9ec2baa87e99a4bf14a1f6eb329c542ba3f 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1000,7 +1000,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe

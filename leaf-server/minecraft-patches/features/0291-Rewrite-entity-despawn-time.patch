@@ -97,7 +97,7 @@ index 703bf9c2a56b262e2719a1787584de537b8f12e0..c1d24cff2af534edfb9fcc45f3cf2b31
  
          private final ChunkEntitySlices[] slices = new ChunkEntitySlices[REGION_SIZE * REGION_SIZE];
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 56ece83a961d91883627148da7542630a7e09a30..a1ba8198eadf5c9ffbda205709cbe79d931a7961 100644
+index 7356b60b7c40c6f657ff7c082c3edddef02547b1..8715e05468c16d3c5055087006d5ca2c48098a84 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1061,6 +1061,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -108,7 +108,7 @@ index 56ece83a961d91883627148da7542630a7e09a30..a1ba8198eadf5c9ffbda205709cbe79d
          if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled) { this.leaf$asyncTracker.onEntitiesTickEnd(); } // Leaf - Multithreaded tracker
      }
  
-@@ -1613,6 +1614,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1611,6 +1612,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          } else {entity.inactiveTick();} // Paper - EAR 2
          profilerFiller.pop();
  
@@ -117,7 +117,7 @@ index 56ece83a961d91883627148da7542630a7e09a30..a1ba8198eadf5c9ffbda205709cbe79d
          for (Entity entity1 : entity.getPassengers()) {
              this.tickPassenger(entity, entity1, isActive); // Paper - EAR 2
          }
-@@ -1641,6 +1644,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1639,6 +1642,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              // Paper end - EAR 2
              profilerFiller.pop();
  
@@ -127,7 +127,7 @@ index 56ece83a961d91883627148da7542630a7e09a30..a1ba8198eadf5c9ffbda205709cbe79d
                  this.tickPassenger(passengerEntity, entity, isActive); // Paper - EAR 2
              }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3c3ca21cc4976bab019bd2a38b4b50afdc73bf54..3f0208f31a71b75267f0e448b537c40269ab482c 100644
+index 5790779e6b96b31f38f61204d272e4d850897bf0..6a4bf70f46b0d37b83401ae41d3f5e08a858aa52 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -375,8 +375,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
@@ -223,7 +223,7 @@ index 3c3ca21cc4976bab019bd2a38b4b50afdc73bf54..3f0208f31a71b75267f0e448b537c402
      // CraftBukkit start
      public void postTick() {
          // No clean way to break out of ticking once the entity has been copied to a new world, so instead we move the portalling later in the tick cycle
-@@ -2686,6 +2732,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2691,6 +2737,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              if (this.maxAirTicks != this.getDefaultMaxAirSupply() && this.getDefaultMaxAirSupply() != this.level().purpurConfig.drowningAirTicks) { // Purpur - Drowning Settings
                  output.putInt("Bukkit.MaxAirSupply", this.getMaxAirSupply());
              }
@@ -231,7 +231,7 @@ index 3c3ca21cc4976bab019bd2a38b4b50afdc73bf54..3f0208f31a71b75267f0e448b537c402
              output.putInt("Spigot.ticksLived", this.totalEntityAge); // Paper
              // CraftBukkit end
              output.storeNullable("CustomName", ComponentSerialization.CODEC, this.getCustomName());
-@@ -2845,7 +2892,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2850,7 +2897,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
              // CraftBukkit start
              // Spigot start
@@ -240,7 +240,7 @@ index 3c3ca21cc4976bab019bd2a38b4b50afdc73bf54..3f0208f31a71b75267f0e448b537c402
                  this.totalEntityAge = input.getIntOr("Spigot.ticksLived", 0); // Paper
              }
              // Spigot end
-@@ -5441,9 +5488,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5446,9 +5493,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
      @Override
      public boolean shouldBeSaved() {

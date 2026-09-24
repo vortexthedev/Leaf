@@ -64,11 +64,11 @@ index 5bfdb48ff7ef740a5a01d02e87f0264e17338de4..4e16552680f86cf1589f862cb38c0f43
          }
  
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 1ebfc5804e97334497f5a76076135e35ed9b2b71..963a44b8454e88973fdca908aa12fde2d0c27e96 100644
+index 153922127a1f3f452f908acf68d9c4c8a7ee09dc..c4b4bc7d429767dba1cbf1bcac96e68a56faf0b8 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -621,8 +621,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
-             this.level.natureSpawnChunkMap.build(this.level.moonrise$getPlayerTickingChunks(), list); // Leaf - optimize mob spawning
+@@ -619,8 +619,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+             if (org.dreeam.leaf.config.modules.opt.OptimizeMobSpawning.enabled) { this.level.natureSpawnChunkMap.tick(this.level, list); } else { this.chunkMap.collectSpawningChunks(list); } // Leaf - optimize mob spawning
              profiler.popPush("shuffleSpawningChunks");
              // Paper start - chunk tick iteration optimisation
 -            this.shuffleRandom.setSeed(this.level.random.nextLong());
@@ -83,10 +83,10 @@ index 1ebfc5804e97334497f5a76076135e35ed9b2b71..963a44b8454e88973fdca908aa12fde2
              profiler.popPush("tickSpawningChunks");
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 6ef471812bd2b14dd92e4198a971443487a9176e..ca3599908e422949ed6b58a1ddfa953833131004 100644
+index de92dd49492d44112ad7a177d1f5f0d30354515c..9973621f57ec1d5c4fea9dac836e57e713dafdee 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1593,26 +1593,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1591,26 +1591,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      }
  
@@ -113,7 +113,7 @@ index 6ef471812bd2b14dd92e4198a971443487a9176e..ca3599908e422949ed6b58a1ddfa9538
          entity.setOldPosAndRot();
          ProfilerFiller profilerFiller = Profiler.get();
          entity.tickCount++;
-@@ -1629,13 +1611,6 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1627,13 +1609,6 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          for (Entity entity1 : entity.getPassengers()) {
              this.tickPassenger(entity, entity1, isActive); // Paper - EAR 2
          }
@@ -128,10 +128,10 @@ index 6ef471812bd2b14dd92e4198a971443487a9176e..ca3599908e422949ed6b58a1ddfa9538
  
      private void tickPassenger(Entity ridingEntity, Entity passengerEntity, final boolean isActive) { // Paper - EAR 2
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a0a3e5c32e216b7ffc3f90ccd5e513e3b980abc7..3212d952bbceb1f4c53e9994a97cdc73eaaa12e7 100644
+index dcddccc947cf34ecea174c652e6dfc80f3b90ed4..8effa6cb3a2040eda916334c7ce35f150f2d5719 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1162,16 +1162,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1162,28 +1162,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          return this.onGround;
      }
  
@@ -146,11 +146,6 @@ index a0a3e5c32e216b7ffc3f90ccd5e513e3b980abc7..3212d952bbceb1f4c53e9994a97cdc73
 -    // Paper end - detailed watchdog information
 -
      public void move(MoverType type, Vec3 movement) {
-         // Gale start - VMP - skip entity move if movement is zero
-         if (!this.boundingBoxChanged && movement.equals(Vec3.ZERO)) {
-@@ -1180,16 +1170,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
-         boundingBoxChanged = false;
-         // Gale end - VMP - skip entity move if movement is zero
          final Vec3 originalMovement = movement; // Paper - Expose pre-collision velocity
 -        // Paper start - detailed watchdog information
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot move an entity off-main");
@@ -165,7 +160,7 @@ index a0a3e5c32e216b7ffc3f90ccd5e513e3b980abc7..3212d952bbceb1f4c53e9994a97cdc73
          if (this.noPhysics) {
              this.setPos(this.getX() + movement.x, this.getY() + movement.y, this.getZ() + movement.z);
              this.horizontalCollision = false;
-@@ -1326,13 +1307,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -1331,13 +1312,6 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                  profilerFiller.pop();
              }
          }
@@ -179,7 +174,7 @@ index a0a3e5c32e216b7ffc3f90ccd5e513e3b980abc7..3212d952bbceb1f4c53e9994a97cdc73
      }
  
      private void applyMovementEmissionAndPlaySound(Entity.MovementEmission movementEmission, Vec3 movement, BlockPos pos, BlockState state) {
-@@ -5099,9 +5073,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5104,9 +5078,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
      public void setDeltaMovement(Vec3 deltaMovement) {
          if (deltaMovement.isFinite()) {
@@ -189,7 +184,7 @@ index a0a3e5c32e216b7ffc3f90ccd5e513e3b980abc7..3212d952bbceb1f4c53e9994a97cdc73
          }
      }
  
-@@ -5202,9 +5174,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5207,9 +5179,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
          // Paper end - Block invalid positions and bounding box
          if (this.position.x != x || this.position.y != y || this.position.z != z) {

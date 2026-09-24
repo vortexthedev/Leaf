@@ -112,7 +112,7 @@ index ff32a89a720676c5a9f34ea7c859f03d47545b72..76ec194d213a1f3f8b7afd6565d8c63a
                      List<org.bukkit.block.BlockState> states = new java.util.ArrayList<>(level.capturedBlockStates.values());
                      level.capturedBlockStates.clear();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 2a0d08a3f19022c34b51029d1aaa400dc620743c..96e16d7dbccc40a0ccf65cb8f46796fc126a0046 100644
+index 8fdace3100ad8fbea764af18adefd5793659e396..7e29c58fce8eb201635f9b59f14f691e9e9055ac 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -311,6 +311,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -380,7 +380,7 @@ index f24ce01762e865a4302af6eb4aa87ff7e0da564f..a8890cbe24479fd65c0de1688187fd25
  
          // Gale start - Pufferfish - SIMD support
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 8ebc3aaa79526cc489885bc817d0c9880ab6ca55..3849314a97b484af454aa8b9a3fe96389cf20e86 100644
+index 551d189457c8a65763476edd84b50c156ac916cc..b295a8b383a3d572e0c499fc0ea27ae1a95f9c06 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -176,6 +176,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -392,7 +392,7 @@ index 8ebc3aaa79526cc489885bc817d0c9880ab6ca55..3849314a97b484af454aa8b9a3fe9638
                  continue;
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 8f6cbc40c59800f2e1ee08c3ea0f12c9daa375c3..79745c9e576ff0c861ce920fb80dc1512af02d4c 100644
+index 22119e3397c1d531ebfe34d63c9de039fc0a1e6c..7ae7f2396a13491678c98e6efc778be03d2f1aee 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -194,7 +194,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -591,7 +591,7 @@ index 8f6cbc40c59800f2e1ee08c3ea0f12c9daa375c3..79745c9e576ff0c861ce920fb80dc151
                                      this.moonrise$midTickTasks(); // Paper - rewrite chunk system
                                      // Gale end - Airplane - remove lambda from ticking guard - copied from guardEntityTick
                                      profilerFiller.pop();
-@@ -1415,7 +1555,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1413,7 +1553,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              fluidState.tick(this, pos, blockState);
          }
          // Paper start - rewrite chunk system
@@ -603,7 +603,7 @@ index 8f6cbc40c59800f2e1ee08c3ea0f12c9daa375c3..79745c9e576ff0c861ce920fb80dc151
              ((ca.spottedleaf.moonrise.patches.chunk_system.server.ChunkSystemMinecraftServer)this.server).moonrise$executeMidTickTasks();
          }
          // Paper end - rewrite chunk system
-@@ -1428,7 +1571,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1426,7 +1569,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              blockState.tick(this, pos, this.random);
          }
          // Paper start - rewrite chunk system
@@ -615,7 +615,7 @@ index 8f6cbc40c59800f2e1ee08c3ea0f12c9daa375c3..79745c9e576ff0c861ce920fb80dc151
              ((ca.spottedleaf.moonrise.patches.chunk_system.server.ChunkSystemMinecraftServer)this.server).moonrise$executeMidTickTasks();
          }
          // Paper end - rewrite chunk system
-@@ -1699,6 +1845,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1697,6 +1843,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
      }
  
      private void addPlayer(ServerPlayer player) {
@@ -623,7 +623,7 @@ index 8f6cbc40c59800f2e1ee08c3ea0f12c9daa375c3..79745c9e576ff0c861ce920fb80dc151
          Entity entity = this.getEntity(player.getUUID());
          if (entity != null) {
              LOGGER.warn("Force-added player with duplicate UUID {}", player.getUUID());
-@@ -1711,7 +1858,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1709,7 +1856,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      // CraftBukkit start
      private boolean addEntity(Entity entity, org.bukkit.event.entity.CreatureSpawnEvent.@Nullable SpawnReason spawnReason) {
@@ -639,7 +639,7 @@ index 8f6cbc40c59800f2e1ee08c3ea0f12c9daa375c3..79745c9e576ff0c861ce920fb80dc151
          // Paper start - extra debug info
          if (entity.valid) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 6fa8c5bb6689b56b95c5f0a1c7d2691f12ac673c..f3bc26efd9c141c4165ebb53da175f9453872b8a 100644
+index 45183f42f1bf97c22add50ed31e3b8f6912b4e7f..1a023728f09adee06189d0f869aeb07ce6bec924 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -470,6 +470,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -659,15 +659,15 @@ index 6fa8c5bb6689b56b95c5f0a1c7d2691f12ac673c..f3bc26efd9c141c4165ebb53da175f94
          // CraftBukkit start
          if (this.joining) {
              this.joining = false;
-@@ -1572,6 +1575,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-                 teleportTransition.postTeleportTransition().onTransition(this);
+@@ -1583,6 +1586,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+                 if (org.dreeam.leaf.config.modules.fixes.MCBugFix.mc270656) this.resetImpulseImpactIfNeeded(true); // Leaf - Fix MC-270656
                  return this;
              } else {
 +                if (org.dreeam.leaf.config.modules.async.SparklyPaperParallelWorldTicking.enabled) ca.spottedleaf.moonrise.common.util.TickThread.ensureOnlyTickThread("Cannot change dimension of a player off-main, from world[" + serverLevel.getWorld().getName() + "] to world[" + level.getWorld().getName() + "]"); // Leaf - SparklyPaper - parallel world ticking (additional concurrency issues logs)
                  this.isChangingDimension = true;
                  LevelData levelData = level.getLevelData();
                  this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(level), ClientboundRespawnPacket.KEEP_ALL_DATA));
-@@ -1902,6 +1906,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1914,6 +1918,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                  return OptionalInt.empty();
              } else {
                  // CraftBukkit start
@@ -680,7 +680,7 @@ index 6fa8c5bb6689b56b95c5f0a1c7d2691f12ac673c..f3bc26efd9c141c4165ebb53da175f94
                  this.containerMenu = abstractContainerMenu; // Moved up
                  if (!this.isImmobile())
                  this.connection
-@@ -1990,6 +2000,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2002,6 +2012,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
      @Override
      public void closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
@@ -802,10 +802,10 @@ index 471e558a609c9e457720660b90fe57322b860461..56dd9ff0bd35a7d20ef0aa8b46570802
              this.createConnection(serverPlayer, waypoint);
          }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index dc41aa4da487929e955de17a91c8bc4471d9519b..f2ba25c6cb6414c5e26b07c279a4ee63f740455a 100644
+index 062ce093ec869015abb4c29d6fc1821b58ef2741..74fc5c79a1d5e22388b09ef3cbad25423e582a6b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -3574,15 +3574,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3579,15 +3579,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                      ProfilerFiller profilerFiller = Profiler.get();
                      profilerFiller.push("portal");
                      this.setPortalCooldown();
@@ -822,7 +822,7 @@ index dc41aa4da487929e955de17a91c8bc4471d9519b..f2ba25c6cb6414c5e26b07c279a4ee63
  
                      profilerFiller.pop();
                  } else if (this.portalProcess.hasExpired()) {
-@@ -3592,6 +3584,56 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3597,6 +3589,56 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
      }
  
@@ -879,7 +879,7 @@ index dc41aa4da487929e955de17a91c8bc4471d9519b..f2ba25c6cb6414c5e26b07c279a4ee63
      public int getDimensionChangingDelay() {
          Entity firstPassenger = this.getFirstPassenger();
          return firstPassenger instanceof ServerPlayer ? firstPassenger.getDimensionChangingDelay() : 300;
-@@ -4162,6 +4204,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4167,6 +4209,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      private @Nullable Entity teleportCrossDimension(ServerLevel oldLevel, ServerLevel newLevel, TeleportTransition teleportTransition) {
@@ -1492,7 +1492,7 @@ index 5471619a0484ece08640e2b3fd26746c351dc3e0..5a71e70e840a48716b05c97005526402
      // CraftBukkit end
  }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index d55053418bdbb0095187cb08f1d6b79e90f6c9d1..df77a5eb9d8e876b1e4bbb2843884847a2be19de 100644
+index 6052cb3b348def15429dad5aac83c096b6fff4d3..81904bcbb982d770320304ef237b85203cc016df 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -408,6 +408,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

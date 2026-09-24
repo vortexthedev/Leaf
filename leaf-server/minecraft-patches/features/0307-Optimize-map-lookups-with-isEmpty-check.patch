@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize map lookups with isEmpty check
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b07f49edf 100644
+index 4acab18d32f3a8df046759099b21fa3b41d3e103..4ce93f981c803e6f5d0953413b0f2f10f982a0d6 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -252,6 +252,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
@@ -25,7 +25,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
              return false;
          }
          return this.getIndirectPassengersStream().anyMatch((entity) -> entity instanceof Player);
-@@ -3644,7 +3645,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3649,7 +3650,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          if (passenger.getVehicle() != this) {
              throw new IllegalStateException("Use x.startRiding(y), not y.addPassenger(x)");
          } else {
@@ -34,7 +34,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
                  this.passengers = ImmutableList.of(passenger);
              } else {
                  List<Entity> list = Lists.newArrayList(this.passengers);
-@@ -3754,7 +3755,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3759,7 +3760,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      protected boolean canAddPassenger(Entity passenger) {
@@ -43,7 +43,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
      }
  
      protected boolean couldAcceptPassenger() {
-@@ -3942,7 +3943,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3947,7 +3948,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public boolean isVehicle() {
@@ -52,7 +52,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
      }
  
      public boolean dismountsUnderwater() {
-@@ -4950,11 +4951,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4955,11 +4956,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public @Nullable Entity getFirstPassenger() {
@@ -66,7 +66,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
      }
  
      public boolean hasPassenger(Predicate<Entity> predicate) {
-@@ -4968,19 +4969,19 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4973,19 +4974,19 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      private Stream<Entity> getIndirectPassengersStream() {
@@ -89,7 +89,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
          return Stream.concat(this.passengers.stream().flatMap(Entity::getPassengersAndSelf), Stream.of(this));
      }
  
-@@ -4988,7 +4989,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4993,7 +4994,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          // Paper start - optimise entity tracker
          final List<Entity> ret = new ArrayList<>();
  
@@ -98,7 +98,7 @@ index 9efb8061115a5c5a241a5361a8dbafb1b2ea8ab3..5003ae7560db038b96eac487c17a3a9b
              return ret;
          }
  
-@@ -5003,7 +5004,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5008,7 +5009,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public boolean hasExactlyOnePlayerPassenger() {

@@ -189,10 +189,10 @@ index 0edb998ac4717a4edf2fb1ff17d2f1eb923daf81..6d4d94b506676f2a8d4ebcf36b4326b5
          } else {
              return 0;
 diff --git a/org/purpurmc/purpur/PurpurWorldConfig.java b/org/purpurmc/purpur/PurpurWorldConfig.java
-index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e73197fb19 100644
+index 9bab9c1058b1aea3f0a05efdd519ebf52f588bbb..2f6ade69e2a0cd876783f507d5ea0460e4f99948 100644
 --- a/org/purpurmc/purpur/PurpurWorldConfig.java
 +++ b/org/purpurmc/purpur/PurpurWorldConfig.java
-@@ -442,6 +442,7 @@ public class PurpurWorldConfig {
+@@ -440,6 +440,7 @@ public class PurpurWorldConfig {
  
      public boolean idleTimeoutKick = true;
      public String playerDeathExpDropEquation = "expLevel * 7";
@@ -200,7 +200,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
      public int playerDeathExpDropMax = 100;
      public boolean teleportIfOutsideBorder = false;
      public boolean teleportOnNetherCeilingDamage = false;
-@@ -475,6 +476,7 @@ public class PurpurWorldConfig {
+@@ -473,6 +474,7 @@ public class PurpurWorldConfig {
          shiftRightClickRepairsMendingPoints = getInt("gameplay-mechanics.player.shift-right-click-repairs-mending-points", shiftRightClickRepairsMendingPoints);
          playerExpPickupDelay = getInt("gameplay-mechanics.player.exp-pickup-delay-ticks", playerExpPickupDelay);
          playerVoidTrading = getBoolean("gameplay-mechanics.player.allow-void-trading", playerVoidTrading);
@@ -208,8 +208,8 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
      }
  
      public boolean silkTouchEnabled = false;
-@@ -2489,6 +2491,10 @@ public class PurpurWorldConfig {
-     public boolean phantomAllowGriefing = false;
+@@ -2474,6 +2476,10 @@ public class PurpurWorldConfig {
+     public double phantomMaxY = 320D;
      public String phantomMaxHealth = "20.0";
      public String phantomAttackDamage = "6 + size";
 +    // Leaf start - Improve Purpur JS expression evaluation
@@ -219,7 +219,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
      public Map<Integer, Double> phantomMaxHealthCache = new HashMap<>();
      public Map<Integer, Double> phantomAttackDamageCache = new HashMap<>();
      public double phantomAttackedByCrystalRadius = 0.0D;
-@@ -2527,6 +2533,10 @@ public class PurpurWorldConfig {
+@@ -2508,6 +2514,10 @@ public class PurpurWorldConfig {
          }
          phantomMaxHealth = getString("mobs.phantom.attributes.max_health", phantomMaxHealth);
          phantomAttackDamage = getString("mobs.phantom.attributes.attack_damage", phantomAttackDamage);
@@ -230,7 +230,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
          phantomMaxHealthCache.clear();
          phantomAttackDamageCache.clear();
          phantomAttackedByCrystalRadius = getDouble("mobs.phantom.attacked-by-crystal-range", phantomAttackedByCrystalRadius);
-@@ -2899,6 +2909,7 @@ public class PurpurWorldConfig {
+@@ -2879,6 +2889,7 @@ public class PurpurWorldConfig {
      public boolean shulkerSpawnFromBulletRequireOpenLid = true;
      public double shulkerSpawnFromBulletNearbyRange = 8.0D;
      public String shulkerSpawnFromBulletNearbyEquation = "(nearby - 1) / 5.0";
@@ -238,7 +238,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
      public boolean shulkerSpawnFromBulletRandomColor = false;
      public boolean shulkerChangeColorWithDye = false;
      public boolean shulkerAlwaysDropExp = false;
-@@ -2915,6 +2926,7 @@ public class PurpurWorldConfig {
+@@ -2895,6 +2906,7 @@ public class PurpurWorldConfig {
          shulkerScale = Mth.clamp(getDouble("mobs.shulker.attributes.scale", shulkerScale), 0.0625D, Shulker.MAX_SCALE);
          shulkerTakeDamageFromWater = getBoolean("mobs.shulker.takes-damage-from-water", shulkerTakeDamageFromWater);
          shulkerSpawnFromBulletBaseChance = (float) getDouble("mobs.shulker.spawn-from-bullet.base-chance", shulkerSpawnFromBulletBaseChance);
@@ -246,7 +246,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
          shulkerSpawnFromBulletRequireOpenLid = getBoolean("mobs.shulker.spawn-from-bullet.require-open-lid", shulkerSpawnFromBulletRequireOpenLid);
          shulkerSpawnFromBulletNearbyRange = getDouble("mobs.shulker.spawn-from-bullet.nearby-range", shulkerSpawnFromBulletNearbyRange);
          shulkerSpawnFromBulletNearbyEquation = getString("mobs.shulker.spawn-from-bullet.nearby-equation", shulkerSpawnFromBulletNearbyEquation);
-@@ -2966,7 +2978,8 @@ public class PurpurWorldConfig {
+@@ -2946,7 +2958,8 @@ public class PurpurWorldConfig {
      public double skeletonHeadVisibilityPercent = 0.5D;
      public int skeletonFeedWitherRoses = 0;
      public String skeletonBowAccuracy = "14 - difficulty * 4";
@@ -256,7 +256,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
      public Boolean skeletonCanPickUpLoot = null;
      private void skeletonSettings() {
          skeletonRidable = getBoolean("mobs.skeleton.ridable", skeletonRidable);
-@@ -2985,6 +2998,7 @@ public class PurpurWorldConfig {
+@@ -2965,6 +2978,7 @@ public class PurpurWorldConfig {
          skeletonFeedWitherRoses = getInt("mobs.skeleton.feed-wither-roses", skeletonFeedWitherRoses);
          final String defaultSkeletonBowAccuracy = skeletonBowAccuracy;
          skeletonBowAccuracy = getString("mobs.skeleton.bow-accuracy", skeletonBowAccuracy);
@@ -264,7 +264,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
          for (int i = 1; i < 4; i++) {
              final float divergence;
              try {
-@@ -3034,8 +3048,12 @@ public class PurpurWorldConfig {
+@@ -3014,8 +3028,12 @@ public class PurpurWorldConfig {
      public boolean slimeControllable = true;
      public String slimeMaxHealth = "size * size";
      public String slimeAttackDamage = "size";
@@ -279,7 +279,7 @@ index 5c634cbe129d077bd37d9804c543e11d93f18ae2..cab34f76db78cf2ee85d2afa2b17b0e7
      public boolean slimeTakeDamageFromWater = false;
      public boolean slimeAlwaysDropExp = false;
      private void slimeSettings() {
-@@ -3049,6 +3067,10 @@ public class PurpurWorldConfig {
+@@ -3029,6 +3047,10 @@ public class PurpurWorldConfig {
          }
          slimeMaxHealth = getString("mobs.slime.attributes.max_health", slimeMaxHealth);
          slimeAttackDamage = getString("mobs.slime.attributes.attack_damage", slimeAttackDamage);

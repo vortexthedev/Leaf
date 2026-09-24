@@ -12,7 +12,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Called when a living entity tries to lunge with a spear
+ * Called when a living entity tries to lunge with a spear.
  */
 @NullMarked
 public class EntityLungeEvent extends EntityEvent implements Cancellable {
@@ -23,7 +23,7 @@ public class EntityLungeEvent extends EntityEvent implements Cancellable {
     private boolean cancelled;
 
     @ApiStatus.Internal
-    public EntityLungeEvent(final LivingEntity entity, int lungePower) {
+    public EntityLungeEvent(final LivingEntity entity, final int lungePower) {
         super(entity);
         this.lungePower = lungePower;
     }
@@ -34,7 +34,7 @@ public class EntityLungeEvent extends EntityEvent implements Cancellable {
      * @return the lunge power
      */
     public int getLungePower() {
-        return lungePower;
+        return this.lungePower;
     }
 
     /**
@@ -51,7 +51,7 @@ public class EntityLungeEvent extends EntityEvent implements Cancellable {
 
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     /**

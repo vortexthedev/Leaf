@@ -99,4 +99,4 @@ jobs:
               --repositoryPath "$REPO_DIR" \
               --storagePath /root/api/storage \
               --download "primary:/root/api/uploads/leaf-${{ env.MC_VERSION }}-${{ env.BUILD_NUMBER }}.jar:${{ steps.hash.outputs.sha256 }}" \
-              --buildChannel experimental
+              --buildChannel default

@@ -205,10 +205,10 @@ index 0e77c717d3481aae5d591a08eed1eb5f1439cdbf..236e32bfb6cffc95368037f3904a2e6e
          try {
              org.purpurmc.purpur.PurpurConfig.init((java.io.File) options.valueOf("purpur-settings"));
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 637fe91dc7f32765d05d0e322dc5f3d4d31e1fda..8d4f4d9dea757ffcbb4e1e8a379904faa3ad0b26 100644
+index 478d454ea544352730229a926a5764b68193f6a4..0f74fa04c9e3672c87690b3159a100e3acf9524d 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -2611,81 +2611,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2623,81 +2623,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      public void resetLastActionTime() {
          this.lastActionTime = Util.getMillis();
@@ -666,7 +666,7 @@ index a0d23f7c733c315a021e8b2ba8968f41807159a4..326da0817707fb2cd145c2c387d88b5e
      // Paper start - Affects Spawning API
      public static final Predicate<Entity> PLAYER_AFFECTS_SPAWNING = (entity) -> {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 1b9eb53e8c8b324e1254a3b0d91ae730672f16f0..4ae381e547855005611d2422ea8f180808979c67 100644
+index 121ebbe807f645a75d2c207ba7dd84a18731d3c6..f5511d1951a3aff7e59ed90f2cd8773976f14067 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -1544,24 +1544,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

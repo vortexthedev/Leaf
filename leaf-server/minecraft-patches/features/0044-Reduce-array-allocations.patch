@@ -153,10 +153,10 @@ index d0ca03ace2db83192d35850d29336990f01bc6fe..ca070adc64ac557b8393770bdfd6a396
                  if (!itemBySlot.isEmpty()) {
                      list.add(Pair.of(equipmentSlot, itemBySlot.copy()));
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 50f65c4b65d59c56a51459051c7f05673eeed0e1..e0cac20ffde626df53ac4773f02fac23efffced6 100644
+index 5b047f14d7dec11ee367034e9cd8962fd8abc13b..d60b197c5c0ef61b7614e07270c81d3d1cad7e7e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1437,7 +1437,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1435,7 +1435,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      public static List<Entity> getCurrentlyTickingEntities() {
          Entity ticking = currentlyTickingEntity.get();
@@ -231,7 +231,7 @@ index c9585ff3dcb1bf1ebec43df26c59db4feffd1a62..c11938914ea9623e7a2f24f3f74cfad5
                      if (!itemBySlot.isEmpty()) {
                          newMob.setItemSlot(equipmentSlot, itemBySlot.copyAndClear());
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 9be26e2b9bf764c629d059d9435c4b3be5c9ef36..fa3ef17f4a8a7003c7062c34c9d21cd231869c29 100644
+index 13a3a107102d26114cf668c0755a61329d583e49..9a7672ccb2b9af28f915437d15d280037d31e4be 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -3194,7 +3194,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name

@@ -9,7 +9,7 @@ Original project: https://github.com/CraftCanvasMC/Canvas
 It is recommended to enable these options, as the client displays most of these particles already, so the server-side particle logic is not needed
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 5003ae7560db038b96eac487c17a3a9b07f49edf..994473f5496bf9117df358c15666ead449727b5b 100644
+index 4ce93f981c803e6f5d0953413b0f2f10f982a0d6..bcd008891393310e15bdb2f4c4ffbade545012f3 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -986,7 +986,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
@@ -21,7 +21,7 @@ index 5003ae7560db038b96eac487c17a3a9b07f49edf..994473f5496bf9117df358c15666ead4
              this.spawnSprintParticle();
          }
  
-@@ -2269,6 +2269,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2274,6 +2274,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
          float f1 = Mth.floor(this.getY());
  
@@ -29,7 +29,7 @@ index 5003ae7560db038b96eac487c17a3a9b07f49edf..994473f5496bf9117df358c15666ead4
          for (int i = 0; i < 1.0F + this.dimensions.width() * 20.0F; i++) {
              double d = (this.random.nextDouble() * 2.0 - 1.0) * this.dimensions.width();
              double d1 = (this.random.nextDouble() * 2.0 - 1.0) * this.dimensions.width();
-@@ -2289,6 +2290,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2294,6 +2295,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              double d1 = (this.random.nextDouble() * 2.0 - 1.0) * this.dimensions.width();
              this.level().addParticle(ParticleTypes.SPLASH, this.getX() + d, f1 + 1.0F, this.getZ() + d1, deltaMovement.x, deltaMovement.y, deltaMovement.z);
          }
@@ -37,7 +37,7 @@ index 5003ae7560db038b96eac487c17a3a9b07f49edf..994473f5496bf9117df358c15666ead4
  
          this.gameEvent(GameEvent.SPLASH);
      }
-@@ -4192,6 +4194,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4197,6 +4199,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      protected static void sendBubbleColumnParticles(Level level, BlockPos pos) {

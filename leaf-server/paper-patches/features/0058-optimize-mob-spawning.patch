@@ -5,7 +5,7 @@ Subject: [PATCH] optimize mob spawning
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 1062e2ae5d384ab01b7b731c9cba34c27798e077..9beee9e4f96f5ff364eece35d4bb05918fe8d68f 100644
+index aecd9225bb0c4f12dff918d07f864d9cffd92b5f..403277294d03cc21a073a8296d9f272f55c61f01 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -286,7 +286,8 @@ public final class CraftServer implements Server {
@@ -18,7 +18,7 @@ index 1062e2ae5d384ab01b7b731c9cba34c27798e077..9beee9e4f96f5ff364eece35d4bb0591
      private File container;
      private WarningState warningState = WarningState.DEFAULT;
      public ApiVersion minimumAPI;
-@@ -484,6 +485,7 @@ public final class CraftServer implements Server {
+@@ -485,6 +486,7 @@ public final class CraftServer implements Server {
          this.saveCommandsConfig();
          this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
          this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
@@ -26,7 +26,7 @@ index 1062e2ae5d384ab01b7b731c9cba34c27798e077..9beee9e4f96f5ff364eece35d4bb0591
          this.overrideSpawnLimits();
          console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
          this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
-@@ -515,9 +517,9 @@ public final class CraftServer implements Server {
+@@ -517,9 +519,9 @@ public final class CraftServer implements Server {
      }
  
      private void overrideSpawnLimits() {
@@ -38,7 +38,7 @@ index 1062e2ae5d384ab01b7b731c9cba34c27798e077..9beee9e4f96f5ff364eece35d4bb0591
              }
          }
      }
-@@ -2386,7 +2388,7 @@ public final class CraftServer implements Server {
+@@ -2389,7 +2391,7 @@ public final class CraftServer implements Server {
      }
  
      public int getSpawnLimitUnsafe(final SpawnCategory spawnCategory) {
@@ -91,7 +91,7 @@ index 5b1534a2a71ae016b351dee27431db273b2c077f..749fe0146259922c13b0810d0caa5aee
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
-index 348bf5ed91ded3537a86bc0708e0158ad4f9296d..7a7d0b8c0b5e6d9b58ca973972bac488975e6e2a 100644
+index 348bf5ed91ded3537a86bc0708e0158ad4f9296d..723e660fd07ae2ba834234eeb8a8b35cea55cbda 100644
 --- a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
 +++ b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
 @@ -290,6 +290,13 @@ public class CustomChunkGenerator extends InternalChunkGenerator {

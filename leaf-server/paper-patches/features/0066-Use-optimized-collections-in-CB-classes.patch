@@ -70,7 +70,7 @@ index a456cc637e2a990354852d8537787af9cd7eb670..82938d46c8e01461337aab483a9718e2
      private CraftInventoryCreator() {
          this.converterMap.put(InventoryType.CHEST, this.defaultConverter);
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index 900a50ed18e931cd090d970634fa27726926af07..60be852fbecf054852b3cb9089976b7915138426 100644
+index 00fb0d0e2c8a0bc1a254505cac5404a4423a525f..791429f1dc6157cd547e195f3390ce5ce0a98901 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -162,10 +162,12 @@ public final class CraftMagicNumbers implements UnsafeValues {

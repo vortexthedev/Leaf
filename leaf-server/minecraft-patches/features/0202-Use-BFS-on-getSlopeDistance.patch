@@ -9,10 +9,10 @@ Leaf: ~48ms (-36%)
 This should help drastically on the farms that use actively changing fluids.
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 64543ea3fad4aa7031ad0b71fb87490a1d4ab4ba..514b16717db33885cb0c339e485c38e8930803de 100644
+index 35ea98a35b577c0e57fd0ec82f469a4ce9109c23..9d89f496477b2460b025e1b3100c3d1227ca6576 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1554,6 +1554,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1552,6 +1552,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          this.emptyTime = 0;
      }
  

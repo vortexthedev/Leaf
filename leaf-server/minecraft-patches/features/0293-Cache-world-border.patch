@@ -7,7 +7,7 @@ The world border is only initialized once when the level is created.
 Lookup from data storage map multiple time is quite unnecessary and expensive.
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index a1ba8198eadf5c9ffbda205709cbe79d931a7961..68830e362d4071e52e5776b16ac77238244e4663 100644
+index 8715e05468c16d3c5055087006d5ca2c48098a84..f81ae5bf6ec0aa6939bb3d9dbd2c118d6e4b8028 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -237,6 +237,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -18,7 +18,7 @@ index a1ba8198eadf5c9ffbda205709cbe79d931a7961..68830e362d4071e52e5776b16ac77238
  
      @Override
      public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
-@@ -2518,8 +2519,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2516,8 +2517,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      @Override
      public WorldBorder getWorldBorder() {

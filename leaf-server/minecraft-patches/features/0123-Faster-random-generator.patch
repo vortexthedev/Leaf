@@ -14,7 +14,7 @@ ThreadUnsafeRandom (Moonrise): 102,265,100 ns
 SimpleThreadUnsafeRandom (Moonrise): 97,054,600 ns
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 3b753337e4ce101057931d320b4a1267d00e9432..8ebc3aaa79526cc489885bc817d0c9880ab6ca55 100644
+index 83e02e02aa3a95acdc2bc914307d7577fec87e8f..551d189457c8a65763476edd84b50c156ac916cc 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -155,7 +155,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -27,7 +27,7 @@ index 3b753337e4ce101057931d320b4a1267d00e9432..8ebc3aaa79526cc489885bc817d0c988
          final ServerLevel world = this.level;
          final int randomTickSpeed = world.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index b8c3b268f910973ddcde2ea13b43b66002dc42e4..f67ce1116e7676ec496b518b5ee82c11ff11758c 100644
+index b14460685cb324336a03867fa78d390d5c7d1bf0..3a93eb9819b2b9109762e21e28c3868f143867aa 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -979,7 +979,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -39,8 +39,8 @@ index b8c3b268f910973ddcde2ea13b43b66002dc42e4..f67ce1116e7676ec496b518b5ee82c11
          final boolean doubleTickFluids = !ca.spottedleaf.moonrise.common.PlatformHooks.get().configFixMC224294();
  
          final ChunkPos cpos = chunk.getPos();
-@@ -1028,7 +1028,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
-     private int currentIceAndSnowTick = 0; protected void resetIceAndSnowTick() { this.currentIceAndSnowTick = this.simpleRandom.nextInt(16); } // Gale - Airplane - optimize random calls in chunk ticking
+@@ -1026,7 +1026,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     // Paper end - optimise random ticking
  
      public void tickChunk(LevelChunk chunk, int randomTickSpeed) {
 -        final ca.spottedleaf.moonrise.common.util.SimpleThreadUnsafeRandom simpleRandom = this.simpleRandom; // Paper - optimise random ticking
@@ -97,7 +97,7 @@ index 98a54bc4de251014342cda6d0951b7fea79ce553..d6e86369689e5651698a569ef32d6e4c
      RandomSource fork();
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f76232eb3db41a39c9cf39ce7eaaa86ada56518d..9401f702b55d22369b7114e436d9f07bfd9fcb70 100644
+index bbe41d1294e0fab352263ab2746f0cb04a08ef8a..26cb112ef71eb3edc8d864ff5ac32edb6b8babe5 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -161,7 +161,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name

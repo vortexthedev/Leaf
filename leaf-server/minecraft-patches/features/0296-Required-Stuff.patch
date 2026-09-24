@@ -448,7 +448,7 @@ index 170d2bac2c280921248c86d266add46260c5a76d..f2efb0e1cea0e3bb9df1e52e8d753160
          LevelSettings levelSettings;
          WorldOptions worldOptions;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 912ef41ae1e97ff856386394d8816710d31d2e13..f8aef77ad7b71a62bebf6077299665ac1a108a70 100644
+index c20457f6232439484db35a308a115c1e18fab0cc..130f8068425f4eb2c4b8cc7b6d962b6aaa610458 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1125,7 +1125,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -474,7 +474,7 @@ index 21cbdbb67686cb67be66ea5f0e695b47c92823a9..f86d95bbf725d73f3445416644ff8a66
          ConsecutiveExecutor consecutiveExecutor1 = new ConsecutiveExecutor(dispatcher, "light");
          // Paper - rewrite chunk system
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 1aa47d5f25de08114abd9a179999b9993e3f0ef4..637fe91dc7f32765d05d0e322dc5f3d4d31e1fda 100644
+index 67c13021344c93049f218b9dd5a0fccba09be75d..478d454ea544352730229a926a5764b68193f6a4 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -515,7 +515,6 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -1133,7 +1133,7 @@ index 2af5be11724d921105c3f01fb6410f9f6a796356..eabbccc18e607411500a3551f927d4fe
          public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
              super.onSyncedDataUpdated(key);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a8143a507 100644
+index 6a4bf70f46b0d37b83401ae41d3f5e08a858aa52..7bdb259f291ebf6676b520977c18629ea02ad95e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -61,6 +61,7 @@ import net.minecraft.network.syncher.SyncedDataHolder;
@@ -1190,7 +1190,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
          }
      }
  
-@@ -2447,7 +2467,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2452,7 +2472,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
  
      public void push(Entity entity) {
          if (!entity.noPhysics && !this.noPhysics) { // Gale - Akarin - collision physics check before vehicle check
@@ -1199,7 +1199,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
                  if (this.level.paperConfig().collisions.onlyPlayersCollide && !(entity instanceof ServerPlayer || this instanceof ServerPlayer)) return; // Paper - Collision option for requiring a player participant
                  double d = entity.getX() - this.getX();
                  double d1 = entity.getZ() - this.getZ();
-@@ -2686,11 +2706,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2691,11 +2711,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          // CraftBukkit end
          try {
              if (includeAll) { // CraftBukkit - selectively save position
@@ -1216,7 +1216,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
              } // CraftBukkit
  
              output.store("Motion", Vec3.CODEC, this.getDeltaMovement());
-@@ -2713,10 +2733,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2718,10 +2738,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              output.putInt("PortalCooldown", this.portalCooldown);
              // CraftBukkit start - selectively save uuid and world
              if (includeAll) {
@@ -1231,7 +1231,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
              }
              output.putInt("Bukkit.updateLevel", Entity.CURRENT_LEVEL);
              if (!this.persist) {
-@@ -3261,11 +3281,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3266,11 +3286,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public boolean shearOffAllLeashConnections(@Nullable Player player) {
@@ -1245,7 +1245,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
          boolean flag = this.dropAllLeashConnections(player, interactionHand); // Paper - EntityUnleashEvent - overload
          if (flag && this.level() instanceof ServerLevel serverLevel) {
              serverLevel.playSound(null, this.blockPosition(), SoundEvents.SHEARS_SNIP, player != null ? player.getSoundSource() : this.getSoundSource());
-@@ -3275,11 +3295,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3280,11 +3300,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      }
  
      public boolean dropAllLeashConnections(@Nullable Player player) {
@@ -1259,7 +1259,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
          List<Leashable> list = Leashable.leashableLeashedTo(this);
          boolean flag = false; // Paper - EntityUnleashEvent - compute flag later, events might prevent unleashing all connected leashables.
          if (this instanceof Leashable leashable && leashable.isLeashed()) {
-@@ -3400,6 +3420,119 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3405,6 +3425,119 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          return this.startRiding(entity, false, true);
      }
  
@@ -1379,7 +1379,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
      public boolean showVehicleHealth() {
          return this instanceof LivingEntity;
      }
-@@ -3525,6 +3658,37 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3530,6 +3663,37 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
      }
  
@@ -1417,7 +1417,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
      // Paper start - Force entity dismount during teleportation
      protected boolean removePassenger(Entity passenger) {
          return removePassenger(passenger, false);
-@@ -3539,8 +3703,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3544,8 +3708,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              Entity orig = craft == null ? null : craft.getHandle();
              if (this.getBukkitEntity() instanceof org.bukkit.entity.Vehicle && passenger.getBukkitEntity() instanceof org.bukkit.entity.LivingEntity) {
                  org.bukkit.event.vehicle.VehicleExitEvent event = new org.bukkit.event.vehicle.VehicleExitEvent(
@@ -1428,7 +1428,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
                  );
                  // Suppress during worldgen
                  if (this.valid) {
-@@ -3658,7 +3822,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3663,7 +3827,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      public void setAsInsidePortal(Portal portal, BlockPos pos) {
          if (this.isOnPortalCooldown()) {
              if (!(level().purpurConfig.playerFixStuckPortal && this instanceof Player && !pos.equals(this.portalPos))) // Purpur - Fix stuck in portals
@@ -1437,7 +1437,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
          } else if (this.level.purpurConfig.entitiesCanUsePortals || this instanceof ServerPlayer) { // Purpur - Entities can use portals
              if (this.portalProcess == null || !this.portalProcess.isSamePortal(portal)) {
                  this.portalProcess = new PortalProcessor(portal, pos.immutable());
-@@ -3973,10 +4137,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -3978,10 +4142,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
              pluginManager.callEvent(entityCombustEvent);
              if (!entityCombustEvent.isCancelled()) {
                  this.igniteForSeconds(entityCombustEvent.getDuration(), false);
@@ -1450,7 +1450,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
              }
              // CraftBukkit end
          }
-@@ -4153,32 +4317,32 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4158,32 +4322,32 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          String string = this.level() == null ? "~NULL~" : this.level().toString();
          return this.removalReason != null
              ? String.format(
@@ -1508,7 +1508,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
      }
  
      public final boolean isInvulnerableToBase(DamageSource damageSource) {
-@@ -4687,11 +4851,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4692,11 +4856,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          // Gale end - VMP - skip entity move if movement is zero
          // CraftBukkit start - block invalid bounding boxes
          double minX = bb.minX,
@@ -1526,7 +1526,7 @@ index 3f0208f31a71b75267f0e448b537c40269ab482c..fc95aa945f3c94cda5b39a79779c710a
          if (len < 0) maxX = minX;
          if (len > 64) maxX = minX + 64.0;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index fbaa257d4718f01ef336f1407d69989f39981cd5..1b9eb53e8c8b324e1254a3b0d91ae730672f16f0 100644
+index adb373bcfaf6b10120267a865eb4da6bcf160496..121ebbe807f645a75d2c207ba7dd84a18731d3c6 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -356,6 +356,27 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
