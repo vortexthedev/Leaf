@@ -800,7 +800,7 @@ index 624c5d3d30282cf0d54faabc88d81ca0a9a8c785..7d4666b4c655274e5d8f1ab71754a741
                  }
              }
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 3541a1d617c070de72e761d62a931d0f4dc313f6..14c3b7b157abfe390a1c06762ec317814535018c 100644
+index 3541a1d617c070de72e761d62a931d0f4dc313f6..ebbb41f2a4216b03ea9fde28c36d6af1d35a99c5 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
 @@ -2,60 +2,36 @@ package net.minecraft.network;
@@ -1129,7 +1129,7 @@ index 3541a1d617c070de72e761d62a931d0f4dc313f6..14c3b7b157abfe390a1c06762ec31781
          boolean flag = flow == PacketFlow.SERVERBOUND;
          boolean flag1 = opposite == PacketFlow.SERVERBOUND;
 -        pipeline.addLast("splitter", createFrameDecoder(memoryOnly))
-+        pipeline.addLast("splitter", new Varint21LengthFieldPrepender())
++        pipeline.addLast("splitter", new Varint21FrameDecoder())
              .addLast(new FlowControlHandler())
 -            .addLast(inboundHandlerName(flag), (ChannelHandler)(flag ? new PacketDecoder<>(INITIAL_PROTOCOL) : new UnconfiguredPipelineHandler.Inbound()))
 -            .addLast("prepender", createFrameEncoder(memoryOnly))
@@ -1151,7 +1151,7 @@ index 3541a1d617c070de72e761d62a931d0f4dc313f6..14c3b7b157abfe390a1c06762ec31781
 -    public static void configureInMemoryPipeline(ChannelPipeline pipeline, PacketFlow flow) {
 -        configureSerialization(pipeline, flow, true);
 +            .addLast(inboundHandlerName(flag), flag ? new PacketDecoder<>(INITIAL_PROTOCOL) : new UnconfiguredPipelineHandler.Inbound())
-+            .addLast("prepender", new Varint21FrameDecoder())
++            .addLast("prepender", new Varint21LengthFieldPrepender())
 +            .addLast(outboundHandlerName(flag1), flag1 ? new PacketEncoder<>(INITIAL_PROTOCOL) : new UnconfiguredPipelineHandler.Outbound());
      }
  
@@ -4646,7 +4646,7 @@ index b790b9476ec0a0569470d5de4067caa5373b2f6b..81e433774aa072690f63e686f8cf8562
          this.inputSlots.setItem(0, ItemStack.EMPTY);
          this.access.execute((level, blockPos) -> {
 diff --git a/net/minecraft/world/item/Items.java b/net/minecraft/world/item/Items.java
-index f9b63e36fd1ebc697cf6d26ba0b305fe10ff7e79..f6319a1737aa3f9df91ce90c6f7573e38019e9ed 100644
+index f9b63e36fd1ebc697cf6d26ba0b305fe10ff7e79..a9c6802e73846eb2cd8e65034001094d10ee9187 100644
 --- a/net/minecraft/world/item/Items.java
 +++ b/net/minecraft/world/item/Items.java
 @@ -1,10 +1,5 @@
