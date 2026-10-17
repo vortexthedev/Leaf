@@ -19,20 +19,11 @@ public class Knockback extends ConfigModule {
     @Override
     public void onLoaded() {
         snowballCanKnockback = globalConfig.getBoolean(basePath() + ".snowball-knockback-players", snowballCanKnockback,
-            globalConfig.pickStringRegionBased(
-                "Make snowball can knockback players.",
-                "使雪球可以击退玩家."
-            ));
+            "Make snowball can knockback players.");
         eggCanKnockback = globalConfig.getBoolean(basePath() + ".egg-knockback-players", eggCanKnockback,
-            globalConfig.pickStringRegionBased(
-                "Make egg can knockback players.",
-                "使鸡蛋可以击退玩家."
-            ));
+            "Make egg can knockback players.");
         canPlayerKnockbackZombie = globalConfig.getBoolean(basePath() + ".can-player-knockback-zombie", canPlayerKnockbackZombie,
-            globalConfig.pickStringRegionBased(
-                "Make players can knockback zombie.",
-                "使玩家可以击退僵尸."
-            ));
+            "Make players can knockback zombie.");
         oldBlastProtectionKnockbackBehavior = globalConfig.getBoolean(basePath() + ".old-blast-protection-explosion-knockback", oldBlastProtectionKnockbackBehavior);
 
         if (legacyTrackerTickingInitialized) {

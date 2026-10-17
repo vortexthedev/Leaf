@@ -81,9 +81,6 @@ public final class EntityActivation {
             if (world.spigotConfig.ignoreSpectatorActivation && p.isSpectator()) {
                 continue;
             }
-            if (!world.purpurConfig.idleTimeoutTickNearbyEntities && p.isAfk()) {
-                continue; // Purpur - AFK API
-            }
             players[playerSize] = p;
             pxl[playerSize] = p.getX();
             pyl[playerSize] = p.getY();

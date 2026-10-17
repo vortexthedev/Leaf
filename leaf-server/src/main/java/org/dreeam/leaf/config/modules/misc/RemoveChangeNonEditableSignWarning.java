@@ -14,9 +14,6 @@ public class RemoveChangeNonEditableSignWarning extends ConfigModule {
     @Override
     public void onLoaded() {
         enabled = globalConfig.getBoolean(basePath() + ".remove-change-non-editable-sign-warning", enabled,
-            globalConfig.pickStringRegionBased(
-                "Enable to prevent console spam.",
-                "移除修改无法编辑的告示牌时输出的警告."
-            ));
+            "Enable to prevent console spam.");
     }
 }

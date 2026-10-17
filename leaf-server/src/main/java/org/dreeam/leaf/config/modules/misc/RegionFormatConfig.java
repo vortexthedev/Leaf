@@ -33,10 +33,7 @@ public class RegionFormatConfig extends ConfigModule {
     public void onLoaded() {
         globalConfig.addCommentRegionBased(basePath(), """
                 Buffered Linear is a region format that uses zstd compression instead of zlib.
-                Read Leaf docs before using!""",
-            """
-                Buffered Linear 是一种使用 zstd 压缩而非 ZLIB 的区域格式.
-                使用前请阅读 Leaf 文档!""");
+                Read Leaf docs before using!""");
 
         if (regionFormatLoaded) {
             globalConfig.getConfigSection(basePath());
@@ -45,9 +42,7 @@ public class RegionFormatConfig extends ConfigModule {
         regionFormatLoaded = true;
 
         regionFormatName = globalConfig.getString(basePath() + ".format-name", regionFormatName,
-            globalConfig.pickStringRegionBased(
-                "Available region format names: MCA, B_LINEAR",
-                "可用格式: MCA, B_LINEAR"));
+            "Available region format names: MCA, B_LINEAR");
         compressionLevel = globalConfig.getInt(basePath() + ".compress-level", compressionLevel);
         ioThreadCount = globalConfig.getInt(basePath() + ".io-thread-count", ioThreadCount);
         ioFlushDelay = globalConfig.getInt(basePath() + ".io-flush-delay", ioFlushDelay);

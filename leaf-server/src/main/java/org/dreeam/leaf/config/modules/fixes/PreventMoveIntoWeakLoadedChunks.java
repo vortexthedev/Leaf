@@ -19,18 +19,10 @@ public class PreventMoveIntoWeakLoadedChunks extends ConfigModule {
     @Override
     public void onLoaded() {
         globalConfig.addCommentRegionBased(basePath(),
-            "Prevents entities from moving into weak loaded chunks.",
-            "阻止实体进入弱加载区块。"
-        );
+            "Prevents entities from moving into weak loaded chunks.");
 
-        enabled = globalConfig.getBoolean(basePath() + ".enabled", enabled, globalConfig.pickStringRegionBased(
-            "Set to true to enable features below.",
-            "设置为 true 以启用以下功能。"
-        ));
+        enabled = globalConfig.getBoolean(basePath() + ".enabled", enabled, "Set to true to enable features below.");
 
-        projectiles = globalConfig.getBoolean(basePath() + ".projectiles", projectiles, globalConfig.pickStringRegionBased(
-            "Prevents projectiles from moving into weak loaded chunks.",
-            "阻止弹射物进入弱加载区块。"
-        ));
+        projectiles = globalConfig.getBoolean(basePath() + ".projectiles", projectiles, "Prevents projectiles from moving into weak loaded chunks.");
     }
 }

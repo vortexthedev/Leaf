@@ -25,31 +25,18 @@ public class FastRNG extends ConfigModule {
         globalConfig.addCommentRegionBased(basePath(), """
                 Use faster random generator?
                 Requires a JVM that supports Xoroshiro128PlusPlus.
-                Some JREs don't support this.""",
-            """
-                是否使用更快的随机生成器?
-                需要支持 Xoroshiro128PlusPlus 的 JVM.
-                一些 JRE 不支持此功能.""");
+                Some JREs don't support this.""");
 
         enabled = globalConfig.getBoolean(basePath() + ".enabled", enabled);
         enableForWorldgen = globalConfig.getBoolean(basePath() + ".enable-for-worldgen", enableForWorldgen,
-            globalConfig.pickStringRegionBased(
-                """
+            """
                     Enable faster random generator for world generation.
-                    WARNING: This will affect world generation!!!""",
-                """
-                    是否为世界生成启用更快的随机生成器.
-                    警告: 此项会影响世界生成!!!"""));
+                    WARNING: This will affect world generation!!!""");
         warnForSlimeChunk = globalConfig.getBoolean(basePath() + ".warn-for-slime-chunk", warnForSlimeChunk,
-            globalConfig.pickStringRegionBased(
-                "Warn if you are not using legacy random source for slime chunk generation.",
-                "是否在没有为史莱姆区块使用原版随机生成器的情况下进行警告."));
-        useLegacyForSlimeChunk = globalConfig.getBoolean(basePath() + ".use-legacy-random-for-slime-chunk", useLegacyForSlimeChunk, globalConfig.pickStringRegionBased(
-            """
+            "Warn if you are not using legacy random source for slime chunk generation.");
+        useLegacyForSlimeChunk = globalConfig.getBoolean(basePath() + ".use-legacy-random-for-slime-chunk", useLegacyForSlimeChunk, """
                 Use legacy random source for slime chunk generation,
-                to follow vanilla behavior.""",
-            """
-                是否使用原版随机生成器来生成史莱姆区块."""));
+                to follow vanilla behavior.""");
         if (enabled) {
             try {
                 Class.forName("org.dreeam.leaf.util.math.random.FasterRandomSource");

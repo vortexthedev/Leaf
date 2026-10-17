@@ -13,8 +13,6 @@ public class AlternativeJoin extends ConfigModule {
 
     @Override
     public void onLoaded() {
-        enabled = globalConfig.getBoolean(basePath() + ".async-switch-state", enabled, globalConfig.pickStringRegionBased(
-            "Async switch connection state.",
-            "异步切换连接状态."));
+        enabled = globalConfig.getBoolean(basePath() + ".async-switch-state", enabled, "Async switch connection state.");
     }
 }

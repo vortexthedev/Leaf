@@ -16,11 +16,8 @@ public class DespawnTime extends ConfigModule {
     @Override
     public void onLoaded() {
         proactiveWeakLoading = globalConfig.getBoolean(basePath() + ".proactive-weak-loading-despawn", proactiveWeakLoading,
-            globalConfig.pickStringRegionBased("""
+            """
                     Proactive despawn check for weak-loaded entities.
-                    This is an experimental feature.""",
-                """
-                    启用主动弱加载实体消失检查，
-                    这是一个实验性功能。"""));
+                    This is an experimental feature.""");
     }
 }

@@ -13,9 +13,7 @@ public class EnableCachedMTBEntityTypeConvert extends ConfigModule {
 
     @Override
     public void onLoaded() {
-        enabled = globalConfig.getBoolean(basePath() + ".enable-cached-minecraft-to-bukkit-entitytype-convert", enabled, globalConfig.pickStringRegionBased("""
-                Whether to cache expensive CraftEntityType#minecraftToBukkit call.""",
-            """
-                是否缓存Minecraft到Bukkit的实体类型转换."""));
+        enabled = globalConfig.getBoolean(basePath() + ".enable-cached-minecraft-to-bukkit-entitytype-convert", enabled, """
+                Whether to cache expensive CraftEntityType#minecraftToBukkit call.""");
     }
 }

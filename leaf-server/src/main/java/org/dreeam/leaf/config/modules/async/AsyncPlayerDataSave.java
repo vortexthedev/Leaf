@@ -14,9 +14,7 @@ public class AsyncPlayerDataSave extends ConfigModule {
     @Override
     public void onLoaded() {
         globalConfig.addCommentRegionBased(basePath(), """
-                Make PlayerData saving asynchronously.""",
-            """
-                异步保存玩家数据.""");
+                Make PlayerData saving asynchronously.""");
 
         enabled = globalConfig.getBoolean(basePath() + ".enabled", enabled);
 

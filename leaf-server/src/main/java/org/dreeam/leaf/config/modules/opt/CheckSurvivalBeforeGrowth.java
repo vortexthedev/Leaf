@@ -14,9 +14,7 @@ public class CheckSurvivalBeforeGrowth extends ConfigModule {
     @Override
     public void onLoaded() {
         cactusCheckSurvivalBeforeGrowth = globalConfig.getBoolean(basePath() + ".cactus-check-survival", cactusCheckSurvivalBeforeGrowth,
-            globalConfig.pickStringRegionBased("""
-                    Check if a cactus can survive before growing.""",
-                """
-                    在仙人掌生长前检查其是否能够存活。"""));
+            """
+                    Check if a cactus can survive before growing.""");
     }
 }

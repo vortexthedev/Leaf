@@ -16,8 +16,7 @@ public class ServerGui extends ConfigModule {
     @Override
     public void onLoaded() {
         globalConfig.addCommentRegionBased(basePath() + ".theme", """
-                GUI theme: system, dark, or light.""", """
-                GUI 主题：system 跟随系统，dark 强制深色，light 强制浅色。""");
+                GUI theme: system, dark, or light.""");
         String configuredTheme = globalConfig.getString(basePath() + ".theme", "system").trim().toLowerCase(Locale.ROOT);
         theme = switch (configuredTheme) {
             case "system", "dark", "light" -> configuredTheme;

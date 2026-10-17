@@ -26,68 +26,39 @@ public class SpawnerSettings extends ConfigModule {
     @Override
     public void onLoaded() {
         globalConfig.addCommentRegionBased(basePath(),
-            "This section contains settings for mob spawner blocks.",
-            "此部分包含刷怪笼生物生成的设置.");
+            "This section contains settings for mob spawner blocks.");
 
         // Global toggle
         enabled = globalConfig.getBoolean(basePath() + ".enabled", enabled,
-            globalConfig.pickStringRegionBased(
-                "Enable custom spawner settings. Set to true to enable all features below.",
-                "启用自定义刷怪笼设置. 设为 true 以启用以下所有功能."
-            ));
+            "Enable custom spawner settings. Set to true to enable all features below.");
 
         // Checks section
         globalConfig.addCommentRegionBased(basePath() + ".checks",
-            "Various checks that can be enabled or disabled for spawner blocks.",
-            "可以为刷怪笼启用或禁用的各种检查.");
+            "Various checks that can be enabled or disabled for spawner blocks.");
 
         lightLevelCheck = globalConfig.getBoolean(basePath() + ".checks.light-level-check", lightLevelCheck,
-            globalConfig.pickStringRegionBased(
-                "Apply Leaf's additional light-level check. Custom light limits are always checked.",
-                "启用 Leaf 额外的光照检查. 自定义光照区间始终检查."
-            ));
+            "Apply Leaf's additional light-level check. Custom light limits are always checked.");
 
         spawnerMaxNearbyCheck = globalConfig.getBoolean(basePath() + ".checks.spawner-max-nearby-check", spawnerMaxNearbyCheck,
-            globalConfig.pickStringRegionBased(
-                "Check if there are the max amount of nearby mobs to spawn the mob",
-                "检查附近是否已达到最大怪物数量限制"
-            ));
+            "Check if there are the max amount of nearby mobs to spawn the mob");
 
         checkForNearbyPlayers = globalConfig.getBoolean(basePath() + ".checks.check-for-nearby-players", checkForNearbyPlayers,
-            globalConfig.pickStringRegionBased(
-                "Check if any players are in a radius to spawn the mob",
-                "检查是否有玩家在生成怪物的半径范围内"
-            ));
+            "Check if any players are in a radius to spawn the mob");
 
         spawnerBlockChecks = globalConfig.getBoolean(basePath() + ".checks.spawner-block-checks", spawnerBlockChecks,
-            globalConfig.pickStringRegionBased(
-                "Check physical collisions and mob spawn obstructions. Custom light limits are always checked.",
-                "检查生成位置的碰撞和生物的生成障碍条件. 自定义光照区间始终检查."
-            ));
+            "Check physical collisions and mob spawn obstructions. Custom light limits are always checked.");
 
         waterPreventSpawnCheck = globalConfig.getBoolean(basePath() + ".checks.water-prevent-spawn-check", waterPreventSpawnCheck,
-            globalConfig.pickStringRegionBased(
-                "Checks if there is water around that prevents spawning",
-                "检查周围是否有水阻止生成"
-            ));
+            "Checks if there is water around that prevents spawning");
         ignoreSpawnRules = globalConfig.getBoolean(basePath() + ".checks.ignore-spawn-rules", ignoreSpawnRules,
-            globalConfig.pickStringRegionBased(
-                "Ignore mob-specific spawn rules, like animals needing grass or specific biomes/blocks (does not affect light level or physical obstruction checks).",
-                "忽略特定于生物的生成规则, 例如动物需要草方块或特定的生物群系/方块 (不影响光照等级或物理障碍物检查)."
-            ));
+            "Ignore mob-specific spawn rules, like animals needing grass or specific biomes/blocks (does not affect light level or physical obstruction checks).");
 
         // Delay settings
 
         minSpawnDelay = globalConfig.getInt(basePath() + ".min-spawn-delay", minSpawnDelay,
-            globalConfig.pickStringRegionBased(
-                "Minimum delay (in ticks) between spawner spawns. Higher values slow down spawners.",
-                "刷怪笼生成怪物之间的最小延迟 (以刻为单位). 较高的值会减缓刷怪笼的速度."
-            ));
+            "Minimum delay (in ticks) between spawner spawns. Higher values slow down spawners.");
 
         maxSpawnDelay = globalConfig.getInt(basePath() + ".max-spawn-delay", maxSpawnDelay,
-            globalConfig.pickStringRegionBased(
-                "Maximum delay (in ticks) between spawner spawns. Higher values slow down spawners.",
-                "刷怪笼生成怪物之间的最大延迟 (以刻为单位). 较高的值会减缓刷怪笼的速度."
-            ));
+            "Maximum delay (in ticks) between spawner spawns. Higher values slow down spawners.");
     }
 }
