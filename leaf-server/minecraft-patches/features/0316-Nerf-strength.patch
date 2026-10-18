@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Sun, 22 Feb 2026 06:17:11 +0200
+Subject: [PATCH] Nerf strength
+
+
+diff --git a/net/minecraft/world/effect/MobEffects.java b/net/minecraft/world/effect/MobEffects.java
+index e6f9e96d2fc72488b046fbf7a5aff43e0dfae154..dc42d8c00188f489616ca5bee4541255cdefdd37 100644
+--- a/net/minecraft/world/effect/MobEffects.java
++++ b/net/minecraft/world/effect/MobEffects.java
+@@ -43,7 +43,7 @@ public class MobEffects {
+     public static final Holder<MobEffect> STRENGTH = register(
+         "strength",
+         new MobEffect("Сила", MobEffectCategory.BENEFICIAL, 16762624)
+-            .addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 1.3, AttributeModifier.Operation.ADD_VALUE)
++            .addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 1.1, AttributeModifier.Operation.ADD_VALUE)
+     );
+     public static final Holder<MobEffect> INSTANT_HEALTH = register("instant_health",
+         new HealOrHarmMobEffect("Исцеление", MobEffectCategory.BENEFICIAL, 16262179, false));

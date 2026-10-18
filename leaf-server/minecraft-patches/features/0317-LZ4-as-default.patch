@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <sigamatute@gmail.com>
+Date: Sun, 18 Oct 2026 15:04:43 +0300
+Subject: [PATCH] LZ4 as default
+
+
+diff --git a/net/minecraft/server/dedicated/DedicatedServerProperties.java b/net/minecraft/server/dedicated/DedicatedServerProperties.java
+index 313bb5aee163b4eed9a6b307564fcc35891f66ba..c13842efe934d69c0f92da578680195d39296f08 100644
+--- a/net/minecraft/server/dedicated/DedicatedServerProperties.java
++++ b/net/minecraft/server/dedicated/DedicatedServerProperties.java
+@@ -111,7 +111,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
+     public final boolean broadcastConsoleToOps = this.get("broadcast-console-to-ops", true);
+     public final int maxWorldSize = this.get("max-world-size", v -> Mth.clamp(v, 1, 29999984), 29999984);
+     public final boolean syncChunkWrites = this.get("sync-chunk-writes", true) && Boolean.getBoolean("Paper.enable-sync-chunk-writes"); // Paper - Hide sync chunk writes behind flag
+-    public final String regionFileComression = this.get("region-file-compression", "deflate");
++    public final String regionFileComression = this.get("region-file-compression", "lz4"); // Leaf - LZ4 as default
+     public final boolean enableJmxMonitoring = this.get("enable-jmx-monitoring", false);
+     public final Settings<DedicatedServerProperties>.MutableValue<Boolean> enableStatus = this.getMutable("enable-status", true);
+     public final Settings<DedicatedServerProperties>.MutableValue<Boolean> hideOnlinePlayers = this.getMutable("hide-online-players", false);
