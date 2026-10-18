@@ -47,12 +47,11 @@ index 0000000000000000000000000000000000000000..0bf630a8fe91021c2609cc86ebdc4093
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/bane_of_arthropods.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/bane_of_arthropods.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..2ca60db322f0622aff5d4dc766e7b4fe114cfcc9
+index 0000000000000000000000000000000000000000..91edc991f50de583a159692e5fc0c960f52b2e8c
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/bane_of_arthropods.json
 @@ -0,0 +1,80 @@
 +{
-+  "name": "Бич членистоногих",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.bane_of_arthropods"
@@ -69,10 +68,10 @@ index 0000000000000000000000000000000000000000..2ca60db322f0622aff5d4dc766e7b4fe
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "this",
 +          "predicate": {
-+            "type": "#minecraft:sensitive_to_bane_of_arthropods"
++            "minecraft:entity_type": "#minecraft:sensitive_to_bane_of_arthropods"
 +          }
 +        }
 +      }
@@ -94,17 +93,17 @@ index 0000000000000000000000000000000000000000..2ca60db322f0622aff5d4dc766e7b4fe
 +        },
 +        "enchanted": "attacker",
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "type": "#minecraft:sensitive_to_bane_of_arthropods"
++                "minecraft:entity_type": "#minecraft:sensitive_to_bane_of_arthropods"
 +              }
 +            },
 +            {
-+              "condition": "minecraft:damage_source_properties",
++              "type": "minecraft:damage_source_properties",
 +              "predicate": {
 +                "is_direct": true
 +              }
@@ -129,7 +128,8 @@ index 0000000000000000000000000000000000000000..2ca60db322f0622aff5d4dc766e7b4fe
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/weapon",
-+  "weight": 5
++  "weight": 5,
++  "name": "Бич членистоногих"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/binding_curse.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/binding_curse.json
 new file mode 100644
@@ -163,12 +163,11 @@ index 0000000000000000000000000000000000000000..41f51ba39111010e7fc1381fcbbfe2d2
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/blast_protection.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/blast_protection.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..91eae115f9080ec6491bffb3962f880a9097595a
+index 0000000000000000000000000000000000000000..44edc349150e92aa6d5700870867860e63617d65
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/blast_protection.json
 @@ -0,0 +1,63 @@
 +{
-+  "name": "Взрывоустойчивость",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.blast_protection"
@@ -197,16 +196,16 @@ index 0000000000000000000000000000000000000000..91eae115f9080ec6491bffb3962f880a
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:damage_source_properties",
++          "type": "minecraft:damage_source_properties",
 +          "predicate": {
 +            "tags": [
 +              {
 +                "expected": true,
-+                "id": "minecraft:is_explosion"
++                "id": "#minecraft:is_explosion"
 +              },
 +              {
 +                "expected": false,
-+                "id": "minecraft:bypasses_invulnerability"
++                "id": "#minecraft:bypasses_invulnerability"
 +              }
 +            ]
 +          }
@@ -228,7 +227,8 @@ index 0000000000000000000000000000000000000000..91eae115f9080ec6491bffb3962f880a
 +    "armor"
 +  ],
 +  "supported_items": "#minecraft:enchantable/armor",
-+  "weight": 2
++  "weight": 2,
++  "name": "Взрывоустойчивость"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/boer.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/boer.json
 new file mode 100644
@@ -301,12 +301,11 @@ index 0000000000000000000000000000000000000000..0aa68c0bdab18b6f27c34cb78d879b1e
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/channeling.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/channeling.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..879373120299c9edfc4739de930fda1357cee748
+index 0000000000000000000000000000000000000000..d2b6af395a7d7291807d7601cc00343783f3502f
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/channeling.json
 @@ -0,0 +1,114 @@
 +{
-+  "name": "Громовержец",
 +  "anvil_cost": 8,
 +  "description": {
 +    "translate": "enchantment.minecraft.channeling"
@@ -330,28 +329,28 @@ index 0000000000000000000000000000000000000000..879373120299c9edfc4739de930fda13
 +          ]
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "condition": "minecraft:weather_check",
++              "type": "minecraft:weather_check",
 +              "thundering": true
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "type": "minecraft:trident"
++                "minecraft:entity_type": "minecraft:trident"
 +              }
 +            },
 +            {
-+              "condition": "minecraft:location_check",
++              "type": "minecraft:location_check",
 +              "predicate": {
 +                "can_see_sky": true
 +              }
 +            },
 +            {
-+              "block": "minecraft:lightning_rod",
-+              "condition": "minecraft:block_state_property"
++              "type": "minecraft:match_block",
++              "blocks": "minecraft:lightning_rod"
 +            }
 +          ]
 +        }
@@ -377,26 +376,26 @@ index 0000000000000000000000000000000000000000..879373120299c9edfc4739de930fda13
 +        },
 +        "enchanted": "attacker",
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "condition": "minecraft:weather_check",
++              "type": "minecraft:weather_check",
 +              "thundering": true
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "location": {
++                "minecraft:location": {
 +                  "can_see_sky": true
 +                }
 +              }
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "direct_attacker",
 +              "predicate": {
-+                "type": "minecraft:trident"
++                "minecraft:entity_type": "minecraft:trident"
 +              }
 +            }
 +          ]
@@ -417,7 +416,8 @@ index 0000000000000000000000000000000000000000..879373120299c9edfc4739de930fda13
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/trident",
-+  "weight": 1
++  "weight": 1,
++  "name": "Громовержец"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/density.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/density.json
 new file mode 100644
@@ -572,12 +572,11 @@ index 0000000000000000000000000000000000000000..388ac3b75e44d45cb6fc065e2ecbb92e
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/feather_falling.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/feather_falling.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..566a5699e0da343707a780cb37aa60a3fa21497c
+index 0000000000000000000000000000000000000000..2b7e988cc928595a48a1dd1388095866f73ecc9c
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/feather_falling.json
 @@ -0,0 +1,50 @@
 +{
-+  "name": "Невесомость",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.feather_falling"
@@ -594,16 +593,16 @@ index 0000000000000000000000000000000000000000..566a5699e0da343707a780cb37aa60a3
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:damage_source_properties",
++          "type": "minecraft:damage_source_properties",
 +          "predicate": {
 +            "tags": [
 +              {
 +                "expected": true,
-+                "id": "minecraft:is_fall"
++                "id": "#minecraft:is_fall"
 +              },
 +              {
 +                "expected": false,
-+                "id": "minecraft:bypasses_invulnerability"
++                "id": "#minecraft:bypasses_invulnerability"
 +              }
 +            ]
 +          }
@@ -624,16 +623,16 @@ index 0000000000000000000000000000000000000000..566a5699e0da343707a780cb37aa60a3
 +    "armor"
 +  ],
 +  "supported_items": "#minecraft:enchantable/foot_armor",
-+  "weight": 5
++  "weight": 5,
++  "name": "Невесомость"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/fire_aspect.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/fire_aspect.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..7314d688b4f460dae87484b61b5f86ae90e27ec8
+index 0000000000000000000000000000000000000000..b88ab7113a64790560768e56352057ae1d3f3081
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/fire_aspect.json
 @@ -0,0 +1,44 @@
 +{
-+  "name": "Заговор огня",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.fire_aspect"
@@ -652,7 +651,7 @@ index 0000000000000000000000000000000000000000..7314d688b4f460dae87484b61b5f86ae
 +        },
 +        "enchanted": "attacker",
 +        "requirements": {
-+          "condition": "minecraft:damage_source_properties",
++          "type": "minecraft:damage_source_properties",
 +          "predicate": {
 +            "is_direct": true
 +          }
@@ -674,16 +673,16 @@ index 0000000000000000000000000000000000000000..7314d688b4f460dae87484b61b5f86ae
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/fire_aspect",
-+  "weight": 2
++  "weight": 2,
++  "name": "Заговор огня"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/fire_protection.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/fire_protection.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..e59186179672fa5b9335fb07b0b3e371b34595a2
+index 0000000000000000000000000000000000000000..d0f4374329531a3064b48a5aeb6d1b97cec29536
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/fire_protection.json
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,63 @@
 +{
-+  "name": "Огнеупорность",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.fire_protection"
@@ -712,24 +711,19 @@ index 0000000000000000000000000000000000000000..e59186179672fa5b9335fb07b0b3e371
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
-+          "terms": [
-+            {
-+              "condition": "minecraft:damage_source_properties",
-+              "predicate": {
-+                "tags": [
-+                  {
-+                    "expected": true,
-+                    "id": "minecraft:is_fire"
-+                  },
-+                  {
-+                    "expected": false,
-+                    "id": "minecraft:bypasses_invulnerability"
-+                  }
-+                ]
++          "type": "minecraft:damage_source_properties",
++          "predicate": {
++            "tags": [
++              {
++                "expected": true,
++                "id": "#minecraft:is_fire"
++              },
++              {
++                "expected": false,
++                "id": "#minecraft:bypasses_invulnerability"
 +              }
-+            }
-+          ]
++            ]
++          }
 +        }
 +      }
 +    ]
@@ -748,7 +742,8 @@ index 0000000000000000000000000000000000000000..e59186179672fa5b9335fb07b0b3e371
 +    "armor"
 +  ],
 +  "supported_items": "#minecraft:enchantable/armor",
-+  "weight": 5
++  "weight": 5,
++  "name": "Огнеупорность"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/flame.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/flame.json
 new file mode 100644
@@ -817,12 +812,11 @@ index 0000000000000000000000000000000000000000..081ba52d900ec65f0f06bc134b9ff508
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/frost_walker.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/frost_walker.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..1b12cfb2094fcb97dc455608058029ecbadcef06
+index 0000000000000000000000000000000000000000..eed28844bf1435d0c6b958208b816355e9afccf9
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/frost_walker.json
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,123 @@
 +{
-+  "name": "Ледоход",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.frost_walker"
@@ -832,16 +826,16 @@ index 0000000000000000000000000000000000000000..1b12cfb2094fcb97dc455608058029ec
 +      {
 +        "effect": {},
 +        "requirements": {
-+          "condition": "minecraft:damage_source_properties",
++          "type": "minecraft:damage_source_properties",
 +          "predicate": {
 +            "tags": [
 +              {
 +                "expected": true,
-+                "id": "minecraft:burn_from_stepping"
++                "id": "#minecraft:burn_from_stepping"
 +              },
 +              {
 +                "expected": false,
-+                "id": "minecraft:bypasses_invulnerability"
++                "id": "#minecraft:bypasses_invulnerability"
 +              }
 +            ]
 +          }
@@ -853,12 +847,9 @@ index 0000000000000000000000000000000000000000..1b12cfb2094fcb97dc455608058029ec
 +        "effect": {
 +          "type": "minecraft:replace_disk",
 +          "block_state": {
-+            "type": "minecraft:simple_state_provider",
-+            "state": {
-+              "Name": "minecraft:frosted_ice",
-+              "Properties": {
-+                "age": "0"
-+              }
++            "id": "minecraft:frosted_ice",
++            "properties": {
++              "age": "0"
 +            }
 +          },
 +          "height": 1.0,
@@ -905,24 +896,24 @@ index 0000000000000000000000000000000000000000..1b12cfb2094fcb97dc455608058029ec
 +          "trigger_game_event": "minecraft:block_place"
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "flags": {
++                "minecraft:flags": {
 +                  "is_on_ground": true
 +                }
 +              }
 +            },
 +            {
-+              "condition": "minecraft:inverted",
++              "type": "minecraft:inverted",
 +              "term": {
-+                "condition": "minecraft:entity_properties",
++                "type": "minecraft:entity_properties",
 +                "entity": "this",
 +                "predicate": {
-+                  "vehicle": {}
++                  "minecraft:vehicle": {}
 +                }
 +              }
 +            }
@@ -945,16 +936,16 @@ index 0000000000000000000000000000000000000000..1b12cfb2094fcb97dc455608058029ec
 +    "feet"
 +  ],
 +  "supported_items": "#minecraft:enchantable/foot_armor",
-+  "weight": 2
++  "weight": 2,
++  "name": "Ледоход"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/impaling.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/impaling.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..9b51157bab07566d6b1248c1c3f5559b770d723d
+index 0000000000000000000000000000000000000000..64ddc1c40b6978c9819c5d52851935081dcb8384
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/impaling.json
 @@ -0,0 +1,43 @@
 +{
-+  "name": "Пронзатель",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.impaling"
@@ -971,10 +962,10 @@ index 0000000000000000000000000000000000000000..9b51157bab07566d6b1248c1c3f5559b
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "this",
 +          "predicate": {
-+            "type": "#minecraft:sensitive_to_impaling"
++            "minecraft:entity_type": "#minecraft:sensitive_to_impaling"
 +          }
 +        }
 +      }
@@ -994,16 +985,16 @@ index 0000000000000000000000000000000000000000..9b51157bab07566d6b1248c1c3f5559b
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/trident",
-+  "weight": 2
++  "weight": 2,
++  "name": "Пронзатель"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/infinity.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/infinity.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..90a2f52fffa976211a1484a2228072768897015f
+index 0000000000000000000000000000000000000000..2f70ddc0eac1b9d3d16dc07c3c5a6e3600d62863
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/infinity.json
 @@ -0,0 +1,38 @@
 +{
-+  "name": "Бесконечность",
 +  "anvil_cost": 8,
 +  "description": {
 +    "translate": "enchantment.minecraft.infinity"
@@ -1016,7 +1007,7 @@ index 0000000000000000000000000000000000000000..90a2f52fffa976211a1484a222807276
 +          "value": 0.0
 +        },
 +        "requirements": {
-+          "condition": "minecraft:match_tool",
++          "type": "minecraft:match_tool",
 +          "predicate": {
 +            "items": "minecraft:arrow"
 +          }
@@ -1038,7 +1029,8 @@ index 0000000000000000000000000000000000000000..90a2f52fffa976211a1484a222807276
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/bow",
-+  "weight": 1
++  "weight": 1,
++  "name": "Бесконечность"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/knockback.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/knockback.json
 new file mode 100644
@@ -1083,12 +1075,11 @@ index 0000000000000000000000000000000000000000..10b29b4a4bd377945e76c6204df18f0c
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/looting.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/looting.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..23ade4ef5d40558681b03fcd5cd4ae988024114c
+index 0000000000000000000000000000000000000000..307ed3cdbae047de23f9c8ee705709aef503d85e
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/looting.json
 @@ -0,0 +1,43 @@
 +{
-+  "name": "Добыча",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.looting"
@@ -1106,10 +1097,10 @@ index 0000000000000000000000000000000000000000..23ade4ef5d40558681b03fcd5cd4ae98
 +        },
 +        "enchanted": "attacker",
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "attacker",
 +          "predicate": {
-+            "type": "minecraft:player"
++            "minecraft:entity_type": "minecraft:player"
 +          }
 +        }
 +      }
@@ -1128,7 +1119,8 @@ index 0000000000000000000000000000000000000000..23ade4ef5d40558681b03fcd5cd4ae98
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/sword",
-+  "weight": 2
++  "weight": 2,
++  "name": "Добыча"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/loyalty.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/loyalty.json
 new file mode 100644
@@ -1214,12 +1206,11 @@ index 0000000000000000000000000000000000000000..d45203daf52ddf7e362d7b0743847dcc
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/lunge.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/lunge.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..36b157c7f5fbebeb6ffebce271acdf691e39679f
+index 0000000000000000000000000000000000000000..ada168ab6bf1d1ae563764bfa23689ba75137003
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/lunge.json
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,144 @@
 +{
-+  "name": "Рывок",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.lunge"
@@ -1273,35 +1264,74 @@ index 0000000000000000000000000000000000000000..36b157c7f5fbebeb6ffebce271acdf69
 +          ]
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "condition": "minecraft:inverted",
++              "type": "minecraft:inverted",
 +              "term": {
-+                "condition": "minecraft:entity_properties",
++                "type": "minecraft:entity_properties",
 +                "entity": "this",
 +                "predicate": {
-+                  "vehicle": {}
++                  "minecraft:vehicle": {}
 +                }
 +              }
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "flags": {
++                "minecraft:flags": {
 +                  "is_fall_flying": false
 +                }
 +              }
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "flags": {
++                "minecraft:flags": {
 +                  "is_in_water": false
 +                }
 +              }
++            },
++            {
++              "type": "minecraft:any_of",
++              "terms": [
++                {
++                  "type": "minecraft:inverted",
++                  "term": {
++                    "type": "minecraft:entity_properties",
++                    "entity": "this",
++                    "predicate": {
++                      "minecraft:type_specific/player": {}
++                    }
++                  }
++                },
++                {
++                  "type": "minecraft:entity_properties",
++                  "entity": "this",
++                  "predicate": {
++                    "minecraft:type_specific/player": {
++                      "gamemode": [
++                        "creative"
++                      ]
++                    }
++                  }
++                },
++                {
++                  "type": "minecraft:entity_properties",
++                  "entity": "this",
++                  "predicate": {
++                    "minecraft:type_specific/player": {
++                      "food": {
++                        "level": {
++                          "min": 7
++                        }
++                      }
++                    }
++                  }
++                }
++              ]
 +            }
 +          ]
 +        }
@@ -1321,7 +1351,8 @@ index 0000000000000000000000000000000000000000..36b157c7f5fbebeb6ffebce271acdf69
 +    "hand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/lunge",
-+  "weight": 5
++  "weight": 5,
++  "name": "Рывок"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/lure.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/lure.json
 new file mode 100644
@@ -1553,12 +1584,11 @@ index 0000000000000000000000000000000000000000..3d871d4c6943524f4f424d7151ba57bf
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/power.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/power.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..b6b6f0bca461b1dbb29994c4cd1ab9d3c1ac72ef
+index 0000000000000000000000000000000000000000..5c1e82d375ca4f8f7adced2eb2abc8a6391d72f4
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/power.json
 @@ -0,0 +1,42 @@
 +{
-+  "name": "Сила",
 +  "anvil_cost": 1,
 +  "description": {
 +    "translate": "enchantment.minecraft.power"
@@ -1575,10 +1605,10 @@ index 0000000000000000000000000000000000000000..b6b6f0bca461b1dbb29994c4cd1ab9d3
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "direct_attacker",
 +          "predicate": {
-+            "type": "#minecraft:arrows"
++            "minecraft:entity_type": "#minecraft:arrows"
 +          }
 +        }
 +      }
@@ -1597,16 +1627,16 @@ index 0000000000000000000000000000000000000000..b6b6f0bca461b1dbb29994c4cd1ab9d3
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/bow",
-+  "weight": 10
++  "weight": 10,
++  "name": "Сила"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/projectile_protection.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/projectile_protection.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..a77d224439aba1f60b047dccf3630c28a1b8c9f4
+index 0000000000000000000000000000000000000000..d80412adc32442feaa706c993f97594aa873cfb5
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/projectile_protection.json
 @@ -0,0 +1,51 @@
 +{
-+  "name": "Защита от снарядов",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.projectile_protection"
@@ -1623,16 +1653,16 @@ index 0000000000000000000000000000000000000000..a77d224439aba1f60b047dccf3630c28
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:damage_source_properties",
++          "type": "minecraft:damage_source_properties",
 +          "predicate": {
 +            "tags": [
 +              {
 +                "expected": true,
-+                "id": "minecraft:is_projectile"
++                "id": "#minecraft:is_projectile"
 +              },
 +              {
 +                "expected": false,
-+                "id": "minecraft:bypasses_invulnerability"
++                "id": "#minecraft:bypasses_invulnerability"
 +              }
 +            ]
 +          }
@@ -1654,16 +1684,16 @@ index 0000000000000000000000000000000000000000..a77d224439aba1f60b047dccf3630c28
 +    "armor"
 +  ],
 +  "supported_items": "#minecraft:enchantable/armor",
-+  "weight": 5
++  "weight": 5,
++  "name": "Защита от снарядов"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/protection.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/protection.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..49e429fc7d4f8d92b78e93478ddf3077d499d4e3
+index 0000000000000000000000000000000000000000..00dc287072d758c4022bf6f8ab1f925f21dab372
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/protection.json
 @@ -0,0 +1,47 @@
 +{
-+  "name": "Защита",
 +  "anvil_cost": 1,
 +  "description": {
 +    "translate": "enchantment.minecraft.protection"
@@ -1680,12 +1710,12 @@ index 0000000000000000000000000000000000000000..49e429fc7d4f8d92b78e93478ddf3077
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:damage_source_properties",
++          "type": "minecraft:damage_source_properties",
 +          "predicate": {
 +            "tags": [
 +              {
 +                "expected": false,
-+                "id": "minecraft:bypasses_invulnerability"
++                "id": "#minecraft:bypasses_invulnerability"
 +              }
 +            ]
 +          }
@@ -1707,16 +1737,16 @@ index 0000000000000000000000000000000000000000..49e429fc7d4f8d92b78e93478ddf3077
 +    "armor"
 +  ],
 +  "supported_items": "#minecraft:enchantable/armor",
-+  "weight": 10
++  "weight": 10,
++  "name": "Защита"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/punch.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/punch.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..87af437ec19636184efaaf00cb498804c103cd7c
+index 0000000000000000000000000000000000000000..15876e90a8796dc131a978c997fd6df440d9e979
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/punch.json
 @@ -0,0 +1,42 @@
 +{
-+  "name": "Откидывание",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.punch"
@@ -1733,10 +1763,10 @@ index 0000000000000000000000000000000000000000..87af437ec19636184efaaf00cb498804
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "direct_attacker",
 +          "predicate": {
-+            "type": "#minecraft:arrows"
++            "minecraft:entity_type": "#minecraft:arrows"
 +          }
 +        }
 +      }
@@ -1755,7 +1785,8 @@ index 0000000000000000000000000000000000000000..87af437ec19636184efaaf00cb498804
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/bow",
-+  "weight": 2
++  "weight": 2,
++  "name": "Откидывание"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/quick_charge.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/quick_charge.json
 new file mode 100644
@@ -2057,12 +2088,11 @@ index 0000000000000000000000000000000000000000..5dae408b4f2da3d798bd9f9532023b53
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/smite.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/smite.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..d27270daa9e795951113d911398c1fa48f395ad8
+index 0000000000000000000000000000000000000000..705de9a871cb19ae1e7ed816b5cd69e2e2959dd6
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/smite.json
 @@ -0,0 +1,44 @@
 +{
-+  "name": "Небесная кара",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.smite"
@@ -2079,10 +2109,10 @@ index 0000000000000000000000000000000000000000..d27270daa9e795951113d911398c1fa4
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "this",
 +          "predicate": {
-+            "type": "#minecraft:sensitive_to_smite"
++            "minecraft:entity_type": "#minecraft:sensitive_to_smite"
 +          }
 +        }
 +      }
@@ -2103,16 +2133,16 @@ index 0000000000000000000000000000000000000000..d27270daa9e795951113d911398c1fa4
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/weapon",
-+  "weight": 5
++  "weight": 5,
++  "name": "Небесная кара"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/soul_speed.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/soul_speed.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834a3704b80
+index 0000000000000000000000000000000000000000..3ef4f8e73f6989a638ecca19b8519fab2ec604f0
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/soul_speed.json
 @@ -0,0 +1,255 @@
 +{
-+  "name": "Скорость души",
 +  "anvil_cost": 8,
 +  "description": {
 +    "translate": "enchantment.minecraft.soul_speed"
@@ -2144,45 +2174,45 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +          ]
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "condition": "minecraft:inverted",
++              "type": "minecraft:inverted",
 +              "term": {
-+                "condition": "minecraft:entity_properties",
++                "type": "minecraft:entity_properties",
 +                "entity": "this",
 +                "predicate": {
-+                  "vehicle": {}
++                  "minecraft:vehicle": {}
 +                }
 +              }
 +            },
 +            {
-+              "condition": "minecraft:any_of",
++              "type": "minecraft:any_of",
 +              "terms": [
 +                {
-+                  "condition": "minecraft:all_of",
++                  "type": "minecraft:all_of",
 +                  "terms": [
 +                    {
-+                      "active": true,
-+                      "condition": "minecraft:enchantment_active_check"
++                      "type": "minecraft:enchantment_active_check",
++                      "active": true
 +                    },
 +                    {
-+                      "condition": "minecraft:entity_properties",
++                      "type": "minecraft:entity_properties",
 +                      "entity": "this",
 +                      "predicate": {
-+                        "flags": {
++                        "minecraft:flags": {
 +                          "is_flying": false
 +                        }
 +                      }
 +                    },
 +                    {
-+                      "condition": "minecraft:any_of",
++                      "type": "minecraft:any_of",
 +                      "terms": [
 +                        {
-+                          "condition": "minecraft:entity_properties",
++                          "type": "minecraft:entity_properties",
 +                          "entity": "this",
 +                          "predicate": {
-+                            "movement_affected_by": {
++                            "minecraft:movement_affected_by": {
 +                              "block": {
 +                                "blocks": "#minecraft:soul_speed_blocks"
 +                              }
@@ -2190,10 +2220,10 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +                          }
 +                        },
 +                        {
-+                          "condition": "minecraft:entity_properties",
++                          "type": "minecraft:entity_properties",
 +                          "entity": "this",
 +                          "predicate": {
-+                            "flags": {
++                            "minecraft:flags": {
 +                              "is_on_ground": false
 +                            }
 +                          }
@@ -2203,20 +2233,20 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +                  ]
 +                },
 +                {
-+                  "condition": "minecraft:all_of",
++                  "type": "minecraft:all_of",
 +                  "terms": [
 +                    {
-+                      "active": false,
-+                      "condition": "minecraft:enchantment_active_check"
++                      "type": "minecraft:enchantment_active_check",
++                      "active": false
 +                    },
 +                    {
-+                      "condition": "minecraft:entity_properties",
++                      "type": "minecraft:entity_properties",
 +                      "entity": "this",
 +                      "predicate": {
-+                        "flags": {
++                        "minecraft:flags": {
 +                          "is_flying": false
 +                        },
-+                        "movement_affected_by": {
++                        "minecraft:movement_affected_by": {
 +                          "block": {
 +                            "blocks": "#minecraft:soul_speed_blocks"
 +                          }
@@ -2236,23 +2266,23 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +          "amount": 1.0
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
++              "type": "minecraft:random_chance",
 +              "chance": {
 +                "type": "minecraft:enchantment_level",
 +                "amount": 0.04
-+              },
-+              "condition": "minecraft:random_chance"
++              }
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "flags": {
++                "minecraft:flags": {
 +                  "is_on_ground": true
 +                },
-+                "movement_affected_by": {
++                "minecraft:movement_affected_by": {
 +                  "block": {
 +                    "blocks": "#minecraft:soul_speed_blocks"
 +                  }
@@ -2286,24 +2316,24 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "this",
 +          "predicate": {
-+            "flags": {
++            "minecraft:flags": {
 +              "is_flying": false,
 +              "is_on_ground": true
 +            },
-+            "movement": {
++            "minecraft:movement": {
 +              "horizontal_speed": {
-+                "min": 9.999999747378752E-6
++                "min": 9.999999747378752e-06
 +              }
 +            },
-+            "movement_affected_by": {
++            "minecraft:movement_affected_by": {
 +              "block": {
 +                "blocks": "#minecraft:soul_speed_blocks"
 +              }
 +            },
-+            "periodic_tick": 5
++            "minecraft:periodic_tick": 5
 +          }
 +        }
 +      },
@@ -2319,31 +2349,31 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +          "volume": 0.6
 +        },
 +        "requirements": {
-+          "condition": "minecraft:all_of",
++          "type": "minecraft:all_of",
 +          "terms": [
 +            {
-+              "chance": 0.35,
-+              "condition": "minecraft:random_chance"
++              "type": "minecraft:random_chance",
++              "chance": 0.35
 +            },
 +            {
-+              "condition": "minecraft:entity_properties",
++              "type": "minecraft:entity_properties",
 +              "entity": "this",
 +              "predicate": {
-+                "flags": {
++                "minecraft:flags": {
 +                  "is_flying": false,
 +                  "is_on_ground": true
 +                },
-+                "movement": {
++                "minecraft:movement": {
 +                  "horizontal_speed": {
-+                    "min": 9.999999747378752E-6
++                    "min": 9.999999747378752e-06
 +                  }
 +                },
-+                "movement_affected_by": {
++                "minecraft:movement_affected_by": {
 +                  "block": {
 +                    "blocks": "#minecraft:soul_speed_blocks"
 +                  }
 +                },
-+                "periodic_tick": 5
++                "minecraft:periodic_tick": 5
 +              }
 +            }
 +          ]
@@ -2364,7 +2394,8 @@ index 0000000000000000000000000000000000000000..5a35c95e888b494d99f045adb2bf5834
 +    "feet"
 +  ],
 +  "supported_items": "#minecraft:enchantable/foot_armor",
-+  "weight": 1
++  "weight": 1,
++  "name": "Скорость души"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/sweeping_edge.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/sweeping_edge.json
 new file mode 100644
@@ -2458,12 +2489,11 @@ index 0000000000000000000000000000000000000000..7e123d7a7417b0e9ec32ca20f62247d8
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/thorns.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/thorns.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..ebf6325639c50acf711c166d6ea14f8b38446813
+index 0000000000000000000000000000000000000000..39b244cb0da55dc681ba9b426543416204830e4b
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/thorns.json
 @@ -0,0 +1,56 @@
 +{
-+  "name": "Шипы",
 +  "anvil_cost": 8,
 +  "description": {
 +    "translate": "enchantment.minecraft.thorns"
@@ -2489,6 +2519,7 @@ index 0000000000000000000000000000000000000000..ebf6325639c50acf711c166d6ea14f8b
 +        },
 +        "enchanted": "victim",
 +        "requirements": {
++          "type": "minecraft:random_chance",
 +          "chance": {
 +            "type": "minecraft:enchantment_level",
 +            "amount": {
@@ -2496,8 +2527,7 @@ index 0000000000000000000000000000000000000000..ebf6325639c50acf711c166d6ea14f8b
 +              "base": 0.15,
 +              "per_level_above_first": 0.15
 +            }
-+          },
-+          "condition": "minecraft:random_chance"
++          }
 +        }
 +      }
 +    ]
@@ -2516,16 +2546,16 @@ index 0000000000000000000000000000000000000000..ebf6325639c50acf711c166d6ea14f8b
 +    "any"
 +  ],
 +  "supported_items": "#minecraft:enchantable/armor",
-+  "weight": 1
++  "weight": 1,
++  "name": "Шипы"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/unbreaking.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/unbreaking.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..32a9ada50758deaf1de22fa7573bce43e7a5718d
+index 0000000000000000000000000000000000000000..da1bf95511cc3c18383ca9cc136b315a8f17cb9b
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/unbreaking.json
 @@ -0,0 +1,76 @@
 +{
-+  "name": "Прочность",
 +  "anvil_cost": 2,
 +  "description": {
 +    "translate": "enchantment.minecraft.unbreaking"
@@ -2550,7 +2580,7 @@ index 0000000000000000000000000000000000000000..32a9ada50758deaf1de22fa7573bce43
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:match_tool",
++          "type": "minecraft:match_tool",
 +          "predicate": {
 +            "items": "#minecraft:enchantable/armor"
 +          }
@@ -2574,9 +2604,9 @@ index 0000000000000000000000000000000000000000..32a9ada50758deaf1de22fa7573bce43
 +          }
 +        },
 +        "requirements": {
-+          "condition": "minecraft:inverted",
++          "type": "minecraft:inverted",
 +          "term": {
-+            "condition": "minecraft:match_tool",
++            "type": "minecraft:match_tool",
 +            "predicate": {
 +              "items": "#minecraft:enchantable/armor"
 +            }
@@ -2598,7 +2628,8 @@ index 0000000000000000000000000000000000000000..32a9ada50758deaf1de22fa7573bce43
 +    "any"
 +  ],
 +  "supported_items": "#minecraft:enchantable/durability",
-+  "weight": 5
++  "weight": 5,
++  "name": "Прочность"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/vanishing_curse.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/vanishing_curse.json
 new file mode 100644
@@ -2632,12 +2663,11 @@ index 0000000000000000000000000000000000000000..b4ba24c07a7a62f5a72802ce36a31fc1
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/wind_burst.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/wind_burst.json
 new file mode 100644
-index 0000000000000000000000000000000000000000..9e3d27b2ac7da33c303712748e2c43834bf432ed
+index 0000000000000000000000000000000000000000..005cbf1a707608fa94d717c598e609f6c2724f82
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/enchantment/wind_burst.json
 @@ -0,0 +1,69 @@
 +{
-+  "name": "Порыв ветра",
 +  "anvil_cost": 4,
 +  "description": {
 +    "translate": "enchantment.minecraft.wind_burst"
@@ -2674,13 +2704,13 @@ index 0000000000000000000000000000000000000000..9e3d27b2ac7da33c303712748e2c4383
 +        },
 +        "enchanted": "attacker",
 +        "requirements": {
-+          "condition": "minecraft:entity_properties",
++          "type": "minecraft:entity_properties",
 +          "entity": "direct_attacker",
 +          "predicate": {
-+            "flags": {
++            "minecraft:flags": {
 +              "is_flying": false
 +            },
-+            "movement": {
++            "minecraft:movement": {
 +              "fall_distance": {
 +                "min": 1.5
 +              }
@@ -2703,7 +2733,8 @@ index 0000000000000000000000000000000000000000..9e3d27b2ac7da33c303712748e2c4383
 +    "mainhand"
 +  ],
 +  "supported_items": "#minecraft:enchantable/mace",
-+  "weight": 1
++  "weight": 1,
++  "name": "Порыв ветра"
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/tags/enchantment/non_treasure.json b/src/main/resources/data/minecraft/datapacks/custom_enchantments/data/minecraft/tags/enchantment/non_treasure.json
 new file mode 100644
@@ -3150,13 +3181,14 @@ index 0000000000000000000000000000000000000000..67f97c25ed442fd3f9656eb724e46b38
 +}
 diff --git a/src/main/resources/data/minecraft/datapacks/custom_enchantments/pack.mcmeta b/src/main/resources/data/minecraft/datapacks/custom_enchantments/pack.mcmeta
 new file mode 100644
-index 0000000000000000000000000000000000000000..3095103510c76987671d233401c5767783602c1f
+index 0000000000000000000000000000000000000000..fa3e13870410de07323b1b31251b030865aa617d
 --- /dev/null
 +++ b/src/main/resources/data/minecraft/datapacks/custom_enchantments/pack.mcmeta
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,7 @@
 +{
 +    "pack": {
 +        "description": "Built-in MineComplex Datapack",
-+        "pack_format": 81
++        "min_format": 121,
++        "max_format": 121
 +    }
 +}

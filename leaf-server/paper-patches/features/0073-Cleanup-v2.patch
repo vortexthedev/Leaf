@@ -1,0 +1,674 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sigam <sigamatute@gmail.com>
+Date: Sun, 18 Oct 2026 18:50:59 +0300
+Subject: [PATCH] Cleanup v2
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
+index c9969013edacde98bf82569d658a3ab10a6a9c55..d56d6e93e06ced2c2bf66562b5c954dc21efc779 100644
+--- a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
++++ b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
+@@ -73,14 +73,6 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
+         copyProfileProperties(resolvableProfile.partialProfile(), this.profile);
+     }
+ 
+-    // Leaf start - Configurable vanilla username check
+-    public CraftPlayerProfile(UUID id, String name, boolean useCustomValidation) {
+-        this.profile = createAuthLibProfile(id, name, useCustomValidation);
+-        this.emptyName = name == null;
+-        this.emptyUUID = id == null;
+-    }
+-    // Leaf end - Configurable vanilla username check
+-
+     @Override
+     public boolean hasProperty(String property) {
+         return profile.properties().containsKey(property);
+@@ -218,15 +210,6 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
+         clone.setProperties(getProperties());
+         return clone;
+     }
+-
+-    // Leaf start - Configurable vanilla username check
+-    public CraftPlayerProfile cloneCustom() {
+-        CraftPlayerProfile clone = new CraftPlayerProfile(this.getId(), this.getName(), org.dreeam.leaf.config.modules.misc.VanillaUsernameCheck.useUsernameRegex);
+-        clone.setProperties(getProperties());
+-        return clone;
+-    }
+-    // Leaf end - Configurable vanilla username check
+-
+     @Override
+     public boolean isComplete() {
+         return this.getId() != null && StringUtils.isNotBlank(this.getName());
+@@ -346,10 +329,8 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
+         }
+     }
+ 
+-    // Leaf start - Configurable vanilla username check
+-    private static GameProfile createAuthLibProfile(UUID uniqueId, String name, boolean useCustomValidation) {
+-        Preconditions.checkArgument(name == null || name.length() <= 16, "Name cannot be longer than 16 characters");
+-        Preconditions.checkArgument(name == null || (useCustomValidation ? StringUtil.isReasonablePlayerName(name) : StringUtil.isValidPlayerName(name)), "The name of the profile contains invalid characters: %s", name);
++    private static GameProfile createAuthLibProfile(UUID uniqueId, String name) {
++        Preconditions.checkArgument(StringUtil.isValidPlayerName(name), "The name of the profile is invalid: %s", name);
+         return new GameProfile(
+             uniqueId != null ? uniqueId : Util.NIL_UUID,
+             name != null ? name : "",
+@@ -357,11 +338,6 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
+         );
+     }
+ 
+-    private static GameProfile createAuthLibProfile(UUID uniqueId, String name) {
+-        return createAuthLibProfile(uniqueId, name, false);
+-    }
+-    // Leaf end - Configurable vanilla username check
+-
+     private static ProfileProperty toBukkit(Property property) {
+         return new ProfileProperty(property.name(), property.value(), property.signature());
+     }
+@@ -374,13 +350,6 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
+         return new Property(property.getName(), property.getValue(), property.getSignature());
+     }
+ 
+-    // Leaf start - Configurable vanilla username check
+-    public static GameProfile asAuthlibCopyCustomValidation(PlayerProfile profile) {
+-        CraftPlayerProfile craft = ((CraftPlayerProfile) profile);
+-        return asAuthlibCopy(craft.cloneCustom());
+-    }
+-    // Leaf end - Configurable vanilla username check
+-
+     public static GameProfile asAuthlibCopy(PlayerProfile profile) {
+         CraftPlayerProfile craft = ((CraftPlayerProfile) profile);
+         return craft.getGameProfile();
+diff --git a/src/main/java/io/papermc/paper/PaperServerInternalAPIBridge.java b/src/main/java/io/papermc/paper/PaperServerInternalAPIBridge.java
+index 4a9b72b5c221fce9c8d7d8ab9d631e9207db6561..20cb319e4b6a1faabc237a28e753b036970952ef 100644
+--- a/src/main/java/io/papermc/paper/PaperServerInternalAPIBridge.java
++++ b/src/main/java/io/papermc/paper/PaperServerInternalAPIBridge.java
+@@ -1,9 +1,7 @@
+ package io.papermc.paper;
+ 
+ import com.destroystokyo.paper.PaperSkinParts;
+-import com.destroystokyo.paper.PaperVersionFetcher;
+ import com.destroystokyo.paper.SkinParts;
+-import com.destroystokyo.paper.util.VersionFetcher;
+ import com.google.common.base.Preconditions;
+ import com.mojang.brigadier.exceptions.CommandSyntaxException;
+ import io.papermc.paper.adventure.PaperAdventure;
+@@ -190,11 +188,6 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
+         return CraftSpawnCategory.toBukkit(CraftEntityType.bukkitToMinecraft(entityType).getCategory());
+     }
+ 
+-    @Override
+-    public VersionFetcher getVersionFetcher() {
+-        return new org.dreeam.leaf.version.LeafVersionFetcher(); // Leaf - Rebrand
+-    }
+-
+     @Override
+     public ItemStack deserializeItem(final byte[] data) {
+         CompoundTag tag = MCUtil.deserializeTagFromBytes(data);
+diff --git a/src/main/java/io/papermc/paper/adventure/ChatProcessor.java b/src/main/java/io/papermc/paper/adventure/ChatProcessor.java
+index 765eacdc673f54bfcf8889d113e99567724af347..6538caa296dc5bdb9b48f3af6f67e648c46c0a0a 100644
+--- a/src/main/java/io/papermc/paper/adventure/ChatProcessor.java
++++ b/src/main/java/io/papermc/paper/adventure/ChatProcessor.java
+@@ -307,7 +307,7 @@ public final class ChatProcessor {
+             if (viewer instanceof ConsoleCommandSender) {
+                 this.sendToServer(chatType, msgFunction);
+             } else if (viewer instanceof CraftPlayer craftPlayer) {
+-                craftPlayer.getHandle().sendChatMessage(ChatProcessor.this.outgoing, ChatProcessor.this.player.shouldFilterMessageTo(craftPlayer.getHandle()), chatType, Optionull.map(msgFunction, f -> f.apply(viewer)));
++                craftPlayer.getHandle().sendChatMessage(ChatProcessor.this.outgoing, chatType, Optionull.map(msgFunction, f -> f.apply(viewer)));
+             } else if (viewer instanceof ForwardingAudience.Single single) {
+                 this.sendNative(single.audience(), chatType, msgFunction);
+             } else {
+diff --git a/src/main/java/io/papermc/paper/configuration/Configurations.java b/src/main/java/io/papermc/paper/configuration/Configurations.java
+index c4a9fc7871959bfb92107f54d6b4554e255a3f1f..6281e7ee1caf013b261bb2696a5e97423ad2cd43 100644
+--- a/src/main/java/io/papermc/paper/configuration/Configurations.java
++++ b/src/main/java/io/papermc/paper/configuration/Configurations.java
+@@ -127,7 +127,6 @@ public abstract class Configurations<G, W> {
+         if (Files.notExists(configFile)) {
+             node = CommentedConfigurationNode.root(loader.defaultOptions());
+             node.node(Configuration.VERSION_FIELD).raw(this.globalConfigVersion());
+-            GlobalConfiguration.isFirstStart = true;
+         } else {
+             node = loader.load();
+             this.verifyGlobalConfigVersion(node);
+diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+index 4f557fd0454e881e6d68a090240866447cb17b81..c99b9f46a24ffb1443c8420e30b7b83f3b1f6b78 100644
+--- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
++++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
+@@ -30,7 +30,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+     private static final Logger LOGGER = LogUtils.getLogger();
+     static final int CURRENT_VERSION = 31; // (when you change the version, change the comment, so it conflicts on rebases): allow-nether property to config
+     private static GlobalConfiguration instance;
+-    public static boolean isFirstStart = false;
+     public static GlobalConfiguration get() {
+         return instance;
+     }
+@@ -127,7 +126,6 @@ public class GlobalConfiguration extends ConfigurationPart {
+                 }
+             }
+         }
+-        public boolean proxyProtocol = false;
+         public boolean isProxyOnlineMode() {
+             return org.bukkit.Bukkit.getOnlineMode() || (this.velocity.enabled && this.velocity.onlineMode);
+         }
+@@ -226,35 +224,8 @@ public class GlobalConfiguration extends ConfigurationPart {
+         public boolean resolveSelectorsInBooks = false;
+     }
+ 
+-    public PacketLimiter packetLimiter;
+-
+-    public class PacketLimiter extends ConfigurationPart {
+-        public Component kickMessage = Component.translatable("disconnect.exceeded_packet_rate", NamedTextColor.RED);
+-        public PacketLimit allPackets = new PacketLimit(7.0, 500.0, PacketLimit.ViolateAction.KICK);
+-        public Map<@WriteKeyBack Class<? extends Packet<?>>, PacketLimit> overrides = Map.of(ServerboundPlaceRecipePacket.class, new PacketLimit(4.0, 5.0, PacketLimit.ViolateAction.DROP));
+-
+-        @ConfigSerializable
+-        public record PacketLimit(@Required double interval, @Required double maxPacketRate, ViolateAction action) {
+-            public PacketLimit(final double interval, final double maxPacketRate, final @Nullable ViolateAction action) {
+-                this.interval = interval;
+-                this.maxPacketRate = maxPacketRate;
+-                this.action = Objects.requireNonNullElse(action, ViolateAction.KICK);
+-            }
+-
+-            public boolean isEnabled() {
+-                return this.interval > 0.0 && this.maxPacketRate > 0.0;
+-            }
+-
+-            public enum ViolateAction {
+-                KICK,
+-                DROP;
+-            }
+-        }
+-    }
+-
+     public PlayerAutoSave playerAutoSave;
+ 
+-
+     public class PlayerAutoSave extends ConfigurationPart {
+         public int rate = -1;
+         private int maxPerTick = -1;
+diff --git a/src/main/java/io/papermc/paper/configuration/mapping/InnerClassFieldDiscoverer.java b/src/main/java/io/papermc/paper/configuration/mapping/InnerClassFieldDiscoverer.java
+index db23f74b4c02c43ab42cf8db15c400eedf35d343..e3f8d174a93a99be925defed4fe9748f53099f65 100644
+--- a/src/main/java/io/papermc/paper/configuration/mapping/InnerClassFieldDiscoverer.java
++++ b/src/main/java/io/papermc/paper/configuration/mapping/InnerClassFieldDiscoverer.java
+@@ -101,7 +101,6 @@ public final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Fiel
+     public static FieldDiscoverer<?> galeWorldConfig(final io.papermc.paper.configuration.Configurations.ContextMap contextMap, final List<Definition<?, ?, ? extends FieldProcessor.Factory<?, ?>>> fieldProcessors) {
+         final Map<Class<?>, Object> overrides = Map.of(
+             org.galemc.gale.configuration.GaleWorldConfiguration.class, new org.galemc.gale.configuration.GaleWorldConfiguration(
+-                contextMap.require(io.papermc.paper.configuration.PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get(),
+                 contextMap.require(io.papermc.paper.configuration.Configurations.WORLD_KEY)
+             )
+         );
+diff --git a/src/main/java/io/papermc/paper/connection/PaperCommonConnection.java b/src/main/java/io/papermc/paper/connection/PaperCommonConnection.java
+index 5cc97ae87c1d4d84ed8f9d780897a25a060ab521..b74d3e96580bb3ff446e1925b2504ee960a5e427 100644
+--- a/src/main/java/io/papermc/paper/connection/PaperCommonConnection.java
++++ b/src/main/java/io/papermc/paper/connection/PaperCommonConnection.java
+@@ -100,11 +100,6 @@ public abstract class PaperCommonConnection<T extends ServerCommonPacketListener
+         return this.packetListener.connection.virtualHost;
+     }
+ 
+-    @Override
+-    public @Nullable InetSocketAddress getHAProxyAddress() {
+-        return this.packetListener.connection.haProxyAddress instanceof final InetSocketAddress inetSocketAddress ? inetSocketAddress : null;
+-    }
+-
+     @Override
+     public void storeCookie(final NamespacedKey key, final byte[] value) {
+         Preconditions.checkArgument(key != null, "Cookie key cannot be null");
+diff --git a/src/main/java/io/papermc/paper/connection/PaperPlayerLoginConnection.java b/src/main/java/io/papermc/paper/connection/PaperPlayerLoginConnection.java
+index 6fcaa17ff5d9f9b77e166732cae151d728d8bb51..190844011e2f62e4ab06a502788bc96194e2ce05 100644
+--- a/src/main/java/io/papermc/paper/connection/PaperPlayerLoginConnection.java
++++ b/src/main/java/io/papermc/paper/connection/PaperPlayerLoginConnection.java
+@@ -47,11 +47,6 @@ public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionIm
+         return this.packetListener.connection.virtualHost;
+     }
+ 
+-    @Override
+-    public @org.jspecify.annotations.Nullable InetSocketAddress getHAProxyAddress() {
+-        return this.packetListener.connection.haProxyAddress instanceof final InetSocketAddress inetSocketAddress ? inetSocketAddress : null;
+-    }
+-
+     @Override
+     public boolean isTransferred() {
+         return this.packetListener.transferred;
+diff --git a/src/main/java/io/papermc/paper/datacomponent/item/PaperResolvableProfile.java b/src/main/java/io/papermc/paper/datacomponent/item/PaperResolvableProfile.java
+index ecafbf6ea8b237e734907a80f8795648f357427c..202be7f3dee64341eb45acf10efd04bfebf5d0d4 100644
+--- a/src/main/java/io/papermc/paper/datacomponent/item/PaperResolvableProfile.java
++++ b/src/main/java/io/papermc/paper/datacomponent/item/PaperResolvableProfile.java
+@@ -178,8 +178,7 @@ public record PaperResolvableProfile(
+         @Override
+         public ResolvableProfile.Builder name(final @Nullable String name) {
+             if (name != null) {
+-                Preconditions.checkArgument(name.length() <= 16, "name cannot be more than 16 characters, was %s", name.length());
+-                Preconditions.checkArgument(StringUtil.isValidPlayerName(name), "name cannot include invalid characters, was %s", name);
++                Preconditions.checkArgument(StringUtil.isValidPlayerName(name), "name is invalid, was %s", name);
+             }
+             this.name = name;
+             return this;
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 8599c979af1cd1ae955030c5ffc259f807fd1d52..06402e1243120978107182ed46856b79bf0597ad 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -114,24 +114,9 @@ import net.minecraft.world.level.storage.PlayerDataStorage;
+ import net.minecraft.world.level.storage.PrimaryLevelData;
+ import net.minecraft.world.level.storage.SavedDataStorage;
+ import org.apache.commons.lang3.StringUtils;
+-import org.bukkit.BanList;
+-import org.bukkit.Bukkit;
+-import org.bukkit.GameMode;
+-import org.bukkit.Keyed;
+-import org.bukkit.Location;
+-import org.bukkit.NamespacedKey;
+-import org.bukkit.OfflinePlayer;
+-import org.bukkit.Registry;
+-import org.bukkit.Server;
+-import org.bukkit.ServerLinks;
+-import org.bukkit.ServerTickManager;
+-import org.bukkit.StructureType;
+-import org.bukkit.UnsafeValues;
++import org.bukkit.*;
+ import org.bukkit.Warning.WarningState;
+-import org.bukkit.World;
+ import org.bukkit.World.Environment;
+-import org.bukkit.WorldBorder;
+-import org.bukkit.WorldCreator;
+ import org.bukkit.block.BlockType;
+ import org.bukkit.block.data.BlockData;
+ import org.bukkit.boss.BarColor;
+@@ -233,8 +218,11 @@ import org.bukkit.scoreboard.Criteria;
+ import org.bukkit.structure.StructureManager;
+ import org.bukkit.util.permissions.DefaultPermissions;
+ import org.jetbrains.annotations.ApiStatus;
++import org.dreeam.leaf.config.LeafConfig;
++import org.dreeam.leaf.misc.EmptyChunkGenerator;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import org.purpurmc.purpur.PurpurConfig;
+ import org.yaml.snakeyaml.LoaderOptions;
+ import org.yaml.snakeyaml.Yaml;
+ import org.yaml.snakeyaml.constructor.SafeConstructor;
+@@ -258,7 +246,6 @@ public final class CraftServer implements Server {
+     private final Map<String, World> worlds = new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>(); // Leaf - Replace world map with optimized collection
+     private final it.unimi.dsi.fastutil.objects.Object2ObjectMap<UUID, World> worldsByUUID = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(); // Gale - MultiPaper - CraftBukkit UUID to world map
+     private YamlConfiguration configuration;
+-    private final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+     private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap();
+     private final EntityMetadataStore entityMetadata = new EntityMetadataStore();
+     private final PlayerMetadataStore playerMetadata = new PlayerMetadataStore();
+@@ -424,10 +411,8 @@ public final class CraftServer implements Server {
+         java.util.Arrays.fill(spawnCategoryLimit, -1); // Leaf - optimize mob spawning
+         this.overrideSpawnLimits();
+         console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
+-        this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
++        this.warningState = WarningState.DEFAULT;
+         TicketType.PLUGIN_TYPE_TIMEOUT = this.configuration.getInt("chunk-gc.period-in-ticks");
+-        this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
+-        this.loadIcon();
+         this.loadCompatibilities();
+         CraftMagicNumbers.INSTANCE.getCommodore().updateReroute(activeCompatibilities::contains);
+ 
+@@ -898,6 +883,44 @@ public final class CraftServer implements Server {
+         }
+     }
+ 
++    public void reloadConfigs(CommandSender sender) {
++        console.server.reloadCount++;
++
++        configuration = YamlConfiguration.loadConfiguration(getConfigFile());
++        console.settings = new DedicatedServerSettings(console.options);
++        overrideSpawnLimits();
++        warningState = Warning.WarningState.DEFAULT;
++        TicketType.PLUGIN_TYPE_TIMEOUT = configuration.getInt("chunk-gc.period-in-ticks");
++        console.autosavePeriod = configuration.getInt("ticks-per.autosave");
++
++        console.paperConfigurations.reloadConfigs(console);
++        org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings"));
++        PurpurConfig.init((File) console.options.valueOf("purpur-settings"));
++        console.galeConfigurations.reloadConfigs(console);
++
++        for (ServerLevel world : console.getAllLevels()) {
++            world.setSpawnSettings(world.isSpawningMonsters()); // Paper - per level difficulty (from MinecraftServer#setDifficulty(ServerLevel, Difficulty, boolean))
++
++            for (SpawnCategory spawnCategory : SpawnCategory.values()) {
++                if (CraftSpawnCategory.isValidForLimits(spawnCategory)) {
++                    long ticksPerCategorySpawn = Bukkit.getTicksPerSpawns(spawnCategory);
++                    if (ticksPerCategorySpawn < 0) {
++                        world.ticksPerSpawnCategory.put(spawnCategory, CraftSpawnCategory.getDefaultTicksPerSpawn(spawnCategory));
++                    } else {
++                        world.ticksPerSpawnCategory.put(spawnCategory, ticksPerCategorySpawn);
++                    }
++                }
++            }
++            world.spigotConfig.init();
++            world.purpurConfig.init();
++            world.resetBreedingCooldowns(); // Purpur - Add adjustable breeding cooldown to config
++        }
++
++        LeafConfig.reloadAsync(sender);
++
++        console.server.reloadCount++;
++    }
++
+     @Override
+     public void reload() {
+         // Paper start - lifecycle events
+@@ -908,17 +931,12 @@ public final class CraftServer implements Server {
+         org.spigotmc.WatchdogThread.hasStarted = false; // Paper - Disable watchdog early timeout on reload
+         this.reloadCount++;
+         this.configuration = YamlConfiguration.loadConfiguration(this.getConfigFile());
+-
+         this.console.settings = new DedicatedServerSettings(this.console.options);
+-        DedicatedServerProperties config = this.console.settings.getProperties();
+-
+         this.overrideSpawnLimits();
+-        this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
++        this.warningState = WarningState.DEFAULT;
+         TicketType.PLUGIN_TYPE_TIMEOUT = this.configuration.getInt("chunk-gc.period-in-ticks");
+-        this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
+         this.printSaveWarning = false;
+         this.console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
+-        this.loadIcon();
+         this.loadCompatibilities();
+         CraftMagicNumbers.INSTANCE.getCommodore().updateReroute(activeCompatibilities::contains);
+ 
+@@ -980,7 +998,6 @@ public final class CraftServer implements Server {
+                 plugin.getDescription().getFullName(),
+                 "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
+             ));
+-            if (console.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread(worker.getThread(), "still running"); // Paper - Debugging
+         }
+         io.papermc.paper.plugin.PluginInitializerManager.reload(this.console); // Paper
+         this.loadPlugins();
+@@ -1025,7 +1042,6 @@ public final class CraftServer implements Server {
+                 getLogger().log(Level.SEVERE, "  " + element);
+             }
+             // Gale end - Airplane - print stack trace for plugins not shutting down tasks
+-            if (console.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread(worker.getThread(), "still running"); // Paper - Debugging
+         }
+     }
+     // Paper end - Wait for Async Tasks during shutdown
+@@ -1047,18 +1063,6 @@ public final class CraftServer implements Server {
+     }
+     // Paper end - API for updating recipes on clients
+ 
+-    private void loadIcon() {
+-        this.icon = new CraftIconCache(null);
+-        try {
+-            final File file = new File(new File("."), "server-icon.png");
+-            if (file.isFile()) {
+-                this.icon = CraftServer.loadServerIcon0(file);
+-            }
+-        } catch (Exception ex) {
+-            this.getLogger().log(Level.WARNING, "Couldn't load server icon", ex);
+-        }
+-    }
+-
+     @Override
+     public String toString() {
+         return "CraftServer{" + "serverName=" + this.serverName + ",serverVersion=" + this.serverVersion + ",minecraftVersion=" + this.console.getServerVersion() + '}';
+@@ -1687,22 +1691,26 @@ public final class CraftServer implements Server {
+                 String name = section.getString("generator");
+ 
+                 if (name != null && !name.isEmpty()) {
+-                    String[] split = name.split(":", 2);
+-                    String id = (split.length > 1) ? split[1] : null;
+-                    Plugin plugin = this.pluginManager.getPlugin(split[0]);
+-
+-                    if (plugin == null) {
+-                        this.getLogger().severe("Could not set generator for default world '" + world + "': Plugin '" + split[0] + "' does not exist");
+-                    } else if (!plugin.isEnabled()) {
+-                        this.getLogger().severe("Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' is not enabled yet (is it load:STARTUP?)");
++                    if(name.equals("disable")) {
++                        result = EmptyChunkGenerator.INSTANCE;
+                     } else {
+-                        try {
+-                            result = plugin.getDefaultWorldGenerator(world, id);
+-                            if (result == null) {
+-                                this.getLogger().severe("Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' lacks a default world generator");
++                        String[] split = name.split(":", 2);
++                        String id = (split.length > 1) ? split[1] : null;
++                        Plugin plugin = this.pluginManager.getPlugin(split[0]);
++
++                        if (plugin == null) {
++                            this.getLogger().severe("Could not set generator for default world '" + world + "': Plugin '" + split[0] + "' does not exist");
++                        } else if (!plugin.isEnabled()) {
++                            this.getLogger().severe("Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' is not enabled yet (is it load:STARTUP?)");
++                        } else {
++                            try {
++                                result = plugin.getDefaultWorldGenerator(world, id);
++                                if (result == null) {
++                                    this.getLogger().severe("Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' lacks a default world generator");
++                                }
++                            } catch (Throwable t) {
++                                plugin.getLogger().log(Level.SEVERE, "Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName(), t);
+                             }
+-                        } catch (Throwable t) {
+-                            plugin.getLogger().log(Level.SEVERE, "Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName(), t);
+                         }
+                     }
+                 }
+@@ -2297,7 +2305,7 @@ public final class CraftServer implements Server {
+ 
+     @Override
+     public CraftIconCache getServerIcon() {
+-        return this.icon;
++        return null;
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 7e2626bf5eaaf3f9c28b167b83221ab85afd9510..bbc5761ee1c6ff304d565a014407d4e5f5cb0fe3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -370,9 +370,6 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+             if (plugin != null) {
+                 plugin.getLogger().warning("Plugin is %s at (%s, %s), this might cause issues.".formatted(reason, x, z));
+             }
+-            if (net.minecraft.server.MinecraftServer.getServer().isDebugging()) {
+-                io.papermc.paper.util.TraceUtil.dumpTraceForThread("Dangerous chunk retrieval");
+-            }
+         }
+     }
+     // Paper end
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 878fda09563430e2090b5a73ba1012932767b5db..ccdcf2fbfe7364ea16fcd253a607f601333a80f3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -338,14 +338,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         }
+     }
+ 
+-    // Paper start - Add API to get player's proxy address
+-    @Override
+-    public @Nullable InetSocketAddress getHAProxyAddress() {
+-        if (this.getHandle().connection == null) return null;
+-
+-        return this.getHandle().connection.connection.haProxyAddress instanceof final InetSocketAddress inetSocketAddress ? inetSocketAddress : null;
+-    }
+-    // Paper end - Add API to get player's proxy address
+     @Override
+     public boolean isTransferred() {
+         return this.getHandle().connection.playerGameConnection.isTransferred();
+@@ -2561,11 +2553,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+ 
+     @Override
+     public void resetFlyingTicks() {
+-        if (getHandle().connection == null) {
+-            return;
+-        }
+-
+-        getHandle().connection.resetFlyingTicks();
++        // Leaf - Cleanup - flying kick removed, nothing to reset
+     }
+ 
+     @Override
+@@ -2931,7 +2919,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         if (getHandle().connection == null) return;
+ 
+         net.minecraft.network.chat.Component component = io.papermc.paper.adventure.PaperAdventure.asVanilla(message);
+-        this.getHandle().sendChatMessage(new net.minecraft.network.chat.OutgoingChatMessage.Disguised(component), this.getHandle().isTextFilteringEnabled(), this.toHandle(boundChatType));
++        this.getHandle().sendChatMessage(new net.minecraft.network.chat.OutgoingChatMessage.Disguised(component), this.toHandle(boundChatType));
+     }
+ 
+     @Override
+@@ -2939,7 +2927,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         if (getHandle().connection == null) return;
+ 
+         if (signedMessage instanceof PlayerChatMessage.AdventureView view) {
+-            this.getHandle().sendChatMessage(net.minecraft.network.chat.OutgoingChatMessage.create(view.playerChatMessage()), this.getHandle().isTextFilteringEnabled(), this.toHandle(boundChatType));
++            this.getHandle().sendChatMessage(net.minecraft.network.chat.OutgoingChatMessage.create(view.playerChatMessage()), this.toHandle(boundChatType));
+             return;
+         }
+         net.kyori.adventure.text.Component message = signedMessage.unsignedContent() == null ? net.kyori.adventure.text.Component.text(signedMessage.message()) : signedMessage.unsignedContent();
+diff --git a/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java b/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java
+index 962080444d5dd301a447799967b465d5cffc6b50..a497cbaeff0750fec6f51fa973f8d673c81ebda8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java
++++ b/src/main/java/org/bukkit/craftbukkit/legacy/CraftLegacy.java
+@@ -262,9 +262,6 @@ public final class CraftLegacy {
+ 
+     static {
+         if (org.galemc.gale.configuration.GaleGlobalConfiguration.get() != null && org.galemc.gale.configuration.GaleGlobalConfiguration.get().logToConsole.legacyMaterialInitialization) LOGGER.warn("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!"); // Paper - Improve logging and errors; doesn't need to be an error // Gale - Purpur - do not log legacy Material initialization
+-        if (MinecraftServer.getServer() != null && MinecraftServer.getServer().isDebugging()) {
+-            new Exception().printStackTrace();
+-        }
+ 
+         SPAWN_EGGS.put((byte) 0, Material.PIG_SPAWN_EGG);
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java b/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
+index 44ce9fac2cf8b497eb9ce14cc7f15048929849fa..a89f641bd6b9b5b84682b4273ecf594164bbb7d5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
++++ b/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
+@@ -49,8 +49,7 @@ public final class CraftPlayerProfile implements PlayerProfile, com.destroystoky
+         if (applyPreconditions) {
+             Preconditions.checkArgument((uniqueId != null) || !StringUtils.isBlank(name), "uniqueId is null or name is blank");
+         }
+-        Preconditions.checkArgument(name == null || name.length() <= 16, "The name of the profile is longer than 16 characters"); // Paper - Validate
+-        Preconditions.checkArgument(name == null || net.minecraft.util.StringUtil.isValidPlayerName(name), "The name of the profile contains invalid characters: %s", name); // Paper - Validate
++        Preconditions.checkArgument(net.minecraft.util.StringUtil.isValidPlayerName(name), "The name of the profile is invalid: %s", name); // Paper - Validate
+         this.uniqueId = uniqueId;
+         this.name = name;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 2c6137746c3bb545967c73de9311eb7d9cb80d10..b72c139e103e2cff875640afa0488e4fe2bb2a36 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -371,18 +371,12 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     @Override
+     public void checkSupported(PluginDescriptionFile descriptionFile) throws InvalidPluginException {
+         ApiVersion toCheck = ApiVersion.getOrCreateVersion(descriptionFile.getAPIVersion());
+-        ApiVersion minimumVersion = MinecraftServer.getServer().server.minimumAPI;
+ 
+         if (toCheck.isNewerThan(ApiVersion.CURRENT)) {
+             // Newer than supported
+             throw new InvalidPluginException("Unsupported API version " + descriptionFile.getAPIVersion());
+         }
+ 
+-        if (toCheck.isOlderThan(minimumVersion)) {
+-            // Older than supported
+-            throw new InvalidPluginException("Plugin API version " + descriptionFile.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+-        }
+-
+         if (!DISABLE_OLD_API_SUPPORT && toCheck.isOlderThan(ApiVersion.FLATTENING)) { // Paper
+             CraftLegacy.init();
+         }
+@@ -416,9 +410,8 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     public boolean isSupportedApiVersion(String apiVersion) {
+         if (apiVersion == null) return false;
+         final ApiVersion toCheck = ApiVersion.getOrCreateVersion(apiVersion);
+-        final ApiVersion minimumVersion = MinecraftServer.getServer().server.minimumAPI;
+ 
+-        return !toCheck.isNewerThan(ApiVersion.CURRENT) && !toCheck.isOlderThan(minimumVersion);
++        return !toCheck.isNewerThan(ApiVersion.CURRENT);
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
+index 1dd1020b1a8f070f48cc6efdedd2f0c8a3811e75..dedf077f99251f83398f7ba6039eeacb8cf7ec64 100644
+--- a/src/main/java/org/spigotmc/SpigotConfig.java
++++ b/src/main/java/org/spigotmc/SpigotConfig.java
+@@ -223,43 +223,12 @@ public class SpigotConfig {
+         SpigotConfig.playerShuffle = SpigotConfig.getInt("settings.player-shuffle", 0);
+     }
+ 
+-    public static boolean enableSpamExclusions = false;
+-    public static List<String> spamExclusions;
+-
+-    private static void spamExclusions() {
+-        SpigotConfig.spamExclusions = SpigotConfig.getList("commands.spam-exclusions", List.of());
+-        Object enabled = SpigotConfig.config.get("commands.enable-spam-exclusions");
+-        if (enabled instanceof Boolean value) {
+-            SpigotConfig.enableSpamExclusions = value;
+-        } else {
+-            if (spamExclusions.size() == 1 && Objects.equals(spamExclusions.getFirst(), "/skill")) {
+-                SpigotConfig.enableSpamExclusions = false;
+-                SpigotConfig.set("commands.enable-spam-exclusions", false);
+-            } else {
+-                SpigotConfig.enableSpamExclusions = true;
+-                SpigotConfig.set("commands.enable-spam-exclusions", true);
+-            }
+-        }
+-
+-    }
+-
+     public static boolean silentCommandBlocks;
+ 
+     private static void silentCommandBlocks() {
+         SpigotConfig.silentCommandBlocks = SpigotConfig.getBoolean("commands.silent-commandblock-console", false);
+     }
+ 
+-    public static Set<String> replaceCommands;
+-
+-    private static void replaceCommands() {
+-        if (SpigotConfig.config.contains("replace-commands")) {
+-            SpigotConfig.set("commands.replace-commands", SpigotConfig.config.getStringList("replace-commands"));
+-            SpigotConfig.config.set("replace-commands", null);
+-        }
+-        SpigotConfig.replaceCommands = new HashSet<>(SpigotConfig.getList("commands.replace-commands",
+-            List.of()));
+-    }
+-
+     public static int userCacheCap;
+ 
+     private static void userCacheCap() {
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index 585a4f13a381c4329a84305385d2e6c5b4cee6df..6946b417d03458c931fb408b7d75ad659cd36fee 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -220,7 +220,7 @@ public class SpigotWorldConfig {
+     public int villagersWorkImmunityFor = 20;
+     public boolean villagersActiveForPanic = true;
+     public boolean tickInactiveVillagers = true;
+-    public boolean ignoreSpectatorActivation = false;
++    public boolean ignoreSpectatorActivation = true;
+ 
+     private void activationRange() {
+         boolean hasAnimalsConfig = config.getInt("entity-activation-range.animals", this.animalActivationRange) != this.animalActivationRange; // Paper
+diff --git a/src/main/java/org/spigotmc/TicksPerSecondCommand.java b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
+index ddf57173cdcf78e6230faac060d3bdd08249a7e5..180b3883e141231deccfbedcc7b72385c0a987e8 100644
+--- a/src/main/java/org/spigotmc/TicksPerSecondCommand.java
++++ b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
+@@ -1,6 +1,6 @@
+ package org.spigotmc;
+ 
+-import ca.spottedleaf.moonrise.common.time.TickData;
++import ca.spottedleaf.common.time.TickData;
+ import net.kyori.adventure.text.Component;
+ import net.kyori.adventure.text.JoinConfiguration;
+ import net.kyori.adventure.text.TextComponent;
+diff --git a/src/main/resources/configurations/bukkit.yml b/src/main/resources/configurations/bukkit.yml
+index bcea13e4bc4a03ed97191eee2960ff1987e09c27..990b5a5761d44b655aec521be48540aa129f8423 100644
+--- a/src/main/resources/configurations/bukkit.yml
++++ b/src/main/resources/configurations/bukkit.yml
+@@ -9,13 +9,11 @@
+ # Discord: https://discord.gg/papermc
+ # Website: https://papermc.io/
+ settings:
+-  allow-end: false
++  allow-end: true
+   warn-on-overload: true
+   update-folder: update
+   connection-throttle: 4000
+-  deprecated-verbose: default
+   shutdown-message: Сервер перезапускается
+-  minimum-api: none
+   use-map-color-cache: false
+ spawn-limits:
+   monsters: 25

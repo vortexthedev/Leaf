@@ -6,8 +6,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.util.Util;
 import org.dreeam.leaf.command.subcommands.MSPTCommand;
-import org.dreeam.leaf.command.subcommands.ReloadCommand;
-import org.dreeam.leaf.command.subcommands.VersionCommand;
 import org.jspecify.annotations.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -35,14 +33,10 @@ public final class LeafCommand extends Command {
     public static final String BASE_PERM = LeafCommands.COMMAND_BASE_PERM + "." + COMMAND_LABEL;
     private static final Permission basePermission = new Permission(BASE_PERM, PermissionDefault.OP);
     // subcommand label -> subcommand
-    private static final LeafSubcommand RELOAD_SUBCOMMAND = new ReloadCommand();
-    private static final LeafSubcommand VERSION_SUBCOMMAND = new VersionCommand();
     private static final LeafSubcommand MSPT_SUBCOMMAND = new MSPTCommand();
     private static final Map<String, LeafSubcommand> SUBCOMMANDS = Util.make(() -> {
         final Map<Set<String>, LeafSubcommand> commands = new HashMap<>();
 
-        commands.put(Set.of(ReloadCommand.LITERAL_ARGUMENT), RELOAD_SUBCOMMAND);
-        commands.put(Set.of(VersionCommand.LITERAL_ARGUMENT), VERSION_SUBCOMMAND);
         commands.put(Set.of(MSPTCommand.LITERAL_ARGUMENT), MSPT_SUBCOMMAND);
 
         return commands.entrySet().stream()
@@ -53,7 +47,6 @@ public final class LeafCommand extends Command {
     private static final Map<String, String> ALIASES = Util.make(() -> {
         final Map<String, Set<String>> aliases = new HashMap<>();
 
-        aliases.put(VersionCommand.LITERAL_ARGUMENT, Set.of("ver"));
 
         return aliases.entrySet().stream()
             .flatMap(entry -> entry.getValue().stream().map(s -> Map.entry(s, entry.getKey())))

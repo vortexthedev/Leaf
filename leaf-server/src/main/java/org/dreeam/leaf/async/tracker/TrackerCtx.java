@@ -263,9 +263,7 @@ public final class TrackerCtx {
                 entity.startSeenByPlayer(player);
 
                 if (tracker.seenBy.size() == 1) {
-                    world.debugSynchronizers().registerEntity(entity);
                 }
-                world.debugSynchronizers().startTrackingEntity(player, entity);
                 tracker.serverEntity.onPlayerAdd();
             }
         }
@@ -284,7 +282,6 @@ public final class TrackerCtx {
             for (ServerPlayerConnection connection : untrack.q) {
                 send(connection, new ClientboundRemoveEntitiesPacket(entity.getId()));
             }
-            world.debugSynchronizers().dropEntity(entity);
             return;
         }
         // Dimension changed or tracker doesn't match
@@ -306,7 +303,6 @@ public final class TrackerCtx {
         if (updated) {
             tracker.seenByUpdated();
             if (tracker.seenBy.isEmpty()) {
-                world.debugSynchronizers().dropEntity(entity);
             }
         }
     }

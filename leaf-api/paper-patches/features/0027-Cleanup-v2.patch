@@ -1,0 +1,103 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sigam <sigamatute@gmail.com>
+Date: Sun, 18 Oct 2026 18:55:52 +0300
+Subject: [PATCH] Cleanup v2
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java b/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
+index 31c77a4b64f96cf9382af043dfb872298233dd97..d4dc4bfe81ffb1161bc0cfc4a8b9a49520a323d5 100644
+--- a/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
++++ b/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
+@@ -32,7 +32,7 @@ public class PlayerHandshakeEvent extends Event implements Cancellable {
+     private @Nullable UUID uniqueId;
+     private @Nullable String propertiesJson;
+     private boolean failed;
+-    private Component failMessage = Component.text("If you wish to use IP forwarding, please enable it in your BungeeCord config as well!", NamedTextColor.YELLOW);
++    private Component failMessage;
+ 
+     private boolean cancelled;
+ 
+@@ -185,6 +185,8 @@ public class PlayerHandshakeEvent extends Event implements Cancellable {
+      * @return the message to display to the client
+      */
+     public Component failMessage() {
++        if(this.failMessage == null)
++            this.failMessage = Component.text("If you wish to use IP forwarding, please enable it in your BungeeCord config as well!", NamedTextColor.YELLOW);
+         return this.failMessage;
+     }
+ 
+diff --git a/src/main/java/io/papermc/paper/InternalAPIBridge.java b/src/main/java/io/papermc/paper/InternalAPIBridge.java
+index 05fc5f062e7df08f4e28e564aea482350b74094d..82667c2dfb2ab92b296409e744b73c1b52103372 100644
+--- a/src/main/java/io/papermc/paper/InternalAPIBridge.java
++++ b/src/main/java/io/papermc/paper/InternalAPIBridge.java
+@@ -1,7 +1,6 @@
+ package io.papermc.paper;
+ 
+ import com.destroystokyo.paper.SkinParts;
+-import com.destroystokyo.paper.util.VersionFetcher;
+ import io.papermc.paper.command.brigadier.CommandSourceStack;
+ import io.papermc.paper.datacomponent.item.ResolvableProfile;
+ import io.papermc.paper.entity.poi.PoiType;
+@@ -103,13 +102,6 @@ public interface InternalAPIBridge {
+ 
+     SpawnCategory getSpawnCategory(EntityType entityType);
+ 
+-    /*
+-     * Called once by the version command on first use, then cached.
+-     */
+-    default VersionFetcher getVersionFetcher() {
+-        return new VersionFetcher.DummyVersionFetcher();
+-    }
+-
+     ItemStack deserializeItem(byte[] data);
+ 
+     boolean hasDefaultEntityAttributes(NamespacedKey entityKey);
+diff --git a/src/main/java/io/papermc/paper/connection/PlayerConnection.java b/src/main/java/io/papermc/paper/connection/PlayerConnection.java
+index 2dd2fdc199a70f90853726b170da698e657bd9e5..c2b78e497edf810fac7c4750c226f347d419d021 100644
+--- a/src/main/java/io/papermc/paper/connection/PlayerConnection.java
++++ b/src/main/java/io/papermc/paper/connection/PlayerConnection.java
+@@ -56,10 +56,4 @@ public interface PlayerConnection {
+      */
+     @Nullable InetSocketAddress getVirtualHost();
+ 
+-    /**
+-     * Gets the socket address of this player's proxy
+-     *
+-     * @return the player's proxy address, null if the server doesn't have Proxy Protocol enabled, or the player didn't connect to an HAProxy instance
+-     */
+-    @Nullable InetSocketAddress getHAProxyAddress();
+ }
+diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+index 2045bc6ea5e09bf88af8ffdf719461af937bfd19..717f3b079df78212c1c105a65f1007812e442dfc 100644
+--- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
++++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+@@ -11,6 +11,8 @@ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
++import java.util.*;
++
+ /**
+  * @apiNote plugin developers should prefer to use the
+  *     <a href="https://docs.papermc.io/paper/dev/command-api/basics/introduction/">Brigadier command API</a>.
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 566c28629b83ddc9145f41f58257a5227c482083..53eaf7cca2fc791235530480fd5e1bb19cb4dfbb 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -284,16 +284,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+     @Nullable
+     public InetSocketAddress getAddress();
+ 
+-    // Paper start - Add API to get player's proxy address
+-    /**
+-     * Gets the socket address of this player's proxy
+-     *
+-     * @return the player's proxy address, null if the server doesn't have Proxy Protocol enabled, or the player didn't connect to an HAProxy instance
+-     */
+-    @Nullable
+-    public InetSocketAddress getHAProxyAddress();
+-    // Paper end - Add API to get player's proxy address
+-
+     /**
+      * Gets if this connection has been transferred from another server.
+      *

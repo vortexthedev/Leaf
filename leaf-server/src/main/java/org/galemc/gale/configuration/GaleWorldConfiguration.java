@@ -16,11 +16,9 @@ public class GaleWorldConfiguration extends ConfigurationPart {
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final int CURRENT_VERSION = 1;
 
-    private transient final SpigotWorldConfig spigotConfig;
     private transient final Identifier worldKey;
 
-    public GaleWorldConfiguration(SpigotWorldConfig spigotConfig, Identifier worldKey) {
-        this.spigotConfig = spigotConfig;
+    public GaleWorldConfiguration(Identifier worldKey) {
         this.worldKey = worldKey;
     }
 

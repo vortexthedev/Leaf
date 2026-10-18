@@ -4,8 +4,6 @@ import me.earthme.luminol.enums.EnumRegionFormat;
 import me.earthme.luminol.utils.BufferedLinearRegionFileFlusher;
 import org.dreeam.leaf.config.ConfigModule;
 import org.dreeam.leaf.config.ConfigCategory;
-import org.dreeam.leaf.config.annotations.DoNotLoad;
-import org.dreeam.leaf.config.annotations.HotReloadUnsupported;
 
 public class RegionFormatConfig extends ConfigModule {
 
@@ -13,13 +11,13 @@ public class RegionFormatConfig extends ConfigModule {
         return ConfigCategory.MISC.basePath() + ".region-format";
     }
 
-    public static @HotReloadUnsupported String regionFormatName = "MCA";
-    public static @HotReloadUnsupported int compressionLevel = 6;
-    public static @HotReloadUnsupported int ioThreadCount = 6;
-    public static @HotReloadUnsupported int ioFlushDelay = -1;
+    public static String regionFormatName = "MCA";
+    public static int compressionLevel = 6;
+    public static int ioThreadCount = 6;
+    public static int ioFlushDelay = -1;
 
-    public static @DoNotLoad EnumRegionFormat regionFormat = EnumRegionFormat.MCA;
-    public static @DoNotLoad BufferedLinearRegionFileFlusher blinearFlusher = null;
+    public static EnumRegionFormat regionFormat = EnumRegionFormat.MCA;
+    public static BufferedLinearRegionFileFlusher blinearFlusher = null;
 
     private static boolean regionFormatLoaded = false;
 
