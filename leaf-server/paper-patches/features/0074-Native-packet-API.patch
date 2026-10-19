@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <72511773+xVorttex@users.noreply.github.com>
+Date: Mon, 19 Oct 2026 12:40:26 +0300
+Subject: [PATCH] Native packet API
+
+
+diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java
+index 7b520d3955f271d1dc8b38c3c0fdf0acd3a521a5..d1ac3f8d45475a23d600404ae07482831e16f790 100644
+--- a/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java
++++ b/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java
+@@ -296,6 +296,15 @@ class PaperPluginInstanceManager {
+                 + pluginName + " (Is it up to date?)", ex, plugin); // Paper
+         }
+ 
++        // Leaf start - Native packet API
++        try {
++            org.dreeam.leaf.network.LeafPackets.unregisterAll(plugin);
++        } catch (Throwable ex) {
++            this.handlePluginException("Error occurred (in the plugin loader) while unregistering packet handlers for "
++                + pluginName + " (Is it up to date?)", ex, plugin);
++        }
++        // Leaf end - Native packet API
++
+         // Paper start - lifecycle event system
+         try {
+             io.papermc.paper.plugin.lifecycle.event.LifecycleEventRunner.INSTANCE.unregisterAllEventHandlersFor(plugin);

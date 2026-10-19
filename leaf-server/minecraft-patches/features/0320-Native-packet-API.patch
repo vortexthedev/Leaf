@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: xVorttex <72511773+xVorttex@users.noreply.github.com>
+Date: Mon, 19 Oct 2026 12:47:13 +0300
+Subject: [PATCH] Native packet API
+
+
+diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
+index 362da388cd99d29acfdb27426c6b8980cba291ba..9852d3fb2ad5e7199365ad47aac21eb26a909913 100644
+--- a/net/minecraft/network/Connection.java
++++ b/net/minecraft/network/Connection.java
+@@ -101,6 +101,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+     public boolean isPending = true;
+     // Paper end - Optimize network
+     private io.netty.channel.SingleThreadEventLoop eventLoop; // Paper - optimise packets that are not flushed
++    public final org.dreeam.leaf.network.PacketUser leafUser = new org.dreeam.leaf.network.PacketUser(this); // Leaf - Native packet API
+ 
+     public Connection(final PacketFlow receiving) {
+         this.receiving = receiving;
+@@ -254,6 +255,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+             PacketBundlePacker newBundler = new PacketBundlePacker(bundlerInfo);
+             configMessage = configMessage.andThen(ctx -> ctx.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.BUNDLER, newBundler));
+         }
++        configMessage = configMessage.andThen(ctx -> this.leafUser.protocolChanged(PacketFlow.SERVERBOUND, protocol.id())); // Leaf - Native packet API
+ 
+         // Leaf start - Async switch connection state
+         io.netty.channel.ChannelFuture cf = this.channel.writeAndFlush(configMessage);
+@@ -278,6 +280,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+         }
+ 
+         boolean isLoginProtocol = protocol.id() == ConnectionProtocol.LOGIN;
++        configMessage = configMessage.andThen(ctx -> this.leafUser.protocolChanged(PacketFlow.CLIENTBOUND, protocol.id())); // Leaf - Native packet API
+         syncAfterConfigurationChange(this.channel.writeAndFlush(configMessage.andThen(ctx -> this.sendLoginDisconnect = isLoginProtocol)));
+     }
+ 
+@@ -297,6 +300,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+         }
+ 
+         boolean isLoginProtocol = protocol.id() == ConnectionProtocol.LOGIN;
++        configMessage = configMessage.andThen(ctx -> this.leafUser.protocolChanged(PacketFlow.CLIENTBOUND, protocol.id())); // Leaf - Native packet API
+         io.netty.channel.ChannelFuture cf = this.channel.writeAndFlush(configMessage.andThen(ctx -> this.sendLoginDisconnect = isLoginProtocol));
+         if (org.dreeam.leaf.config.modules.network.AlternativeJoin.enabled) {
+             cf.addListener((ChannelFutureListener) Connection::syncAfterConfigurationChange);
+@@ -609,7 +613,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+             public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) throws Exception {
+                 super.write(ctx, msg, promise);
+             }
+-        }).addLast(HandlerNames.PACKET_HANDLER, this);
++        }).addLast(org.dreeam.leaf.network.PacketInterceptor.NAME, new org.dreeam.leaf.network.PacketInterceptor(this.leafUser)) // Leaf - Native packet API
++            .addLast(HandlerNames.PACKET_HANDLER, this);
+     }
+ 
+     public static void configureSerialization(
