@@ -185,6 +185,12 @@ public class LeafGlobalConfig {
         return configFile.getConfigSection(path);
     }
 
+    // Leaf start - Orebfuscator - used to fill lenient sections with their defaults
+    public void set(String path, Object value) {
+        configFile.set(path, value);
+    }
+    // Leaf end - Orebfuscator - used to fill lenient sections with their defaults
+
     public void addComment(String path, String comment) {
         configFile.addComment(path, comment);
     }
