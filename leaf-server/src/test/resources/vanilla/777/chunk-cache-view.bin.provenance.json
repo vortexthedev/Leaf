@@ -1,0 +1,11 @@
+{
+  "protocol": 777,
+  "release": "26.3",
+  "family": "chunk-cache-view",
+  "generator_sources_sha256": "f3f279bb367282be714b8a2bb5041ad17c5c9a2384b189a5011f42d48b423291",
+  "client_jar_sha256": "a48f9128f54bd44c6d2041699d4b69b8bffac03fbd16fc60bde4492035585a48",
+  "decompressed_sha256": "d6c904f1ad3bce55c166dbc34f317fe12405f2c02371782b595fb9c88c2a5bb6",
+  "validated_by_independent_compilation": true,
+  "os": "Windows",
+  "arch": "AMD64"
+}

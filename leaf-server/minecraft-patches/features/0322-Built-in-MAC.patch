@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sigam <sigamatute@gmail.com>
+Date: Thu, 22 Oct 2026 12:00:00 +0300
+Subject: [PATCH] Встроить жизненный цикл MAC в Leaf
+
+Start MAC before accepting connections, enqueue markers after plugin tick
+writes, and finalize captures before shutting down the network.
+
+The implementation and native fixtures live in leaf-server/src.
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -586,5 +586,6 @@
+     // Paper start - rework world loading process
+     protected void initPostWorld() {
++        org.dreeam.leaf.mac.MacRuntime.start(this); // Leaf - built-in MAC
+         org.dreeam.leaf.orebfuscator.LeafOrebfuscator.start(this); // Leaf - Orebfuscator - worlds are loaded, start before plugins are enabled
+         this.server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
+         this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark
+@@ -947,6 +948,7 @@
+         // CraftBukkit end
+         this.packetProcessor.close();
+         LOGGER.info("Stopping server");
++        org.dreeam.leaf.mac.MacRuntime.shutdown(); // Leaf - built-in MAC
+         Commands.COMMAND_SENDING_POOL.shutdownNow(); // Paper - Perf: Async command map building; Shutdown and don't bother finishing
+         // CraftBukkit start
+         if (this.server != null) {
+@@ -1475,6 +1477,7 @@
+         long endTime = System.nanoTime();
+         long remaining = this.nextTickTimeNanos - endTime;
+         new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.tickCount, ((double)(endTime - this.currentTickStart) / 1000000D), remaining).callEvent();
++        org.dreeam.leaf.mac.MacRuntime.tickEnd(); // Leaf - built-in MAC, after plugin tick writes
+         // Paper end - Server Tick Events
+         this.server.spark.tickEnd(((double)(endTime - this.currentTickStart) / 1000000D)); // Paper - spark
+         long tickTime = Util.getNanos() - nano;

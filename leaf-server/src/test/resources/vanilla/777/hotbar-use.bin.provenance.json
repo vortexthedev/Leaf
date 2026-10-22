@@ -1,0 +1,12 @@
+{
+  "protocol": 777,
+  "release": "26.3",
+  "family": "hotbar-use",
+  "generator_sources_sha256": "dd57c3f382c03d8da263898b8383f220ff5b89261091057b7efd6e1b4fd4dcdf",
+  "client_jar_sha256": "a48f9128f54bd44c6d2041699d4b69b8bffac03fbd16fc60bde4492035585a48",
+  "decompressed_sha256": "3e4c49aa53ca46d1afe1f7d77722e4b3968ef852874df100913a7c4cc52e5bef",
+  "validated_by_independent_compilation": true,
+  "java": "java version \"25.0.1\" 2025-10-21 LTS\nJava(TM) SE Runtime Environment (build 25.0.1+8-LTS-27)\nJava HotSpot(TM) 64-Bit Server VM (build 25.0.1+8-LTS-27, mixed mode, sharing)",
+  "os": "Windows",
+  "arch": "AMD64"
+}

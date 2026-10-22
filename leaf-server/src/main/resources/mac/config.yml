@@ -1,0 +1,14 @@
+# Automatic diagnostics start at login. Reconnect after enabling/changing these settings.
+diagnostics:
+  enabled: true
+  before-ticks: 40
+  after-ticks: 20
+  # Diagnostic trigger only, never an anticheat tolerance. Includes predictions with uncertainty gaps.
+  offset-threshold: 0.00001
+  cooldown-ticks: 200
+  max-incidents-per-session: 8
+  max-sessions: 16
+  # Complete session prefix on disk. On exhaustion capture stops explicitly; history is never silently truncated.
+  journal-mib: 64
+  retained-archives: 20
+  archive-total-mib: 256

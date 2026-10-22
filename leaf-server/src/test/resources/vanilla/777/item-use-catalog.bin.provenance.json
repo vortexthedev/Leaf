@@ -1,0 +1,12 @@
+{
+  "protocol": 777,
+  "release": "26.3",
+  "family": "item-use-catalog",
+  "generator_sources_sha256": "14eba3b3a8b72460257e824066301ed62b9ac3ffc7510468e7ba0725bdf05b77",
+  "decompressed_sha256": "d86ffc354671c72432bbc7c58344c18d2a4a5bbf60a9505a13f63990515c59d8",
+  "client_jar_sha256": "ce26f317d426f7648cebba6d83dacfefd8d278688c78b3fc5c6fd061f0c03c7c",
+  "validated_by_independent_compilation": true,
+  "java": "openjdk version \"25.0.3\" 2026-04-21 LTS\nOpenJDK Runtime Environment Zulu25.34+17-CA (build 25.0.3+9-LTS)\nOpenJDK 64-Bit Server VM Zulu25.34+17-CA (build 25.0.3+9-LTS, mixed mode, sharing)",
+  "os": "Darwin",
+  "arch": "arm64"
+}

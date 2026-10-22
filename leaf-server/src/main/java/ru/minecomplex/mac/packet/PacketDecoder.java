@@ -1,0 +1,96 @@
+package ru.minecomplex.mac.packet;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.protocol.common.*;
+import ru.minecomplex.mac.listener.MultiBlockChangeBitRepackHandler;
+/** Selects native model inputs and expands section block updates for the timeline. */
+public final class PacketDecoder {
+    private PacketDecoder() { }
+    public static Object decode(PacketInput input) { return input.value(); }
+    public static Object decode(Packet<?> packet, net.minecraft.core.RegistryAccess registries) {
+        return switch (packet) {
+            case ClientboundLightUpdatePacket p -> p;
+            case ClientboundChunksBiomesPacket p -> p;
+            case ClientboundSectionBlocksUpdatePacket p -> MultiBlockChangeBitRepackHandler.read(p);
+            case ClientboundAddEntityPacket p -> p;
+            case ClientboundAnimatePacket p -> p;
+            case ClientboundBlockChangedAckPacket p -> p;
+            case ClientboundBlockEntityDataPacket p -> p;
+            case ClientboundBlockEventPacket p -> p;
+            case ClientboundBlockUpdatePacket p -> p;
+            case ClientboundBundleDelimiterPacket p -> p;
+            case ClientboundChunkBatchFinishedPacket p -> p;
+            case ClientboundChunkBatchStartPacket p -> p;
+            case ClientboundContainerClosePacket p -> p;
+            case ClientboundContainerSetContentPacket p -> p;
+            case ClientboundContainerSetSlotPacket p -> p;
+            case ClientboundCooldownPacket p -> p;
+            case ClientboundEntityEventPacket p -> p;
+            case ClientboundEntityPositionSyncPacket p -> p;
+            case ClientboundExplodePacket p -> p;
+            case ClientboundForgetLevelChunkPacket p -> p;
+            case ClientboundGameEventPacket p -> p;
+            case ClientboundMountScreenOpenPacket p -> p;
+            case ClientboundInitializeBorderPacket p -> p;
+            case ClientboundLevelChunkWithLightPacket p -> p;
+            case ClientboundLoginPacket p -> p;
+            case ClientboundMoveEntityPacket.Pos p -> p;
+            case ClientboundMoveEntityPacket.PosRot p -> p;
+            case ClientboundMoveEntityPacket.Rot p -> p;
+            case ClientboundMoveVehiclePacket p -> p;
+            case ClientboundOpenScreenPacket p -> p;
+            case ClientboundPingPacket p -> p;
+            case ClientboundPlayerAbilitiesPacket p -> p;
+            case ClientboundPlayerInfoRemovePacket p -> p;
+            case ClientboundPlayerInfoUpdatePacket p -> p;
+            case ClientboundPlayerPositionPacket p -> p;
+            case ClientboundPlayerRotationPacket p -> p;
+            case ClientboundRemoveEntitiesPacket p -> p;
+            case ClientboundRemoveMobEffectPacket p -> p;
+            case ClientboundRespawnPacket p -> p;
+            case ClientboundSetBorderCenterPacket p -> p;
+            case ClientboundSetBorderLerpSizePacket p -> p;
+            case ClientboundSetBorderSizePacket p -> p;
+            case ClientboundSetChunkCacheCenterPacket p -> p;
+            case ClientboundSetChunkCacheRadiusPacket p -> p;
+            case ClientboundSetCursorItemPacket p -> p;
+            case ClientboundSetEntityDataPacket p -> p;
+            case ClientboundSetEntityMotionPacket p -> p;
+            case ClientboundSetEquipmentPacket p -> p;
+            case ClientboundSetHealthPacket p -> p;
+            case ClientboundSetHeldSlotPacket p -> p;
+            case ClientboundSetPassengersPacket p -> p;
+            case ClientboundSetPlayerInventoryPacket p -> p;
+            case ClientboundSetPlayerTeamPacket p -> p;
+            case ClientboundSetTimePacket p -> p;
+            case ClientboundTeleportEntityPacket p -> p;
+            case ClientboundUpdateAttributesPacket p -> p;
+            case ClientboundUpdateMobEffectPacket p -> p;
+            case ClientboundUpdateTagsPacket p -> p;
+            case ServerboundAcceptTeleportationPacket p -> p;
+            case ServerboundAttackPacket p -> p;
+            case ServerboundChunkBatchReceivedPacket p -> p;
+            case ServerboundClientTickEndPacket p -> p;
+            case ServerboundContainerClickPacket p -> p;
+            case ServerboundContainerClosePacket p -> p;
+            case ServerboundInteractPacket p -> p;
+            case ServerboundKeepAlivePacket p -> p;
+            case ServerboundMovePlayerPacket p -> p;
+            case ServerboundMoveVehiclePacket p -> p;
+            case ServerboundPaddleBoatPacket p -> p;
+            case ServerboundPlayerAbilitiesPacket p -> p;
+            case ServerboundPlayerActionPacket p -> p;
+            case ServerboundPlayerCommandPacket p -> p;
+            case ServerboundPlayerInputPacket p -> p;
+            case ServerboundPlayerLoadedPacket p -> p;
+            case ServerboundPongPacket p -> p;
+            case ServerboundSetCarriedItemPacket p -> p;
+            case ServerboundSetCreativeModeSlotPacket p -> p;
+            case ServerboundPunchPacket p -> p;
+            case ServerboundUseItemOnPacket p -> p;
+            case ServerboundUseItemPacket p -> p;
+            default -> new UnhandledPacket(packet.type().flow() == PacketFlow.CLIENTBOUND, packet.type().toString());
+        };
+    }
+}
