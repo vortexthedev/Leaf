@@ -1,0 +1,207 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sigam <sigamatute@gmail.com>
+Date: Tue, 20 Oct 2026 00:39:16 +0300
+Subject: [PATCH] Orebfuscator
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+index bada1d995614d028160166002555d261821ad7dc..d0a267a0ab5d5093c7422b121eb7dfb0f9c13901 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+@@ -468,6 +468,7 @@ public final class RegionizedPlayerChunkLoader {
+             ((ChunkSystemChunkHolder)((ChunkSystemServerLevel)this.world).moonrise$getChunkTaskScheduler().chunkHolderManager
+                 .getChunkHolder(chunkX, chunkZ).vanillaChunkHolder).moonrise$removeReceivedChunk(this.player);
+             this.player.connection.send(new ClientboundForgetLevelChunkPacket(new ChunkPos(chunkX, chunkZ)));
++            org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onForgetChunk(this.player, chunkX, chunkZ); // Leaf - Orebfuscator
+             // Paper start - PlayerChunkUnloadEvent
+             if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
+                 new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey()), player.getBukkitEntity()).callEvent();
+diff --git a/io/papermc/paper/FeatureHooks.java b/io/papermc/paper/FeatureHooks.java
+index e90fd9183a5f03eeb19a5f4cfbc986c9e1530540..51b0cb80178c40d819f76e306dbcbcda6999232a 100644
+--- a/io/papermc/paper/FeatureHooks.java
++++ b/io/papermc/paper/FeatureHooks.java
+@@ -51,6 +51,18 @@ public final class FeatureHooks {
+     }
+ 
+     public static void sendChunkRefreshPackets(final List<ServerPlayer> playersInRange, final LevelChunk chunk) {
++        // Leaf start - Orebfuscator - chunks are obfuscated per player, so every player needs an own packet
++        if (org.dreeam.leaf.orebfuscator.LeafOrebfuscator.isActive()) {
++            for (final ServerPlayer player : playersInRange) {
++                if (player.connection == null) continue;
++
++                final ClientboundLevelChunkWithLightPacket playerPacket = new ClientboundLevelChunkWithLightPacket(chunk, chunk.getLevel().getLightEngine(), null, null);
++                org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onSendChunk(player, playerPacket);
++                player.connection.send(playerPacket);
++            }
++            return;
++        }
++        // Leaf end - Orebfuscator - chunks are obfuscated per player, so every player needs an own packet
+         final ClientboundLevelChunkWithLightPacket refreshPacket = new ClientboundLevelChunkWithLightPacket(chunk, chunk.getLevel().getLightEngine(), null, null);
+         for (final ServerPlayer player : playersInRange) {
+             if (player.connection == null) continue;
+diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
+index 90b4c2335924a17c762997a161e81014e706aac4..c33b757d69cdcd7ccc699cfbfb2d3908d43bbea3 100644
+--- a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
++++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
+@@ -133,6 +133,20 @@ public class ClientboundLevelChunkPacketData {
+         return this.heightmaps;
+     }
+ 
++    // Leaf start - Orebfuscator
++    public void removeBlockEntitiesIf(final int chunkX, final int chunkZ, final BlockPosPredicate predicate) {
++        final int baseX = 16 * chunkX;
++        final int baseZ = 16 * chunkZ;
++        this.blockEntitiesData.removeIf(data -> predicate.test(
++            baseX + SectionPos.sectionRelative(data.packedXZ >> 4), data.y, baseZ + SectionPos.sectionRelative(data.packedXZ)));
++    }
++
++    @FunctionalInterface
++    public interface BlockPosPredicate {
++        boolean test(int x, int y, int z);
++    }
++    // Leaf end - Orebfuscator
++
+     private record BlockEntityInfo(byte packedXZ, short y, BlockEntityType<?> type, Optional<CompoundTag> tag) {
+         public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkPacketData.BlockEntityInfo> STREAM_CODEC = StreamCodec.composite(
+             ByteBufCodecs.BYTE,
+diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
+index 2130a61f28cb57a46d606bfc6dc07674c1ffcf6d..397adf237287e8a459dee0da34b9868be4878cbc 100644
+--- a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
++++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
+@@ -38,9 +38,18 @@ public final class ClientboundLevelChunkWithLightPacket implements Packet<Client
+         ClientboundLevelChunkWithLightPacket::new
+     );
+     // Paper start - Anti-Xray
++    private volatile boolean ready = true; // Leaf - Orebfuscator - held back by Connection until the obfuscation is done
++
+     public void setReady(final boolean ready) {
+-        // Empty hook, updated by feature patch
++        this.ready = ready; // Leaf - Orebfuscator
++    }
++
++    // Leaf start - Orebfuscator
++    @Override
++    public boolean isReady() {
++        return this.ready;
+     }
++    // Leaf end - Orebfuscator
+     // Paper end - Anti-Xray
+ 
+     public ClientboundLevelChunkWithLightPacket(
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 3ccf970c908938e8c36c2485bc96b54b49a79e78..a51c8dd484437bff7602baaf0752bf108e1ac750 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -585,6 +585,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+     // Paper start - rework world loading process
+     protected void initPostWorld() {
++        org.dreeam.leaf.orebfuscator.LeafOrebfuscator.start(this); // Leaf - Orebfuscator - worlds are loaded, start before plugins are enabled
+         this.server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
+         this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark
+         this.server.spark.enableAfterPlugins(this.server); // Paper - spark
+@@ -951,6 +952,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         if (this.server != null) {
+             this.server.spark.disable(); // Paper - spark
+             this.server.disablePlugins();
++            org.dreeam.leaf.orebfuscator.LeafOrebfuscator.shutdown(); // Leaf - Orebfuscator
+             this.server.waitForAsyncTasksShutdown(); // Paper - Wait for Async Tasks during shutdown
+         }
+         // CraftBukkit end
+@@ -1714,6 +1716,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         if (org.dreeam.leaf.config.modules.async.SparklyPaperParallelWorldTicking.enabled) level.tickExecutor.shutdown(); // Leaf - SparklyPaper - parallel world ticking (We remove it in here instead of ServerLevel.close() because ServerLevel.close() is never called!)
+         if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled) { level.leaf$asyncTracker.onTickEnd(); } // Leaf - Multithreaded tracker
+         this.levels = Collections.unmodifiableMap(newLevels);
++        org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onLevelUnload(level); // Leaf - Orebfuscator
+     }
+     // CraftBukkit end
+ 
+diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
+index 2550e56112333cc9b294c2c1aa3501e0a9bfaf25..e4c0fd94ee1da4152aeb582a84c2bc0f1893bbd5 100644
+--- a/net/minecraft/server/level/ServerPlayerGameMode.java
++++ b/net/minecraft/server/level/ServerPlayerGameMode.java
+@@ -275,6 +275,7 @@ public class ServerPlayerGameMode {
+                 if (blockEvent.isCancelled()) {
+                     return;
+                 }
++                org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onStartDestroyBlock(this.level, pos); // Leaf - Orebfuscator
+ 
+                 if (blockEvent.getInstaBreak()) {
+                     progress = 2.0f;
+diff --git a/net/minecraft/server/network/PlayerChunkSender.java b/net/minecraft/server/network/PlayerChunkSender.java
+index 776b9002ee885a30258540c17ddcfff8b2ffeca9..4196f1d6cbe599a18dbbe8fa35cad671f7d3c6a1 100644
+--- a/net/minecraft/server/network/PlayerChunkSender.java
++++ b/net/minecraft/server/network/PlayerChunkSender.java
+@@ -44,6 +44,7 @@ public class PlayerChunkSender {
+     public void dropChunk(final ServerPlayer player, final ChunkPos pos) {
+         if (!this.pendingChunks.remove(pos.pack()) && player.isAlive()) {
+             player.connection.send(new ClientboundForgetLevelChunkPacket(pos));
++            org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onForgetChunk(player, pos.x(), pos.z()); // Leaf - Orebfuscator
+             // Paper start - PlayerChunkUnloadEvent
+             if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
+                 new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(pos.pack()), player.getBukkitEntity()).callEvent();
+@@ -79,7 +80,11 @@ public class PlayerChunkSender {
+     }
+ 
+     public static void sendChunk(final ServerGamePacketListenerImpl connection, final ServerLevel level, final LevelChunk chunk) { // Paper - rewrite chunk system - public
+-        connection.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null));
++        // Leaf start - Orebfuscator
++        final ClientboundLevelChunkWithLightPacket chunkPacket = new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null);
++        org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onSendChunk(connection.player, chunkPacket);
++        connection.send(chunkPacket);
++        // Leaf end - Orebfuscator
+         // Paper start - PlayerChunkLoadEvent
+         if (io.papermc.paper.event.packet.PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
+             new io.papermc.paper.event.packet.PlayerChunkLoadEvent(new org.bukkit.craftbukkit.CraftChunk(chunk), connection.getPlayer().getBukkitEntity()).callEvent();
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 858769b120f7601e3c446574a0b642039fb002ee..81d47c2af06ed6023a41672d1ed4c3d8ee41db53 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -236,6 +236,7 @@ public abstract class PlayerList {
+ 
+         org.bukkit.event.player.PlayerJoinEvent playerJoinEvent = new org.bukkit.event.player.PlayerJoinEvent(bukkitPlayer, getJoinMsg(component, bukkitPlayer)); // Paper - Adventure // Leaf - Configurable connection message - join message
+         this.cserver.getPluginManager().callEvent(playerJoinEvent);
++        org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onPlayerJoin(player); // Leaf - Orebfuscator
+ 
+         if (!player.connection.isAcceptingMessages()) {
+             return;
+@@ -446,6 +447,7 @@ public abstract class PlayerList {
+ 
+         org.bukkit.event.player.PlayerQuitEvent playerQuitEvent = new org.bukkit.event.player.PlayerQuitEvent(player.getBukkitEntity(), getQuitMsg(leaveMessage, player.getBukkitEntity()), player.quitReason); // Paper - Adventure & Add API for quit reason // Leaf - Configurable connection message - quit message
+         this.cserver.getPluginManager().callEvent(playerQuitEvent);
++        org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onPlayerQuit(player); // Leaf - Orebfuscator
+         player.getBukkitEntity().disconnect();
+ 
+         // CraftBukkit end
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index fec275ec80b3270b3f3ec4de3baac52659ae1a9f..83cfe64adb0e12a37c1c978e17549d5f90acf036 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -1211,6 +1211,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+ 
+     // CraftBukkit start - Split off from above in order to directly send client and physic updates
+     public void notifyAndUpdatePhysics(BlockPos pos, LevelChunk chunk, BlockState oldState, BlockState blockState, BlockState newState, @Block.UpdateFlags int updateFlags, int updateLimit) {
++        org.dreeam.leaf.orebfuscator.LeafOrebfuscator.onBlockChange(this, pos, oldState, newState); // Leaf - Orebfuscator - reveal blocks that became visible
+         if (newState == blockState) {
+             if (oldState != newState) {
+                 this.setBlocksDirty(pos, oldState, newState);
+diff --git a/net/minecraft/world/level/chunk/PalettedContainer.java b/net/minecraft/world/level/chunk/PalettedContainer.java
+index 7729caf8ee7a72fe42e5a622e14829a7a7f2463b..3d20b6097c35748943b118ea7d6dcae1a94595ea 100644
+--- a/net/minecraft/world/level/chunk/PalettedContainer.java
++++ b/net/minecraft/world/level/chunk/PalettedContainer.java
+@@ -217,6 +217,15 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+         }
+     }
+ 
++    // Leaf start - retain Paper binary compatibility for plugins such as FAWE
++    public static <T> DataResult<PalettedContainer<T>> unpack(
++        final Strategy<T> strategy, final PalettedContainerRO.PackedData<T> discData, final T defaultValue, final T @Nullable [] presetValues
++    ) {
++        // Paper anti-xray was removed; its default and preset values are no longer used.
++        return unpack(strategy, discData);
++    }
++    // Leaf end - retain Paper binary compatibility for plugins such as FAWE
++
+     @VisibleForTesting
+     public static <T> DataResult<PalettedContainer<T>> unpack(final Strategy<T> strategy, final PalettedContainerRO.PackedData<T> discData) {
+         List<T> paletteEntries = discData.paletteEntries();

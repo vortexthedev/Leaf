@@ -255,7 +255,7 @@ public final class LeafPackets {
      */
     static @Nullable Packet<?> dispatch(final PacketUser user, final Packet<?> packet, final @Nullable List<Runnable> sentTasks) {
         final Handlers handlers = packet.type().flow() == PacketFlow.SERVERBOUND ? serverbound : clientbound;
-        if (handlers == Handlers.EMPTY && !org.dreeam.leaf.mac.MacRuntime.active()) {
+        if (handlers == Handlers.EMPTY) {
             return packet;
         }
 
@@ -296,14 +296,11 @@ public final class LeafPackets {
 
     private static @Nullable Packet<?> call(final Handlers handlers, final PacketUser user, final Packet<?> packet, final @Nullable List<Runnable> sentTasks) {
         final PacketRegistration[] registrations = handlers.get(packet.type());
-        if (registrations.length == 0 && !org.dreeam.leaf.mac.MacRuntime.active()) {
+        if (registrations.length == 0) {
             return packet;
         }
 
         final PacketEvent<Packet<?>> event = new PacketEvent<>(user, packet, sentTasks);
-        if (packet.type().flow() == PacketFlow.SERVERBOUND) {
-            org.dreeam.leaf.mac.MacRuntime.packet(event);
-        }
         for (final PacketRegistration registration : registrations) {
             if (registration.ignoreCancelled && event.isCancelled()) {
                 continue;
@@ -314,10 +311,6 @@ public final class LeafPackets {
             } catch (final Throwable throwable) {
                 LOGGER.error("Could not pass packet {} of {} to {}", event.getType(), user, registration.plugin.getName(), throwable);
             }
-        }
-        if (packet.type().flow() == PacketFlow.CLIENTBOUND) {
-            event.readOnly = true;
-            org.dreeam.leaf.mac.MacRuntime.packet(event);
         }
         return event.isCancelled() ? null : event.getPacket();
     }
@@ -359,7 +352,6 @@ public final class LeafPackets {
         if (!USERS.remove(user)) {
             return;
         }
-        org.dreeam.leaf.mac.MacRuntime.disconnected(user);
         for (final ConnectionRegistration registration : connectionListeners) {
             try {
                 registration.listener.onDisconnect(user);

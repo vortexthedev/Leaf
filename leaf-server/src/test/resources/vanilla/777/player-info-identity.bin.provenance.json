@@ -1,8 +1,0 @@
-{
-  "release": "26.3",
-  "protocol": 777,
-  "format": "MAPI v1",
-  "client_unsigned_sha256": "ce26f317d426f7648cebba6d83dacfefd8d278688c78b3fc5c6fd061f0c03c7c",
-  "generator_sha256": "a3414973b4e4838cf45d982642ebe40c509adfb3d8fc076b35bd4caa39467556",
-  "decompressed_sha256": "5d92675e98db7bd0a3a3c3cb2d436e662e4a48fdbda248eb4b1b60651011ff41"
-}
