@@ -18,6 +18,7 @@ public final class PacketRegistration implements Registration {
     final boolean ignoreCancelled;
     final PacketHandler<Packet<?>> handler;
     final long order;
+    final boolean handling;
 
     PacketRegistration(
         final Plugin plugin,
@@ -28,6 +29,19 @@ public final class PacketRegistration implements Registration {
         final PacketHandler<Packet<?>> handler,
         final long order
     ) {
+        this(plugin, flow, type, priority, ignoreCancelled, handler, order, false);
+    }
+
+    PacketRegistration(
+        final Plugin plugin,
+        final PacketFlow flow,
+        final @Nullable PacketType<?> type,
+        final PacketPriority priority,
+        final boolean ignoreCancelled,
+        final PacketHandler<Packet<?>> handler,
+        final long order,
+        final boolean handling
+    ) {
         this.plugin = plugin;
         this.flow = flow;
         this.type = type;
@@ -35,6 +49,7 @@ public final class PacketRegistration implements Registration {
         this.ignoreCancelled = ignoreCancelled;
         this.handler = handler;
         this.order = order;
+        this.handling = handling;
     }
 
     @Override
@@ -59,6 +74,10 @@ public final class PacketRegistration implements Registration {
 
     public boolean ignoreCancelled() {
         return this.ignoreCancelled;
+    }
+
+    public boolean isHandling() {
+        return this.handling;
     }
 
     @Override

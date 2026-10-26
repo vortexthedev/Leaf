@@ -1,0 +1,197 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sigam <sigamatute@gmail.com>
+Date: Mon, 26 Oct 2026 22:57:49 +0200
+Subject: [PATCH] Packet decode and handling hooks
+
+
+diff --git a/net/minecraft/nbt/ListTag.java b/net/minecraft/nbt/ListTag.java
+index 73b50aa596c5ce163d1130d2afac2940aefb95bc..2eda1c9114c0bd2be994b5c6adc6a7bda53360b6 100644
+--- a/net/minecraft/nbt/ListTag.java
++++ b/net/minecraft/nbt/ListTag.java
+@@ -39,6 +39,7 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
+             accounter.accountBytes(4L, count);
+             TagType<?> type = TagTypes.getType(typeId);
+             ListTag list = new ListTag(new ArrayList<>(count));
++            org.dreeam.leaf.network.LeafPackets.decodedListType(list, typeId);
+ 
+             for (int i = 0; i < count; i++) {
+                 list.addAndUnwrap(type.load(input, accounter));
+@@ -206,6 +207,7 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
+     }
+ 
+     public void addAndUnwrap(final Tag tag) {
++        org.dreeam.leaf.network.LeafPackets.decodedListElement(this, tag);
+         if (tag instanceof CompoundTag compound) {
+             this.add(tryUnwrap(compound));
+         } else {
+diff --git a/net/minecraft/nbt/NbtIo.java b/net/minecraft/nbt/NbtIo.java
+index 5c03b51bcdea77560ac9e4c1791e66cc1e990a95..b49d150feccb3e6e3bf1a938448ba97d787f0269 100644
+--- a/net/minecraft/nbt/NbtIo.java
++++ b/net/minecraft/nbt/NbtIo.java
+@@ -149,7 +149,9 @@ public class NbtIo {
+ 
+     public static Tag readAnyTag(final DataInput input, final NbtAccounter accounter) throws IOException {
+         byte type = input.readByte();
+-        return type == 0 ? EndTag.INSTANCE : readTagSafe(input, accounter, type);
++        Tag tag = type == 0 ? EndTag.INSTANCE : readTagSafe(input, accounter, type);
++        org.dreeam.leaf.network.LeafPackets.inspectNbt(tag);
++        return tag;
+     }
+ 
+     public static void writeAnyTag(final Tag tag, final DataOutput output) throws IOException {
+diff --git a/net/minecraft/network/PacketDecoder.java b/net/minecraft/network/PacketDecoder.java
+index 7c7d51148774aa30e0b91d7ebd7cc10bc9476e75..0d6d969b57878fc6cd92698996f6b12458fa1cbb 100644
+--- a/net/minecraft/network/PacketDecoder.java
++++ b/net/minecraft/network/PacketDecoder.java
+@@ -21,16 +21,27 @@ public class PacketDecoder<T extends PacketListener> extends ByteToMessageDecode
+     @Override
+     protected void decode(final ChannelHandlerContext ctx, final ByteBuf input, final List<Object> out) throws Exception {
+         int readableBytes = input.readableBytes();
++        if (!org.dreeam.leaf.network.LeafPackets.allowFrame(ctx, this.protocolInfo.id(), input.capacity(), readableBytes)) {
++            input.skipBytes(readableBytes);
++            return;
++        }
+ 
+         Packet<? super T> packet;
++        var previousDecode = org.dreeam.leaf.network.LeafPackets.enterDecode(ctx, this.protocolInfo.id());
+         try {
+             packet = this.protocolInfo.codec().decode(input);
+         } catch (Exception e) {
++            if (org.dreeam.leaf.network.LeafPackets.isDecodeRejected(e)) {
++                input.skipBytes(input.readableBytes());
++                return;
++            }
+             if (e instanceof SkipPacketException) {
+                 input.skipBytes(input.readableBytes());
+             }
+ 
+             throw e;
++        } finally {
++            org.dreeam.leaf.network.LeafPackets.exitDecode(previousDecode);
+         }
+ 
+         PacketType<? extends Packet<? super T>> packetId = packet.type();
+diff --git a/net/minecraft/network/protocol/game/ServerboundContainerClickPacket.java b/net/minecraft/network/protocol/game/ServerboundContainerClickPacket.java
+index 59cd8b192547300585eb534b162196601cee7880..5855ad427839509a32477ef0e2bc2d0c9252b7ef 100644
+--- a/net/minecraft/network/protocol/game/ServerboundContainerClickPacket.java
++++ b/net/minecraft/network/protocol/game/ServerboundContainerClickPacket.java
+@@ -35,7 +35,7 @@ public final class ServerboundContainerClickPacket implements Packet<ServerGameP
+ 
+     private static final int MAX_SLOT_COUNT = 128;
+     private static final StreamCodec<RegistryFriendlyByteBuf, Int2ObjectMap<HashedStack>> SLOTS_STREAM_CODEC = ByteBufCodecs.map(
+-        Int2ObjectOpenHashMap::new, ByteBufCodecs.SHORT.map(Short::intValue, Integer::shortValue), HashedStack.STREAM_CODEC, 128
++        count -> { if (count >= 0) org.dreeam.leaf.network.LeafPackets.inspectSlots(count); return new Int2ObjectOpenHashMap<>(count); }, ByteBufCodecs.SHORT.map(Short::intValue, Integer::shortValue), HashedStack.STREAM_CODEC, 128
+     );
+     public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacket> STREAM_CODEC = StreamCodec.composite(
+         ByteBufCodecs.CONTAINER_ID,
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 08659e701e6c9d8b63f35c8f5d1fad8b59a546b0..3ed77651d5181d963682b24c656af032325902d1 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -967,6 +967,12 @@ public class ServerGamePacketListenerImpl
+     public void handlePickItemFromBlock(final ServerboundPickItemFromBlockPacket packet) {
+         ServerLevel level = this.player.level();
+         PacketUtils.ensureRunningOnSameThread(packet, this, level);
++        final ServerboundPickItemFromBlockPacket checked = org.dreeam.leaf.network.LeafPackets.handleInteraction(this.player, packet);
++        if (checked != null) this.handlePickItemFromBlockChecked(checked);
++    }
++
++    private void handlePickItemFromBlockChecked(final ServerboundPickItemFromBlockPacket packet) {
++        ServerLevel level = this.player.level();
+         BlockPos pos = packet.pos();
+         if (this.player.isWithinBlockInteractionRange(pos, 1.0)) {
+             if (level.isLoaded(pos)) {
+@@ -1001,6 +1007,12 @@ public class ServerGamePacketListenerImpl
+     public void handlePickItemFromEntity(final ServerboundPickItemFromEntityPacket packet) {
+         ServerLevel level = this.player.level();
+         PacketUtils.ensureRunningOnSameThread(packet, this, level);
++        final ServerboundPickItemFromEntityPacket checked = org.dreeam.leaf.network.LeafPackets.handleInteraction(this.player, packet);
++        if (checked != null) this.handlePickItemFromEntityChecked(checked);
++    }
++
++    private void handlePickItemFromEntityChecked(final ServerboundPickItemFromEntityPacket packet) {
++        ServerLevel level = this.player.level();
+         Entity entity = level.getEntityOrPart(packet.id());
+         if (entity != null && this.player.isWithinEntityInteractionRange(entity, 3.0)) {
+             ItemStack itemStack = entity.getPickResult();
+@@ -1398,6 +1410,13 @@ public class ServerGamePacketListenerImpl
+     @Override
+     public void handleMovePlayer(final ServerboundMovePlayerPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
++        final ServerboundMovePlayerPacket checked = org.dreeam.leaf.network.LeafPackets.handlePlayerMove(this.player, packet);
++        if (checked != null) {
++            this.handleMovePlayerChecked(checked);
++        }
++    }
++
++    private void handleMovePlayerChecked(final ServerboundMovePlayerPacket packet) {
+         // Purpur start - Add more logger output for invalid movement kicks
+         boolean invalidX = Double.isNaN(packet.getX(0.0));
+         boolean invalidY = Double.isNaN(packet.getY(0.0));
+@@ -2080,6 +2099,11 @@ public class ServerGamePacketListenerImpl
+     @Override
+     public void handleUseItemOn(final ServerboundUseItemOnPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
++        final ServerboundUseItemOnPacket checked = org.dreeam.leaf.network.LeafPackets.handleInteraction(this.player, packet);
++        if (checked != null) this.handleUseItemOnChecked(checked);
++    }
++
++    private void handleUseItemOnChecked(final ServerboundUseItemOnPacket packet) {
+         if (this.player.isImmobile()) return; // CraftBukkit
+         if (!this.checkLimit(packet.timestamp())) return; // Spigot - check limit
+         if (this.hasClientLoaded()) {
+@@ -3050,6 +3074,13 @@ public class ServerGamePacketListenerImpl
+     @Override
+     public void handleContainerClick(final ServerboundContainerClickPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
++        final ServerboundContainerClickPacket checked = org.dreeam.leaf.network.LeafPackets.handleContainerClick(this.player, packet);
++        if (checked != null) {
++            this.handleContainerClickChecked(checked);
++        }
++    }
++
++    private void handleContainerClickChecked(final ServerboundContainerClickPacket packet) {
+         if (this.player.isImmobile()) return; // CraftBukkit
+         this.player.resetLastActionTime();
+         if (this.player.containerMenu.containerId == packet.containerId() && this.player.containerMenu.stillValid(this.player)) { // CraftBukkit
+@@ -3269,7 +3300,8 @@ public class ServerGamePacketListenerImpl
+                                     if (this.player.containerMenu.quickcraftSlots.size() == 1) {
+                                         int index = containerMenu.quickcraftSlots.iterator().next().index;
+                                         containerMenu.resetQuickCraft();
+-                                        this.handleContainerClick(new ServerboundContainerClickPacket(packet.containerId(), packet.stateId(), (short) index, (byte) containerMenu.quickcraftType, net.minecraft.world.inventory.ContainerInput.PICKUP, packet.changedSlots(), packet.carriedItem()));
++                                        // LeafPackets: this is a server-generated drag fallback, not another received packet.
++                                        this.handleContainerClickChecked(new ServerboundContainerClickPacket(packet.containerId(), packet.stateId(), (short) index, (byte) containerMenu.quickcraftType, net.minecraft.world.inventory.ContainerInput.PICKUP, packet.changedSlots(), packet.carriedItem()));
+                                         return;
+                                     }
+                                 }
+@@ -3476,6 +3508,13 @@ public class ServerGamePacketListenerImpl
+     @Override
+     public void handleSetCreativeModeSlot(final ServerboundSetCreativeModeSlotPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
++        final ServerboundSetCreativeModeSlotPacket checked = org.dreeam.leaf.network.LeafPackets.handleCreativeSlot(this.player, packet);
++        if (checked != null) {
++            this.handleSetCreativeModeSlotChecked(checked);
++        }
++    }
++
++    private void handleSetCreativeModeSlotChecked(final ServerboundSetCreativeModeSlotPacket packet) {
+         if (this.player.hasInfiniteMaterials()) {
+             boolean drop = packet.slotNum() < 0;
+             ItemStack itemStack = packet.itemStack();
+@@ -3719,7 +3758,15 @@ public class ServerGamePacketListenerImpl
+ 
+     @Override
+     public void handleCustomPayload(final ServerboundCustomPayloadPacket packet) {
+-        super.handleCustomPayload(packet); // Paper
++        if (packet.payload() instanceof net.minecraft.network.protocol.common.custom.DiscardedPayload) {
++            PacketUtils.ensureRunningOnSameThread(packet, this, this.server.packetProcessor());
++            final ServerboundCustomPayloadPacket checked = org.dreeam.leaf.network.LeafPackets.handleCustomPayload(this.player, packet);
++            if (checked != null) {
++                super.handleCustomPayload(checked);
++            }
++        } else {
++            super.handleCustomPayload(packet); // Paper
++        }
+     }
+ 
+     @Override

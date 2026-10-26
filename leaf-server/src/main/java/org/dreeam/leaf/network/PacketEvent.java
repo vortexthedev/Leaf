@@ -31,18 +31,29 @@ public final class PacketEvent<P extends Packet<?>> {
     private final @Nullable List<Runnable> sentTasks;
     private P packet;
     private boolean cancelled;
+    private final boolean handling;
     boolean readOnly;
 
     PacketEvent(final PacketUser user, final P packet, final @Nullable List<Runnable> sentTasks) {
+        this(user, packet, sentTasks, false);
+    }
+
+    PacketEvent(final PacketUser user, final P packet, final @Nullable List<Runnable> sentTasks, final boolean handling) {
         this.user = user;
         this.type = packet.type();
         this.protocol = user.getProtocol(this.type.flow());
         this.packet = packet;
         this.sentTasks = sentTasks;
+        this.handling = handling;
     }
 
     public PacketUser getUser() {
         return this.user;
+    }
+
+    /** True only during an opt-in server-thread handling hook, after PacketUtils' thread check. */
+    public boolean isHandling() {
+        return this.handling;
     }
 
     public Connection getConnection() {
